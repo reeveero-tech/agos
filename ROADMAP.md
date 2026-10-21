@@ -58,7 +58,7 @@
 | R-F-006 | إصلاح استيرادات `rie` (نسبية) | ملفات `rie` الخمسة تُستورد | R-F-005 | DONE |
 | R-F-007 | تصفير بقية أعطال الاستيراد (`decision`, `diagnostics`, `core/tests`, ...) | `import_fail = 0` | R-F-002..006 | TODO |
 | R-F-008 | `test_validation.py`: إضافة واجهة توافق `AGOSKernel` في `core` (إضافة لا تعديل اختبار) | الاختبار يُجمع وينجح | R-W3-001 جزئياً | TODO |
-| R-F-009 | دعم الاختبارات غير المتزامنة (`pytest-asyncio`) + إعداد `asyncio_mode` | اختبارات `test_execution_implementation` تعمل | R-F-001 | TODO |
+| R-F-009 | دعم الاختبارات غير المتزامنة (`pytest-asyncio`) + إعداد `asyncio_mode` | اختبارات `test_execution_implementation` تعمل | R-F-001 | DONE |
 | R-F-010 | كل الاختبارات الحالية خضراء؛ خط الأساس فارغ | `known_failures = []` | R-F-001..009 | TODO |
 | R-F-011 | تدقيق التبعيات الخارجية الفعلية وتسجيلها (yaml, requests, psutil, ...) | لا `ModuleNotFoundError` لحزمة خارجية في بيئة نظيفة | R-F-001 | TODO |
 | R-F-012 | تحويل `datetime.utcnow()` إلى توقيت واعٍ بالمنطقة (تحذيرات الإيقاف) | صفر `DeprecationWarning` من utcnow | — | TODO |

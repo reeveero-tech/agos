@@ -2,11 +2,6 @@
  "known_failures": [
   "::agos.agos-kernel.test_validation",
   "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_file_permissions_are_restricted",
-  "agos.agos-kernel.test_execution_implementation::test_adapters",
-  "agos.agos-kernel.test_execution_implementation::test_execution_engine",
-  "agos.agos-kernel.test_execution_implementation::test_integration",
-  "agos.agos-kernel.test_execution_implementation::test_providers",
-  "agos.agos-kernel.test_execution_implementation::test_skills",
   "agos.agos-kernel.test_intelligence::test_architecture_analysis",
   "agos.agos-kernel.test_intelligence::test_capability_discovery",
   "agos.agos-kernel.test_intelligence::test_code_analysis",

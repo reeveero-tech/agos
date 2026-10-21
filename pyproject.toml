@@ -29,6 +29,7 @@ agos-analyze = "agos.cli:main"
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "pytest-asyncio>=0.24",
 ]
 
 [build-system]
@@ -50,3 +51,6 @@ exclude = ["**/__pycache__", "**/*.pyc", ".venv"]
 
 [tool.pytest.ini_options]
 testpaths = ["agos/agos-kernel", "tests"]
+# R-F-009: plain `async def test_*` functions run on an event loop (pytest-asyncio).
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

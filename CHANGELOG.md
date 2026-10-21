@@ -5,6 +5,14 @@
 
 ## [غير مُصدَر]
 
+### 0008 — الاختبارات غير المتزامنة — 2026-10-21 — R-F-009
+**تغيّر**
+- `pyproject.toml`: `pytest-asyncio>=0.24` في مجموعة `dev`؛ `asyncio_mode = "auto"`.
+- `uv.lock`: أُضيف `pytest-asyncio 1.4.0` (+ `typing-extensions`).
+- `docs/quality/test_baseline.json`: تقدّم المراقب (21 ← 16 معروفاً).
+
+**النتيجة:** اختبارات `test_execution_implementation` الخمسة (محرك التنفيذ، المهارات، الموفّرون، المحوّلات، التكامل) تعمل وتنجح؛ الاختبارات 128 ← 133 ناجحاً.
+
 ### 0007 — تغليف حقيقي — 2026-10-21 — R-F-001
 **تغيّر**
 - `pyproject.toml`: من قالب Replit (`repl-nix-workspace`، بلا نظام بناء) إلى الحزمة `agos 0.1.0.dev0` — `hatchling`، التبعيات الفعلية الأربع موثقة بمواضع استخدامها، `pytest` في مجموعة `dev`، `testpaths`، أمر `agos-analyze`.
