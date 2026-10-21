@@ -5,12 +5,12 @@
 ## Totals
 
 - **files**: 525
-- **functions**: 5754
+- **functions**: 5765
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 523
-- **lines**: 89527
-- **not_imported_by_others**: 254
+- **lines**: 90410
+- **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -32,7 +32,7 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 10 | 1820 | 141 | 26 | 0 | 10 | 0 | 1 |
+| `agos-kernel/capabilities` | 10 | 2696 | 152 | 26 | 0 | 10 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
 | `agos-kernel/civilization` | 99 | 23507 | 1280 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
@@ -49,7 +49,7 @@
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision_pipeline` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/diagnostics` | 3 | 159 | 8 | 0 | 0 | 3 | 0 | 0 |
-| `agos-kernel/discovery` | 1 | 435 | 22 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/discovery` | 1 | 442 | 22 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/domains` | 3 | 565 | 37 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/ecosystem` | 5 | 2258 | 211 | 102 | 0 | 5 | 0 | 4 |

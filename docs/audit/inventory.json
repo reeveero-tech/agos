@@ -1,12 +1,12 @@
 {
  "totals": {
   "files": 525,
-  "lines": 89527,
-  "functions": 5754,
+  "lines": 90410,
+  "functions": 5765,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 254,
+  "not_imported_by_others": 253,
   "import_ok": 523,
   "import_fail": 0
  },
@@ -167,12 +167,12 @@
   },
   "agos-kernel/capabilities": {
    "files": 10,
-   "lines": 1820,
-   "functions": 141,
+   "lines": 2696,
+   "functions": 152,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 10,
    "import_fail": 0
   },
@@ -354,7 +354,7 @@
   },
   "agos-kernel/discovery": {
    "files": 1,
-   "lines": 435,
+   "lines": 442,
    "functions": 22,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -2287,7 +2287,7 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 295,
+   "lines": 307,
    "syntax_ok": true,
    "classes": 2,
    "functions": 12,
@@ -2303,6 +2303,7 @@
     "typing",
     "contracts",
     "interfaces",
+    "capabilities.foundation_extra",
     "providers",
     "stack_detection",
     "stack_detection",
@@ -2317,6 +2318,7 @@
    "importable_package_path": true,
    "id": "K:capabilities",
    "resolved_imports": [
+    "K:capabilities.foundation_extra",
     "K:contracts",
     "K:interfaces",
     "K:providers",
@@ -2332,6 +2334,7 @@
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
     "tests/test_language_weights.py",
+    "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
@@ -2457,20 +2460,47 @@
    "path": "agos/agos-kernel/capabilities/foundation_extra.py",
    "module": "capabilities.foundation_extra",
    "root": "kernel",
-   "lines": 124,
+   "lines": 988,
    "syntax_ok": true,
-   "classes": 7,
-   "functions": 14,
+   "classes": 9,
+   "functions": 25,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "typing"
+    "__future__",
+    "ast",
+    "hashlib",
+    "json",
+    "os",
+    "re",
+    "shutil",
+    "dataclasses",
+    "typing",
+    "interfaces",
+    "providers",
+    "urllib.request",
+    "clone_safety",
+    "stack_detection",
+    "stack_detection",
+    "stack_detection",
+    "stack_detection",
+    "tomllib"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:capabilities.foundation_extra",
-   "resolved_imports": [],
-   "imported_by": [],
+   "resolved_imports": [
+    "K:clone_safety",
+    "K:interfaces",
+    "K:providers",
+    "K:stack_detection"
+   ],
+   "imported_by": [
+    "K:capabilities"
+   ],
+   "tested_by_external": [
+    "tests/test_seven_capabilities.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -5459,6 +5489,7 @@
    "id": "K:clone_safety",
    "resolved_imports": [],
    "imported_by": [
+    "K:capabilities.foundation_extra",
     "K:providers",
     "K:providers.filesystem",
     "K:vertical_slices.repo_discovery.slice"
@@ -6636,7 +6667,7 @@
    "path": "agos/agos-kernel/discovery/__init__.py",
    "module": "discovery",
    "root": "kernel",
-   "lines": 435,
+   "lines": 442,
    "syntax_ok": true,
    "classes": 7,
    "functions": 22,
@@ -8349,6 +8380,7 @@
    ],
    "imported_by": [
     "K:capabilities",
+    "K:capabilities.foundation_extra",
     "K:decision",
     "K:discovery",
     "K:providers",
@@ -8646,6 +8678,7 @@
     "tests/test_bootstrap.py",
     "tests/test_clone_safety.py",
     "tests/test_language_weights.py",
+    "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
@@ -9419,12 +9452,14 @@
    ],
    "imported_by": [
     "K:capabilities",
+    "K:capabilities.foundation_extra",
     "K:test_integration",
     "K:test_validation"
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
     "tests/test_clone_safety.py",
+    "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
@@ -11315,6 +11350,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:capabilities",
+    "K:capabilities.foundation_extra",
     "K:capabilities.technology.detection",
     "K:civilization.capabilities.dependency_analysis",
     "K:civilization.intelligence_pipeline.stages",
@@ -16052,6 +16088,34 @@
    ],
    "scripts": [],
    "resolved": []
+  },
+  {
+   "path": "tests/test_seven_capabilities.py",
+   "imports": [
+    "agos.kernel",
+    "agos.kernel.capabilities",
+    "agos.kernel.capabilities.foundation_extra",
+    "flask",
+    "http.server",
+    "json",
+    "os",
+    "providers",
+    "pytest",
+    "re",
+    "shutil",
+    "socket",
+    "subprocess",
+    "threading"
+   ],
+   "scripts": [
+    "main"
+   ],
+   "resolved": [
+    "K:capabilities",
+    "K:capabilities.foundation_extra",
+    "K:main",
+    "K:providers"
+   ]
   },
   {
    "path": "tests/test_structure_fields.py",

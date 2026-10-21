@@ -52,7 +52,12 @@ def test_lifecycle_and_registries():
                           "after": k.state.value}))
     """)))
     assert out["before"] == ["created", True]
-    assert out["during"] == ["running", ["RepositoryAnalysis"], ["LocalRepositoryProvider"], True]
+    # R-W2-007: السبع الحقيقية مسجلة مع RepositoryAnalysis (اكتشاف الجذر يقبل المُعاد تصديره)
+    expected_caps = sorted(["RepositoryAnalysis", "SecurityScan", "LicenseAnalysis",
+                            "DocumentationAnalysis", "ConfigurationAnalysis",
+                            "InfrastructureAnalysis", "RepositoryDNAGeneration",
+                            "EngineeringKnowledgeExtraction"])
+    assert out["during"] == ["running", expected_caps, ["LocalRepositoryProvider"], True]
     assert out["after"] == "stopped"
 
 

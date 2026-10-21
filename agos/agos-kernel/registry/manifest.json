@@ -4,6 +4,50 @@
   "generated_by": "tools/audit/registry_manifest.py",
   "capabilities": [
     {
+      "name": "ConfigurationAnalysis",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.ConfigurationAnalysisCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
+      "name": "DocumentationAnalysis",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.DocumentationAnalysisCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
+      "name": "EngineeringKnowledgeExtraction",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.EngineeringKnowledgeExtractionCapability",
+      "skills": [
+        "ReadRepository"
+      ]
+    },
+    {
+      "name": "InfrastructureAnalysis",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.InfrastructureAnalysisCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
+      "name": "LicenseAnalysis",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.LicenseAnalysisCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
       "name": "RepositoryAnalysis",
       "version": "1.0.0",
       "class": "capabilities.RepositoryAnalysisCapability",
@@ -11,6 +55,24 @@
         "CloneRepository",
         "ReadRepository",
         "GenerateDNA"
+      ]
+    },
+    {
+      "name": "RepositoryDNAGeneration",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.RepositoryDNAGenerationCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
+      "name": "SecurityScan",
+      "version": "1.0.0",
+      "class": "capabilities.foundation_extra.SecurityScanCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
       ]
     }
   ],

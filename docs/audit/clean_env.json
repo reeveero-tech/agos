@@ -18,7 +18,14 @@
     "agos_kernel_version": "2.0.0",
     "boot_success": true,
     "capabilities": [
-      "RepositoryAnalysis"
+      "ConfigurationAnalysis",
+      "DocumentationAnalysis",
+      "EngineeringKnowledgeExtraction",
+      "InfrastructureAnalysis",
+      "LicenseAnalysis",
+      "RepositoryAnalysis",
+      "RepositoryDNAGeneration",
+      "SecurityScan"
     ],
     "providers": [
       "LocalRepositoryProvider"

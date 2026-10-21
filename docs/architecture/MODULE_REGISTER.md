@@ -40,7 +40,7 @@
 | L1 | `agos-kernel/decision-pipeline` | decision | 1 | 305 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/decision_pipeline` | decision | 1 | 18 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/diagnostics` | healing | 3 | 159 | 0 | yes | no | yes | L1 | R-F-007, R-W3-013 |
-| L1 | `agos-kernel/discovery` | registry | 1 | 435 | 0 | yes | yes | yes | L4 | R-W3-002 |
+| L1 | `agos-kernel/discovery` | registry | 1 | 442 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/event-engine` | events | 1 | 211 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
 | L1 | `agos-kernel/event_engine` | events | 1 | 18 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
 | L1 | `agos-kernel/events` | events | 1 | 75 | 0 | yes | yes | yes | L4 | R-W3-005 |
@@ -92,7 +92,7 @@
 | L2 | `cli.py` | boot | 1 | 29 | 0 | yes | no | yes | L1 | R-F-001, R-W3-001 |
 | L3 | `agos-kernel/adapters` | providers | 11 | 1343 | 9 | yes | no | yes | L1 | R-W3-011 |
 | L3 | `agos-kernel/agent_packs` | packs | 1 | 141 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `agos-kernel/capabilities` | repository-intelligence | 10 | 1820 | 26 | yes | yes | yes | L3 | R-W2-001, R-W2-002, R-W2-003, R-W2-004, R-W2-007 |
+| L3 | `agos-kernel/capabilities` | repository-intelligence | 10 | 2696 | 26 | yes | yes | yes | L3 | R-W2-001, R-W2-002, R-W2-003, R-W2-004, R-W2-007 |
 | L3 | `agos-kernel/civilization_packs` | packs | 1 | 206 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/cloud_packs` | packs | 1 | 111 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/connectors` | packs | 1 | 133 | 0 | yes | no | yes | L1 | R-W4-005 |

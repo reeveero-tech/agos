@@ -27,11 +27,18 @@ def _ensure_on_path(path: str) -> None:
 
 
 def _is_concrete_subclass(attr: Any, base: type, module_name: str) -> bool:
-    """A concrete implementation of ``base`` *defined in* ``module_name``."""
+    """A concrete implementation of ``base`` *defined in* (or re-exported by) ``module_name``.
+
+    R-W2-007: a capability defined in a ``capabilities.*`` submodule and re-exported by
+    the package root is discovered from the root too — its ``__module__`` is the
+    submodule, not the root, and that is a re-export, not a foreign class.
+    """
     import inspect
-    return (isinstance(attr, type) and issubclass(attr, base) and attr is not base
-            and getattr(attr, "__module__", "") == module_name
-            and not inspect.isabstract(attr))
+    if not (isinstance(attr, type) and issubclass(attr, base) and attr is not base
+            and not inspect.isabstract(attr)):
+        return False
+    mod = getattr(attr, "__module__", "")
+    return mod == module_name or mod.startswith(module_name + ".")
 
 
 @dataclass

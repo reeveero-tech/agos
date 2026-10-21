@@ -10,6 +10,18 @@ from typing import Any, Dict, List, Optional
 from contracts import RepositoryDNA, RepositorySnapshot
 from interfaces import ICapability
 
+# R-W2-007: re-export the seven real capabilities so AutoDiscovery registers them
+# from the package root (they are mission-resolvable by name).
+from .foundation_extra import (  # noqa: F401 — public re-exports (G2)
+    ConfigurationAnalysisCapability,
+    DocumentationAnalysisCapability,
+    EngineeringKnowledgeExtractionCapability,
+    InfrastructureAnalysisCapability,
+    LicenseAnalysisCapability,
+    RepositoryDNAGenerationCapability,
+    SecurityScanCapability,
+)
+
 
 class RepositoryAnalysisInput:
     """Input for Repository Analysis."""

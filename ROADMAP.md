@@ -105,7 +105,7 @@
 | R-W2-004 | نقاط الدخول، شجرة مجلدات بعمق قابل للضبط، ضم الملفات المخفية ذات الصلة (`.github`, `.env.example`) | حقول DNA مملوءة ومختبرة + التصحيح 0021: `tree_depth` عبر `execute` وضمن مفتاح الذاكرة، واستبعاد المُورَّد من نقاط الدخول، ومسار الملف في التصريحات، وملفات الأسرار مرفوضة في أي عمق | R-W2-002 | DONE |
 | R-W2-005 | تقوية الاستنساخ: مهلة، قائمة سماح URL، سقوف حجم/عدد، تنظيف المؤقت دائماً، حماية الروابط الرمزية، الفرع الافتراضي | اختبارات مستودع ضخم/مشوه/بطيء/رابط رمزي | — | DONE |
 | R-W2-006 | توحيد ذكاء المستودعات: `capabilities` + `rie` v2 + `civilization/capabilities/repository_analysis` + `repository` + `intelligence.project_dna` في خط واحد | ADR + خط واحد، البقية واجهات | R-W1-009, R-F-006 | TODO |
-| R-W2-007 | تنفيذ القدرات السبع حقيقياً: SecurityScan (أسرار + OSV)، License (SPDX)، Infrastructure، Documentation، Configuration، DNA، KnowledgeExtraction | كل قدرة باختبار تكامل حقيقي؛ لا نتيجة إيجابية بلا فحص | R-W2-002 | TODO |
+| R-W2-007 | تنفيذ القدرات السبع حقيقياً: SecurityScan (أسرار + OSV)، License (SPDX)، Infrastructure، Documentation، Configuration، DNA، KnowledgeExtraction | كل قدرة باختبار تكامل حقيقي؛ لا نتيجة إيجابية بلا فحص | R-W2-002 | DONE |
 | R-W2-008 | الرسم المعرفي (`civilization/knowledge_graph`) يُملأ من التحليل ويُحفظ | استعلامات على رسم حقيقي | R-W1-005 | TODO |
 | R-W2-009 | رسم القدرات ورسم الموفّرين | الرسمان يُولّدان من السجل | R-W3-002 | TODO |
 | R-W2-010 | قاعدة القرار بالأدلة (المادتان 12–13) | كل قرار يجيب «لماذا X؟» بأدلة | R-W1-004 | TODO |
