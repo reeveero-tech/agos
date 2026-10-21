@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 514
+- **files**: 515
 - **functions**: 5606
 - **hardcoded_paths**: 0
-- **import_fail**: 8
-- **import_ok**: 504
-- **lines**: 86632
-- **not_imported_by_others**: 245
+- **import_fail**: 3
+- **import_ok**: 510
+- **lines**: 86652
+- **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -146,28 +146,23 @@
 | `products` | 5 | 556 | 78 | 15 | 0 | 5 | 0 | 4 |
 | `research` | 6 | 337 | 41 | 5 | 0 | 6 | 0 | 5 |
 | `resource` | 1 | 153 | 19 | 2 | 0 | 1 | 0 | 1 |
-| `rie` | 11 | 2399 | 95 | 20 | 0 | 6 | 5 | 3 |
+| `rie` | 12 | 2419 | 95 | 20 | 0 | 12 | 0 | 11 |
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1206 | 68 | 2 | 0 | 5 | 0 | 4 |
 
-## Import failures (8)
-
-### ERR ModuleNotFoundError — 5
-
-- `agos/agos-kernel/diagnostics/__init__.py` — ERR ModuleNotFoundError: No module named 'diagnostics.runtime'
-- `agos/rie/adapters/__init__.py` — ERR ModuleNotFoundError: No module named 'application'
-- `agos/rie/application/__init__.py` — ERR ModuleNotFoundError: No module named 'contracts'
-- `agos/rie/application/dna_generator.py` — ERR ModuleNotFoundError: No module named 'contracts'
-- `agos/rie/application/scoring.py` — ERR ModuleNotFoundError: No module named 'contracts'
-
-### ERR ImportError — 2
-
-- `agos/agos-kernel/test_validation.py` — ERR ImportError: cannot import name 'AGOSKernel' from 'core' (<repo>/agos/agos-kernel/core/__init__.py)
-- `agos/rie/infrastructure/__init__.py` — ERR ImportError: cannot import name 'FileNode' from 'domain' (<repo>/agos/domain/__init__.py)
+## Import failures (3)
 
 ### ERR TypeError — 1
 
 - `agos/agos-kernel/decision/__init__.py` — ERR TypeError: type 'Result' is not subscriptable
+
+### ERR ModuleNotFoundError — 1
+
+- `agos/agos-kernel/diagnostics/__init__.py` — ERR ModuleNotFoundError: No module named 'diagnostics.runtime'
+
+### ERR ImportError — 1
+
+- `agos/agos-kernel/test_validation.py` — ERR ImportError: cannot import name 'AGOSKernel' from 'core' (<repo>/agos/agos-kernel/core/__init__.py)
 
 ## Syntax errors (0)
 

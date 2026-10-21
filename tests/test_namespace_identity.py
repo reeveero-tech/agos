@@ -125,10 +125,7 @@ def test_platform_packages_listed():
 
 # Modules that may still fail under agos.* — each tied to an open roadmap item.
 # R-F-006 empties this set; it must only ever shrink.
-KNOWN_NAMESPACE_FAILURES = {
-    "agos.rie.adapters", "agos.rie.application", "agos.rie.application.dna_generator",
-    "agos.rie.application.scoring", "agos.rie.infrastructure",  # R-F-006
-}
+KNOWN_NAMESPACE_FAILURES: set = set()  # emptied by R-F-006 (was: the five agos.rie.* modules)
 
 
 def test_every_platform_module_importable_under_agos_namespace_with_kernel():

@@ -5,6 +5,17 @@
 
 ## [غير مُصدَر]
 
+### 0006 — إحياء rie — 2026-10-21 — R-F-006
+**أُضيف**
+- `agos/rie/__init__.py`: `rie` حزمة عادية موثقة (كانت حزمة namespace ضمنية).
+- `tests/test_rie_pipeline.py`: اختبار طرف-لطرف على مستودع git محلي حقيقي.
+
+**تغيّر**
+- 8 ملفات في `rie` (12 استيراداً): استيرادات نسبية بدل `from contracts`/`from domain`/`from application`/`from rie.X` — كانت تلتقط `contracts` النواة و`domain` المنصة بالخطأ.
+- `tests/test_namespace_identity.py`: `KNOWN_NAMESPACE_FAILURES` أصبحت فارغة.
+
+**النتيجة:** خط RIE (fetch ← normalize ← detect ← aggregate ← DNA) يعمل لأول مرة؛ 138/138 وحدة منصة تحت `agos.*`؛ أعطال الاستيراد 8 ← 3.
+
 ### 0005 — مساحة الاسم الموحدة agos.* — 2026-10-21 — R-F-005
 **أُضيف**
 - `agos/__init__.py`: الحزمة `agos` — كل حزمة منصة كـ `agos.<name>`، والنواة كـ `agos.kernel` (نفس كائنات `agos_kernel`)، مع هوية وحدة واحدة في كل الاتجاهات (`agos.X` ⇄ `X` المجرد لغير المتصادمة)، و`platform_packages()`.

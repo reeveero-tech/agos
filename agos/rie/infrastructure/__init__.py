@@ -5,7 +5,8 @@ import subprocess
 import tempfile
 from typing import Any, Dict, List, Optional
 
-from domain import FileNode, Repository
+# R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
+from ..domain import FileNode, Repository
 
 
 class GitFetcher:

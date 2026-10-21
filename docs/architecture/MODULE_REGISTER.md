@@ -6,8 +6,8 @@
 
 ## ملخص المستويات
 
-- **L0**: 4 حزمة
-- **L1**: 109 حزمة
+- **L0**: 3 حزمة
+- **L1**: 110 حزمة
 - **L2**: 14 حزمة
 - **L3**: 2 حزمة
 - **L4**: 2 حزمة
@@ -107,7 +107,7 @@
 | L3 | `agos-kernel/templates` | packs | 1 | 101 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/tool_packs` | packs | 1 | 144 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/workflows` | packs | 1 | 228 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `rie` | repository-intelligence | 11 | 2399 | 20 | NO | no | no | L0 | R-F-006, R-W2-006 |
+| L3 | `rie` | repository-intelligence | 12 | 2419 | 20 | yes | no | no | L1 | R-F-006, R-W2-006 |
 | L4 | `agos-kernel/audit` | governance | 1 | 148 | 3 | yes | no | yes | L1 | R-W5-002 |
 | L4 | `agos-kernel/benchmark` | certification | 3 | 347 | 1 | yes | no | yes | L1 | R-W2-011, R-W5-003 |
 | L4 | `agos-kernel/brain` | core-brain | 2 | 258 | 0 | yes | no | yes | L1 | R-W1-011, R-W3-014 |

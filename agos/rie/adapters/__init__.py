@@ -1,8 +1,9 @@
 """RIE Adapters - Adapters for AGOS Kernel integration."""
 from typing import Any
 
-from application import RepositoryIntelligencePipeline, create_rie_pipeline
-from contracts import RepositoryDNA
+# R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
+from ..application import RepositoryIntelligencePipeline, create_rie_pipeline
+from ..contracts import RepositoryDNA
 
 
 class RIEKernelAdapter:

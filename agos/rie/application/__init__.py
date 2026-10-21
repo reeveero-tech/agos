@@ -3,9 +3,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List
 
-from contracts import DetectorResult, RepositoryDNA, RepositoryFeatureSet
-from detectors import DetectorContext, DetectorRegistry, create_default_registry
-from infrastructure import GitFetcher, FileSystemReader, RepositoryNormalizer
+# R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
+from ..contracts import DetectorResult, RepositoryDNA, RepositoryFeatureSet
+from ..detectors import DetectorContext, DetectorRegistry, create_default_registry
+from ..infrastructure import GitFetcher, FileSystemReader, RepositoryNormalizer
 
 
 @dataclass

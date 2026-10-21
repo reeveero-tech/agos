@@ -3,7 +3,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List
 
-from rie.contracts import RepositoryFeatureSet
+# R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
+from ..contracts import RepositoryFeatureSet
 
 
 @dataclass

@@ -1,14 +1,14 @@
 {
  "totals": {
-  "files": 514,
-  "lines": 86632,
+  "files": 515,
+  "lines": 86652,
   "functions": 5606,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 245,
-  "import_ok": 504,
-  "import_fail": 8
+  "not_imported_by_others": 253,
+  "import_ok": 510,
+  "import_fail": 3
  },
  "packages": {
   "__init__.py": {
@@ -1420,15 +1420,15 @@
    "import_fail": 0
   },
   "rie": {
-   "files": 11,
-   "lines": 2399,
+   "files": 12,
+   "lines": 2419,
    "functions": 95,
    "stub_functions": 20,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 3,
-   "import_ok": 6,
-   "import_fail": 5
+   "not_imported_by_others": 11,
+   "import_ok": 12,
+   "import_fail": 0
   },
   "sdk": {
    "files": 1,
@@ -14595,10 +14595,40 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/rie/__init__.py",
+   "module": "rie",
+   "root": "src",
+   "lines": 12,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "S:rie",
+   "resolved_imports": [],
+   "imported_by": [
+    "S:rie.adapters",
+    "S:rie.application",
+    "S:rie.application.dna_generator",
+    "S:rie.application.scoring",
+    "S:rie.contracts",
+    "S:rie.detectors",
+    "S:rie.detectors.ai_detector",
+    "S:rie.detectors.architecture_detector",
+    "S:rie.detectors.capability_detector",
+    "S:rie.domain",
+    "S:rie.infrastructure"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/rie/adapters/__init__.py",
    "module": "rie.adapters",
    "root": "src",
-   "lines": 32,
+   "lines": 33,
    "syntax_ok": true,
    "classes": 1,
    "functions": 3,
@@ -14606,24 +14636,23 @@
    "abstract_functions": 0,
    "imports": [
     "typing",
-    "application",
-    "contracts"
+    "rie.application",
+    "rie.contracts"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.adapters",
    "resolved_imports": [
-    "S:rie.application",
-    "S:rie.contracts"
+    "S:rie"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'application'"
+   "import_status": "OK"
   },
   {
    "path": "agos/rie/application/__init__.py",
    "module": "rie.application",
    "root": "src",
-   "lines": 239,
+   "lines": 240,
    "syntax_ok": true,
    "classes": 2,
    "functions": 7,
@@ -14633,22 +14662,18 @@
     "dataclasses",
     "datetime",
     "typing",
-    "contracts",
-    "detectors",
-    "infrastructure"
+    "rie.contracts",
+    "rie.detectors",
+    "rie.infrastructure"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.application",
    "resolved_imports": [
-    "S:rie.contracts",
-    "S:rie.detectors",
-    "S:rie.infrastructure"
+    "S:rie"
    ],
-   "imported_by": [
-    "S:rie.adapters"
-   ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'contracts'"
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/rie/application/dna_generator.py",
@@ -14670,15 +14695,17 @@
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.application.dna_generator",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "S:rie"
+   ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'contracts'"
+   "import_status": "OK"
   },
   {
    "path": "agos/rie/application/scoring.py",
    "module": "rie.application.scoring",
    "root": "src",
-   "lines": 307,
+   "lines": 308,
    "syntax_ok": true,
    "classes": 2,
    "functions": 12,
@@ -14694,10 +14721,10 @@
    "importable_package_path": true,
    "id": "S:rie.application.scoring",
    "resolved_imports": [
-    "S:rie.contracts"
+    "S:rie"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'contracts'"
+   "import_status": "OK"
   },
   {
    "path": "agos/rie/contracts/__init__.py",
@@ -14718,19 +14745,17 @@
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.contracts",
-   "resolved_imports": [],
-   "imported_by": [
-    "S:rie.adapters",
-    "S:rie.application",
-    "S:rie.application.scoring"
+   "resolved_imports": [
+    "S:rie"
    ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
    "path": "agos/rie/detectors/__init__.py",
    "module": "rie.detectors",
    "root": "src",
-   "lines": 475,
+   "lines": 476,
    "syntax_ok": true,
    "classes": 11,
    "functions": 33,
@@ -14749,23 +14774,16 @@
    "importable_package_path": true,
    "id": "S:rie.detectors",
    "resolved_imports": [
-    "S:rie.detectors.ai_detector",
-    "S:rie.detectors.architecture_detector",
-    "S:rie.detectors.capability_detector"
+    "S:rie"
    ],
-   "imported_by": [
-    "S:rie.application",
-    "S:rie.detectors.ai_detector",
-    "S:rie.detectors.architecture_detector",
-    "S:rie.detectors.capability_detector"
-   ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
    "path": "agos/rie/detectors/ai_detector.py",
    "module": "rie.detectors.ai_detector",
    "root": "src",
-   "lines": 246,
+   "lines": 247,
    "syntax_ok": true,
    "classes": 2,
    "functions": 6,
@@ -14781,18 +14799,16 @@
    "importable_package_path": true,
    "id": "S:rie.detectors.ai_detector",
    "resolved_imports": [
-    "S:rie.detectors"
+    "S:rie"
    ],
-   "imported_by": [
-    "S:rie.detectors"
-   ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
    "path": "agos/rie/detectors/architecture_detector.py",
    "module": "rie.detectors.architecture_detector",
    "root": "src",
-   "lines": 191,
+   "lines": 192,
    "syntax_ok": true,
    "classes": 2,
    "functions": 5,
@@ -14808,18 +14824,16 @@
    "importable_package_path": true,
    "id": "S:rie.detectors.architecture_detector",
    "resolved_imports": [
-    "S:rie.detectors"
+    "S:rie"
    ],
-   "imported_by": [
-    "S:rie.detectors"
-   ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
    "path": "agos/rie/detectors/capability_detector.py",
    "module": "rie.detectors.capability_detector",
    "root": "src",
-   "lines": 221,
+   "lines": 222,
    "syntax_ok": true,
    "classes": 2,
    "functions": 6,
@@ -14835,11 +14849,9 @@
    "importable_package_path": true,
    "id": "S:rie.detectors.capability_detector",
    "resolved_imports": [
-    "S:rie.detectors"
+    "S:rie"
    ],
-   "imported_by": [
-    "S:rie.detectors"
-   ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
@@ -14860,17 +14872,17 @@
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.domain",
-   "resolved_imports": [],
-   "imported_by": [
-    "S:rie.infrastructure"
+   "resolved_imports": [
+    "S:rie"
    ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
    "path": "agos/rie/infrastructure/__init__.py",
    "module": "rie.infrastructure",
    "root": "src",
-   "lines": 167,
+   "lines": 168,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -14882,18 +14894,16 @@
     "subprocess",
     "tempfile",
     "typing",
-    "domain"
+    "rie.domain"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.infrastructure",
    "resolved_imports": [
-    "S:rie.domain"
+    "S:rie"
    ],
-   "imported_by": [
-    "S:rie.application"
-   ],
-   "import_status": "ERR ImportError: cannot import name 'FileNode' from 'domain' (<repo>/agos/domain/__init__.py)"
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/sdk/__init__.py",

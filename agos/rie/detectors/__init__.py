@@ -448,9 +448,10 @@ def create_default_registry() -> DetectorRegistry:
 
 
 # Advanced Detectors
-from rie.detectors.ai_detector import AIStackDetector, AIStackFeatureSet
-from rie.detectors.capability_detector import CapabilityDetector, CapabilityFeatureSet
-from rie.detectors.architecture_detector import ArchitectureDetector, ArchitectureFeatureSet
+# R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
+from .ai_detector import AIStackDetector, AIStackFeatureSet
+from .capability_detector import CapabilityDetector, CapabilityFeatureSet
+from .architecture_detector import ArchitectureDetector, ArchitectureFeatureSet
 
 __all__ = [
     "DetectorContext",
