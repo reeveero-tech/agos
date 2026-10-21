@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 524
-- **functions**: 5741
+- **functions**: 5747
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 522
-- **lines**: 89020
+- **lines**: 89213
 - **not_imported_by_others**: 254
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -32,7 +32,7 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 10 | 1822 | 141 | 26 | 0 | 10 | 0 | 1 |
+| `agos-kernel/capabilities` | 10 | 1812 | 141 | 26 | 0 | 10 | 0 | 1 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
 | `agos-kernel/civilization` | 99 | 23506 | 1280 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
@@ -93,7 +93,7 @@
 | `agos-kernel/platform_runtime` | 2 | 232 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/providers` | 7 | 1526 | 146 | 26 | 0 | 7 | 0 | 1 |
+| `agos-kernel/providers` | 7 | 1535 | 146 | 26 | 0 | 7 | 0 | 1 |
 | `agos-kernel/quality_gates` | 1 | 430 | 20 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/recommendation` | 2 | 175 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/registry` | 3 | 123 | 15 | 0 | 0 | 3 | 0 | 0 |
@@ -111,7 +111,7 @@
 | `agos-kernel/skill-engine` | 1 | 209 | 17 | 1 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skill_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skills` | 10 | 1651 | 243 | 48 | 0 | 10 | 0 | 3 |
-| `agos-kernel/stack_detection` | 1 | 961 | 48 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/stack_detection` | 1 | 1130 | 54 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/state-store` | 1 | 286 | 25 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/state_store` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/templates` | 1 | 101 | 6 | 0 | 0 | 1 | 0 | 0 |
@@ -149,7 +149,7 @@
 | `products` | 5 | 556 | 78 | 15 | 0 | 5 | 0 | 4 |
 | `research` | 6 | 337 | 41 | 5 | 0 | 6 | 0 | 5 |
 | `resource` | 1 | 153 | 19 | 2 | 0 | 1 | 0 | 1 |
-| `rie` | 12 | 2518 | 96 | 20 | 0 | 12 | 0 | 11 |
+| `rie` | 12 | 2543 | 96 | 20 | 0 | 12 | 0 | 11 |
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1206 | 68 | 2 | 0 | 5 | 0 | 4 |
 

@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from pathlib import PurePosixPath
 from typing import Any, Dict, List, Optional
 
 # R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
@@ -78,23 +79,31 @@ class FileSystemReader:
         """Read all files in repository."""
         files = []
         
+        # R-W2-004: the kernel's single source decides which hidden paths are relevant.
+        from ..detectors import _stack_detection
+        _is_relevant_hidden = _stack_detection().is_relevant_hidden
+        
         for dirpath, dirnames, filenames in os.walk(repo_path):
-            # Skip .git
-            if ".git" in dirpath:
+            # Skip .git itself — exact path part, so .github (CI config, R-W2-004) survives.
+            if any(part == ".git" for part in PurePosixPath(dirpath).parts):
                 continue
             
             rel_dir = os.path.relpath(dirpath, repo_path)
             
-            # Directories
+            # Directories — relevant hidden ones (.github, .circleci, .gitlab) are project
+            # data: CI configuration (R-W2-004). Everything else hidden stays skipped.
+            # Prune (not just skip): a skipped hidden dir must not contribute the
+            # non-hidden files inside it (".idea/workspace.xml" would sneak in).
+            dirnames[:] = [d for d in dirnames
+                           if not (d.startswith(".") and not _is_relevant_hidden(d))]
             for dirname in dirnames:
-                if dirname.startswith("."):
-                    continue
                 dir_path = os.path.join(rel_dir, dirname) if rel_dir != "." else dirname
                 files.append(FileNode(path=dir_path, is_dir=True))
             
             # Files
             for filename in filenames:
-                if filename.startswith("."):
+                if filename.startswith(".") and not _is_relevant_hidden(
+                        os.path.join(rel_dir, filename) if rel_dir != "." else filename):
                     continue
                 file_path = os.path.join(rel_dir, filename) if rel_dir != "." else filename
                 full_path = os.path.join(dirpath, filename)

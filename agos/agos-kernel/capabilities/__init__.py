@@ -210,6 +210,7 @@ class RepositoryAnalysisCapability(ICapability):
         frameworks: List[str],
         stack=None,
         language_stats: Optional[Dict[str, Dict[str, int]]] = None,
+        tree_depth: int = 3,
     ) -> RepositoryDNA:
         """Generate Repository DNA.
         
@@ -218,6 +219,8 @@ class RepositoryAnalysisCapability(ICapability):
         ``language_stats`` is the ``stack_detection.language_breakdown`` of the snapshot
         (computed here when omitted); the primary language is the one with the most lines,
         not the alphabetically first entry (R-W2-003).
+        Entry points, the directory tree (depth adjustable via ``tree_depth``, R-W2-004) and
+        config files all come from ``stack_detection`` too — one source for the DNA.
         """
         metadata = snapshot.metadata
         if stack is None:
@@ -245,35 +248,22 @@ class RepositoryAnalysisCapability(ICapability):
                     license_name = os.path.basename(file_node.path)
                     break
         
-        # Find config files
-        config_extensions = [
-            ".json", ".yaml", ".yml", ".toml", ".ini", ".cfg",
-            "package.json", "requirements.txt", "Gemfile", "go.mod"
-        ]
-        config_files = []
-        for file_node in snapshot.files:
-            if file_node.is_dir:
-                continue
-            path_lower = file_node.path.lower()
-            for ext in config_extensions:
-                if path_lower.endswith(ext) or ext in path_lower:
-                    config_files.append(file_node.path)
-                    break
+        # R-W2-004: config files by suffix or exact name (no substring matching),
+        # entry points (conventional + manifest-declared) and the directory tree at an
+        # adjustable depth — all from the kernel's single source.
+        from stack_detection import detect_config_files, detect_entry_points, directory_tree
+        file_paths = [f.path for f in snapshot.files if not f.is_dir]
+        config_files = detect_config_files(file_paths)
         
         # Package managers (R-W2-002): from manifests and lock files, never from substrings
         # of arbitrary paths (``node_modules/x/package.json`` is not the project's npm, and
         # Gradle is not Maven).
         from stack_detection import detect_package_managers, dependency_records, project_dependencies
-        package_managers = detect_package_managers(
-            [f.path for f in snapshot.files if not f.is_dir], self._manifest_files(snapshot))
+        package_managers = detect_package_managers(file_paths, self._manifest_files(snapshot))
         
-        # Directory tree (top level)
-        dirs = set()
-        for file_node in snapshot.files:
-            if file_node.is_dir:
-                parts = file_node.path.split("/")
-                if len(parts) > 0:
-                    dirs.add(parts[0])
+        entry_points = detect_entry_points(file_paths, self._manifest_files(snapshot))
+        tree = directory_tree([f.path for f in snapshot.files], max_depth=tree_depth,
+                              dir_paths=[f.path for f in snapshot.files if f.is_dir])
         
         return RepositoryDNA(
             name=metadata.name,
@@ -285,9 +275,9 @@ class RepositoryAnalysisCapability(ICapability):
             package_managers=sorted(list(package_managers)),
             dependencies=project_dependencies(stack),
             dependency_details=dependency_records(stack),
-            config_files=config_files[:20],  # Limit to 20
-            entry_points=[],
-            directory_tree=sorted(list(dirs))[:20],
+            config_files=config_files,
+            entry_points=entry_points,
+            directory_tree=tree,
             readme_summary=readme_summary,
             license=license_name,
             generated_at=datetime.now(timezone.utc),

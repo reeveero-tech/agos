@@ -63,6 +63,14 @@ __all__ = [
     "read_code_files",
     "LanguageStat",
     "LANGUAGE_EXTENSIONS",
+    "is_relevant_hidden",
+    "RELEVANT_HIDDEN_DIRS",
+    "RELEVANT_HIDDEN_FILES",
+    "detect_entry_points",
+    "directory_tree",
+    "detect_config_files",
+    "CONFIG_SUFFIXES",
+    "CONFIG_NAMES",
     "normalize_name",
 ]
 
@@ -958,3 +966,164 @@ def read_code_files(root: "os.PathLike[str] | str", max_bytes: int = 1_000_000) 
             except OSError:
                 continue
     return out
+
+
+# ---------------------------------------------------------------------------
+# R-W2-004 — نقاط الدخول وشجرة المجلدات والملفات المخفية ذات الصلة
+# ---------------------------------------------------------------------------
+# مجلدات مخفية تحمل معلومات مشروع حقيقية (CI/CD وإعدادات مستوى المستودع)؛ يُتجاهل
+# الباقي (.git و.git الداخلية دائماً).
+RELEVANT_HIDDEN_DIRS: Tuple[str, ...] = (".github", ".circleci", ".gitlab")
+# ملفات مخفية ذات صلة ببناء المشروع وتشغيله؛ أي ملف بهذا الاسم في أي عمق مقبول.
+RELEVANT_HIDDEN_FILES: Tuple[str, ...] = (
+    ".gitignore", ".gitattributes", ".env.example", ".editorconfig", ".dockerignore",
+    ".nvmrc", ".tool-versions", ".python-version", ".npmrc", ".prettierrc",
+    ".eslintrc", ".eslintrc.json", ".eslintrc.yml", ".flake8", ".babelrc",
+)
+
+
+def _norm_path(path: "os.PathLike[str] | str") -> PurePosixPath:
+    """مثل ``_posix`` لكن دون تجريد النقطة البادئة — ``.github`` يبقى ``.github`` (R-W2-004)."""
+    return PurePosixPath(str(path).replace("\\", "/"))
+
+
+def is_relevant_hidden(path: "os.PathLike[str] | str") -> bool:
+    """هل هذا المسار ملفاً/مجلداً مخفياً ذا صلة بالمشروع (R-W2-004)؟
+
+    ``.github`` ومثيلاته من مجلدات الـ CI، والملفات مثل ``.gitignore`` و``.env.example``
+    ليست مخلفات: إنها تكوين المشروع. ما عدا ذلك من المخفي يُتجاهل (``.git`` دائماً).
+    """
+    p = _norm_path(path)
+    if not p.parts or p.name == ".git":
+        return False
+    if p.parts[0] in RELEVANT_HIDDEN_DIRS:
+        return True
+    return p.name in RELEVANT_HIDDEN_FILES
+
+
+# ملفات الدخول الاصطلاحية باسمها، في الجذر أو مجلدات الدخول المألوفة.
+_ENTRY_BASENAMES: Tuple[str, ...] = (
+    "main.py", "app.py", "manage.py", "cli.py", "run.py", "setup.py",
+    "index.js", "index.ts", "main.js", "main.ts", "server.js", "app.js",
+    "main.go", "Makefile", "Dockerfile",
+)
+_ENTRY_ROOT_DIRS: Tuple[str, ...] = ("", "src", "bin", "scripts")
+
+
+def _manifest_entry_points(manifests: Optional[Mapping[str, Optional[str]]]) -> List[str]:
+    """نقاط الدخول المعلنة في الملفات: pyproject [project.scripts] وpackage.json main/bin."""
+    out: List[str] = []
+    if not manifests:
+        return out
+    for path, content in sorted(manifests.items()):
+        if not content:
+            continue
+        name = os.path.basename(path)
+        try:
+            if name == "pyproject.toml":
+                data = _toml.loads(content) if _toml is not None else {}
+                scripts = ((data.get("project") or {}).get("scripts") or {})
+                out.extend(f"pyproject.toml:scripts:{k}" for k in sorted(scripts))
+            elif name == "package.json":
+                data = json.loads(content)
+                main = data.get("main")
+                if isinstance(main, str):
+                    out.append(f"package.json:main:{main}")
+                bins = data.get("bin")
+                if isinstance(bins, dict):
+                    out.extend(f"package.json:bin:{k}" for k in sorted(bins))
+                elif isinstance(bins, str):
+                    out.append(f"package.json:bin:{bins}")
+        except (ValueError, TypeError):
+            continue
+    return sorted(set(out))
+
+
+def detect_entry_points(paths: Iterable[str],
+                        manifests: Optional[Mapping[str, Optional[str]]] = None) -> List[str]:
+    """نقاط الدخول: ملفات اصطلاحية + معلن في الملفات (R-W2-004).
+
+    الاصطلاح: ملف باسم دخول معروف (main.py, index.js, …) في الجذر أو ``src`` أو
+    ``bin`` أو ``scripts``، أو ``cmd/<name>/main.go``، أو ``src/main.rs`` أو ``src/bin/*.rs``.
+    والمعمول: ``pyproject.toml`` [project.scripts] و``package.json`` main/bin — تُعاد
+    كأسهم ``manifest:field:name`` لأنها تصريح لا ملف. الحتمية: قائمة مرتبة بلا تكرار.
+    """
+    out: List[str] = []
+    for raw in paths:
+        p = _norm_path(raw)
+        if not p.parts:
+            continue
+        name = p.name
+        parent = p.parts[-2] if len(p.parts) >= 2 else ""
+        if name in _ENTRY_BASENAMES and parent in _ENTRY_ROOT_DIRS:
+            out.append(p.as_posix())
+        elif name == "main.go" and len(p.parts) >= 3 and p.parts[-3] == "cmd":
+            out.append(p.as_posix())
+        elif name == "main.rs" and len(p.parts) == 2 and p.parts[0] == "src":
+            out.append(p.as_posix())
+        elif p.suffix == ".rs" and len(p.parts) == 3 and p.parts[0] == "src" and p.parts[1] == "bin":
+            out.append(p.as_posix())
+    out.extend(_manifest_entry_points(manifests))
+    return sorted(set(out))
+
+
+def directory_tree(paths: Iterable[str], max_depth: int = 3, limit: int = 200,
+                    dir_paths: Optional[Iterable[str]] = None) -> List[str]:
+    """شجرة المجلدات بعمق قابل للضبط (R-W2-004).
+
+    ``paths``: كل المسارات (ملفات ومجلدات). ``dir_paths``: المجلدات صراحةً (إن عُرفت)
+    — لأن الاسم وحده لا يكفي للتمييز (``Makefile`` ملف و``src`` مجلد، و``.github``
+    مجلد رغم نقطته). إن غابت تُستنتج المجلدات بما لا له لاحقة ولا نقطة.
+
+    المجلدات فريدة حتى ``max_depth``، بلا المُورَّد (``SKIP_DIRS``)، مرتبة وبحد ``limit``.
+    ``max_depth=1`` يعادل الطبقة العليا فقط.
+    """
+    if max_depth < 1:
+        return []
+    dirs = set()
+    known_dirs = set()
+    if dir_paths is not None:
+        known_dirs = {_norm_path(d).as_posix() for d in dir_paths}
+    for raw in paths:
+        p = _norm_path(raw)
+        posix = p.as_posix()
+        is_dir = posix in known_dirs or (
+            dir_paths is None and not p.suffix and "." not in p.name)
+        parts = p.parts if is_dir else p.parts[:-1]
+        for i in range(1, min(len(parts), max_depth) + 1):
+            if any(part in SKIP_DIRS for part in parts[:i]):
+                break
+            dirs.add("/".join(parts[:i]))
+    return sorted(dirs)[:limit]
+
+
+# لواحق ملفات التكوين وأسماؤها المعروفة (بدون مطابقة جزئية للنص).
+CONFIG_SUFFIXES: Tuple[str, ...] = (".json", ".yaml", ".yml", ".toml", ".ini", ".cfg")
+CONFIG_NAMES: Tuple[str, ...] = (
+    "requirements.txt", "setup.py", "setup.cfg", "pyproject.toml", "Pipfile",
+    "package.json", "Gemfile", "go.mod", "Cargo.toml", "composer.json", "pubspec.yaml",
+    "pom.xml", "build.gradle", "build.gradle.kts", "Makefile", "CMakeLists.txt",
+    "Dockerfile", "docker-compose.yml", "docker-compose.yaml", "tsconfig.json",
+    "webpack.config.js", "vite.config.js", ".env.example", "procfile",
+    ".gitignore", ".editorconfig", ".dockerignore", ".nvmrc", ".tool-versions",
+    ".python-version",
+)
+
+
+_CONFIG_NAMES_LOWER = {c.lower() for c in CONFIG_NAMES}
+
+
+def detect_config_files(paths: Iterable[str], limit: int = 20) -> List[str]:
+    """ملفات التكوين: مطابقة لاحقة أو اسم صريح — لا مطابقة جزئية (R-W2-004).
+
+    القاعدة القديمة كانت ``ext in path`` فكان "docs/package.json.md" يُحسب ملف
+    package.json. الآن: اللاحقة أو الاسم المعروف، بلا المُورَّد، مرتبة وبحد ``limit``.
+    """
+    out: List[str] = []
+    for raw in paths:
+        p = _norm_path(raw)
+        if any(part in SKIP_DIRS for part in p.parts[:-1]):
+            continue
+        if p.name.lower() in _CONFIG_NAMES_LOWER or p.suffix.lower() in CONFIG_SUFFIXES:
+            out.append(p.as_posix())
+    return sorted(set(out))[:limit]

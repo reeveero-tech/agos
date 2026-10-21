@@ -2,6 +2,7 @@
 import os
 import subprocess
 import tempfile
+from pathlib import PurePosixPath
 from typing import Generator
 
 from contracts import FileNode, RepositoryMetadata, RepositorySnapshot
@@ -131,20 +132,28 @@ class LocalRepositoryProvider(IProvider):
     
     def _walk_files(self, root: str) -> Generator[FileNode, None, None]:
         """Walk through files in a directory."""
+        # R-W2-004: relevant hidden files/dirs are part of the project — .github,
+        # .gitignore, .env.example, … — everything else hidden (and .git always) is skipped.
+        from stack_detection import is_relevant_hidden
         for dirpath, dirnames, filenames in os.walk(root):
-            if ".git" in dirpath:
+            # Skip .git itself — exact path part, so .github (CI config, R-W2-004) survives.
+            if any(part == ".git" for part in PurePosixPath(dirpath).parts):
                 continue
             
             rel_dir = os.path.relpath(dirpath, root)
             
+            # Prune (not just skip): a skipped hidden dir must not contribute the
+            # non-hidden files inside it (".idea/workspace.xml" would sneak in).
+            dirnames[:] = [d for d in dirnames
+                           if not (d.startswith(".") and not is_relevant_hidden(
+                               os.path.join(rel_dir, d) if rel_dir != "." else d))]
             for dirname in dirnames:
-                if dirname.startswith("."):
-                    continue
                 dir_path = os.path.join(rel_dir, dirname) if rel_dir != "." else dirname
                 yield FileNode(path=dir_path, is_dir=True)
             
             for filename in filenames:
-                if filename.startswith("."):
+                if filename.startswith(".") and not is_relevant_hidden(
+                        os.path.join(rel_dir, filename) if rel_dir != "." else filename):
                     continue
                 file_path = os.path.join(rel_dir, filename) if rel_dir != "." else filename
                 full_path = os.path.join(dirpath, filename)

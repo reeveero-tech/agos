@@ -92,7 +92,7 @@
 | L2 | `cli.py` | boot | 1 | 29 | 0 | yes | no | yes | L1 | R-F-001, R-W3-001 |
 | L3 | `agos-kernel/adapters` | providers | 11 | 1343 | 9 | yes | no | yes | L1 | R-W3-011 |
 | L3 | `agos-kernel/agent_packs` | packs | 1 | 141 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `agos-kernel/capabilities` | repository-intelligence | 10 | 1822 | 26 | yes | yes | yes | L3 | R-W2-001, R-W2-002, R-W2-003, R-W2-004, R-W2-007 |
+| L3 | `agos-kernel/capabilities` | repository-intelligence | 10 | 1812 | 26 | yes | yes | yes | L3 | R-W2-001, R-W2-002, R-W2-003, R-W2-004, R-W2-007 |
 | L3 | `agos-kernel/civilization_packs` | packs | 1 | 206 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/cloud_packs` | packs | 1 | 111 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/connectors` | packs | 1 | 133 | 0 | yes | no | yes | L1 | R-W4-005 |
@@ -101,16 +101,16 @@
 | L3 | `agos-kernel/framework_packs` | packs | 1 | 135 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/language_packs` | packs | 1 | 107 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/model_packs` | packs | 1 | 149 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `agos-kernel/providers` | providers | 7 | 1526 | 26 | yes | yes | yes | L3 | R-W2-005, R-W3-010 |
+| L3 | `agos-kernel/providers` | providers | 7 | 1535 | 26 | yes | yes | yes | L3 | R-W2-005, R-W3-010 |
 | L3 | `agos-kernel/repository` | repository-intelligence | 2 | 309 | 2 | yes | no | yes | L1 | R-W2-006 |
 | L3 | `agos-kernel/sdk` | sdk | 2 | 353 | 4 | yes | no | yes | L1 | R-W4-001 |
 | L3 | `agos-kernel/sdks` | sdk | 3 | 545 | 9 | yes | no | no | L1 | R-W4-001 |
 | L3 | `agos-kernel/skills` | skills | 10 | 1651 | 48 | yes | no | yes | L1 | R-W3-009 |
-| L3 | `agos-kernel/stack_detection` | repository-intelligence | 1 | 961 | 0 | yes | yes | no | L2 | R-W2-001, R-W2-002, R-W2-006 |
+| L3 | `agos-kernel/stack_detection` | repository-intelligence | 1 | 1130 | 0 | yes | yes | no | L2 | R-W2-001, R-W2-002, R-W2-006 |
 | L3 | `agos-kernel/templates` | packs | 1 | 101 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/tool_packs` | packs | 1 | 144 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/workflows` | packs | 1 | 228 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `rie` | repository-intelligence | 12 | 2518 | 20 | yes | no | yes | L1 | R-F-006, R-W2-006 |
+| L3 | `rie` | repository-intelligence | 12 | 2543 | 20 | yes | no | yes | L1 | R-F-006, R-W2-006 |
 | L4 | `agos-kernel/audit` | governance | 1 | 148 | 3 | yes | no | yes | L1 | R-W5-002 |
 | L4 | `agos-kernel/benchmark` | certification | 3 | 347 | 1 | yes | no | yes | L1 | R-W2-011, R-W5-003 |
 | L4 | `agos-kernel/brain` | core-brain | 2 | 258 | 0 | yes | no | yes | L1 | R-W1-011, R-W3-014 |

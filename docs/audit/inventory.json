@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 524,
-  "lines": 89020,
-  "functions": 5741,
+  "lines": 89213,
+  "functions": 5747,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -167,7 +167,7 @@
   },
   "agos-kernel/capabilities": {
    "files": 10,
-   "lines": 1822,
+   "lines": 1812,
    "functions": 141,
    "stub_functions": 26,
    "hardcoded_paths": 0,
@@ -838,7 +838,7 @@
   },
   "agos-kernel/providers": {
    "files": 7,
-   "lines": 1526,
+   "lines": 1535,
    "functions": 146,
    "stub_functions": 26,
    "hardcoded_paths": 0,
@@ -1036,8 +1036,8 @@
   },
   "agos-kernel/stack_detection": {
    "files": 1,
-   "lines": 961,
-   "functions": 48,
+   "lines": 1130,
+   "functions": 54,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1454,7 +1454,7 @@
   },
   "rie": {
    "files": 12,
-   "lines": 2518,
+   "lines": 2543,
    "functions": 96,
    "stub_functions": 20,
    "hardcoded_paths": 0,
@@ -2287,7 +2287,7 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 297,
+   "lines": 287,
    "syntax_ok": true,
    "classes": 2,
    "functions": 12,
@@ -2304,6 +2304,7 @@
     "contracts",
     "interfaces",
     "providers",
+    "stack_detection",
     "stack_detection",
     "stack_detection",
     "stack_detection",
@@ -2329,7 +2330,8 @@
     "tests/test_bootstrap.py",
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
-    "tests/test_language_weights.py"
+    "tests/test_language_weights.py",
+    "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
   },
@@ -8611,7 +8613,8 @@
    "imported_by": [],
    "tested_by_external": [
     "tests/test_bootstrap.py",
-    "tests/test_language_weights.py"
+    "tests/test_language_weights.py",
+    "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
   },
@@ -9356,7 +9359,7 @@
    "path": "agos/agos-kernel/providers/__init__.py",
    "module": "providers",
    "root": "kernel",
-   "lines": 164,
+   "lines": 173,
    "syntax_ok": true,
    "classes": 5,
    "functions": 16,
@@ -9366,16 +9369,19 @@
     "os",
     "subprocess",
     "tempfile",
+    "pathlib",
     "typing",
     "contracts",
-    "interfaces"
+    "interfaces",
+    "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:providers",
    "resolved_imports": [
     "K:contracts",
-    "K:interfaces"
+    "K:interfaces",
+    "K:stack_detection"
    ],
    "imported_by": [
     "K:capabilities",
@@ -9383,7 +9389,8 @@
     "K:test_validation"
    ],
    "tested_by_external": [
-    "tests/test_bootstrap.py"
+    "tests/test_bootstrap.py",
+    "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
   },
@@ -11246,10 +11253,10 @@
    "path": "agos/agos-kernel/stack_detection/__init__.py",
    "module": "stack_detection",
    "root": "kernel",
-   "lines": 961,
+   "lines": 1130,
    "syntax_ok": true,
    "classes": 4,
-   "functions": 48,
+   "functions": 54,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -11275,6 +11282,7 @@
     "K:civilization.capabilities.dependency_analysis",
     "K:civilization.intelligence_pipeline.stages",
     "K:intelligence.repository.analyzer",
+    "K:providers",
     "K:vertical_slices.repo_discovery.slice"
    ],
    "import_status": "OK"
@@ -15195,7 +15203,8 @@
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
     "tests/test_language_weights.py",
-    "tests/test_rie_pipeline.py"
+    "tests/test_rie_pipeline.py",
+    "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
   },
@@ -15279,7 +15288,7 @@
    "path": "agos/rie/detectors/__init__.py",
    "module": "rie.detectors",
    "root": "src",
-   "lines": 524,
+   "lines": 540,
    "syntax_ok": true,
    "classes": 11,
    "functions": 34,
@@ -15410,7 +15419,7 @@
    "path": "agos/rie/infrastructure/__init__.py",
    "module": "rie.infrastructure",
    "root": "src",
-   "lines": 185,
+   "lines": 194,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -15421,8 +15430,10 @@
     "shutil",
     "subprocess",
     "tempfile",
+    "pathlib",
     "typing",
     "rie.domain",
+    "rie.detectors",
     "rie.detectors"
    ],
    "hardcoded_paths": 0,
@@ -15968,6 +15979,29 @@
    ],
    "scripts": [],
    "resolved": []
+  },
+  {
+   "path": "tests/test_structure_fields.py",
+   "imports": [
+    "agos.kernel",
+    "agos.kernel.capabilities",
+    "agos.rie.application",
+    "json",
+    "os",
+    "providers",
+    "pytest",
+    "shutil",
+    "subprocess"
+   ],
+   "scripts": [
+    "main"
+   ],
+   "resolved": [
+    "K:capabilities",
+    "K:main",
+    "K:providers",
+    "S:rie.application"
+   ]
   }
  ]
 }

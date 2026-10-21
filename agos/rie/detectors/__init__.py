@@ -261,14 +261,9 @@ class ConfigurationDetector(IDetector):
     def detect(self, context: DetectorContext) -> DetectorResult:
         start = datetime.now(timezone.utc)
         
-        config_files = []
-        
-        for path in context.files.keys():
-            path_lower = path.lower()
-            for pattern in self.CONFIG_PATTERNS:
-                if pattern.lower() in path_lower:
-                    config_files.append(path)
-                    break
+        # R-W2-004: delegate to the kernel's single source — suffix or exact-name match,
+        # never a substring match ("docs/package.json.md" is not package.json).
+        config_files = _stack_detection().detect_config_files(context.files.keys())
         
         duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
@@ -374,7 +369,17 @@ class ReadmeDetector(IDetector):
 
 
 class DirectoryDetector(IDetector):
-    """Detects directory structure."""
+    """Detects directory structure and entry points (R-W2-004).
+
+    The tree and the entry points both come from the kernel's ``stack_detection`` —
+    one source: directories up to an adjustable depth (``max_depth`` below), and
+    entry points by convention (main.py, index.js, cmd/*/main.go, …) plus manifest
+    declarations (pyproject [project.scripts], package.json main/bin).
+    """
+    
+    # Historical behaviour kept as the default: the full tree of every directory the
+    # reader saw. Set a smaller ``max_depth`` for the R-W2-004 adjustable-depth tree.
+    max_depth = 0  # 0 = no limit
     
     @property
     def name(self) -> str:
@@ -386,6 +391,16 @@ class DirectoryDetector(IDetector):
     
     def detect(self, context: DetectorContext) -> DetectorResult:
         start = datetime.now(timezone.utc)
+        
+        sd = _stack_detection()
+        paths = list(context.files.keys()) + list(context.directories)
+        tree = (sd.directory_tree(paths, max_depth=self.max_depth,
+                                  dir_paths=context.directories) if self.max_depth >= 1
+                else sorted(context.directories))
+        entry_points = sd.detect_entry_points(
+            list(context.files.keys()),
+            {p: context.get_file_content(p) for p in context.files
+             if sd.is_manifest(p)})
         
         top_level_dirs = set()
         for directory in context.directories:
@@ -400,7 +415,8 @@ class DirectoryDetector(IDetector):
             success=True,
             features={
                 "top_level_directories": sorted(list(top_level_dirs)),
-                "directory_tree": sorted(context.directories)
+                "directory_tree": tree,
+                "entry_points": entry_points
             },
             duration_ms=duration_ms
         )
