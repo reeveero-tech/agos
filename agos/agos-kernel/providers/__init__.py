@@ -57,14 +57,16 @@ class LocalRepositoryProvider(IProvider):
             raise ValueError(f"Unknown skill: {skill_name}")
     
     def Clone(self, url: str, branch: str = "main") -> str:
-        """Clone a git repository."""
-        temp_dir = tempfile.mkdtemp(prefix="agos_repo_")
-        repo_path = os.path.join(temp_dir, "repo")
-        subprocess.run(
-            ["git", "clone", "--branch", branch, "--depth", "1", url, repo_path],
-            check=True, capture_output=True
-        )
-        return repo_path
+        """Clone a git repository — hardened (R-W2-005).
+
+        Delegates to the kernel's ``clone_safety`` (single source): URL allowlist,
+        timeout, size/file caps, escaping-symlink rejection, guaranteed temp cleanup on
+        failure, and one retry with the repository's default branch when the requested
+        branch does not exist (a ``master`` default no longer fails because "main" was
+        assumed). The returned path is owned by the caller on success.
+        """
+        from clone_safety import clone
+        return clone(url, branch)
     
     def Open(self, path: str) -> str:
         """Open a repository."""
@@ -155,8 +157,12 @@ class LocalRepositoryProvider(IProvider):
                 if filename.startswith(".") and not is_relevant_hidden(
                         os.path.join(rel_dir, filename) if rel_dir != "." else filename):
                     continue
-                file_path = os.path.join(rel_dir, filename) if rel_dir != "." else filename
                 full_path = os.path.join(dirpath, filename)
+                # R-W2-005: a symlinked file may resolve outside the repository root —
+                # never read through it (dirs are already not followed by os.walk).
+                if os.path.islink(full_path):
+                    continue
+                file_path = os.path.join(rel_dir, filename) if rel_dir != "." else filename
                 
                 try:
                     size = os.path.getsize(full_path)

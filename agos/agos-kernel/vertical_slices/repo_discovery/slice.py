@@ -189,13 +189,21 @@ class RepositoryDiscoveryMission:
             raise
     
     async def _clone_repository(self) -> str:
-        """Clone if URL provided."""
+        """Clone if URL provided — hardened (R-W2-005).
+
+        Delegates to the kernel's ``clone_safety`` into the slice's own temp dir:
+        allowlist + timeout + caps + symlink protection. The old body ignored
+        failures silently (no ``check``) and left the temp dir behind.
+        """
         if self.repo_path:
             return self.repo_path
         temp_dir = tempfile.mkdtemp(prefix="agos_repo_")
         if self.repo_url:
-            subprocess.run(["git", "clone", "--depth", "1", self.repo_url, temp_dir],
-                         capture_output=True, timeout=300)
+            try:
+                from agos.kernel import clone_safety
+            except ImportError:
+                import clone_safety
+            clone_safety.clone(self.repo_url, dest=temp_dir)
         return temp_dir
     
     async def _fingerprint_repository(self, repo_path: str) -> RepositoryDNA:

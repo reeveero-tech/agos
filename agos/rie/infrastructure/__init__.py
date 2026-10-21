@@ -14,17 +14,19 @@ class GitFetcher:
     """Fetches repositories from git."""
     
     def fetch(self, url: str, branch: str = "main", depth: int = 1) -> str:
-        """Clone repository and return local path."""
-        temp_dir = tempfile.mkdtemp(prefix="rie_repo_")
-        repo_path = os.path.join(temp_dir, "repo")
-        
-        subprocess.run(
-            ["git", "clone", "--branch", branch, "--depth", str(depth), url, repo_path],
-            check=True,
-            capture_output=True
-        )
-        
-        return repo_path
+        """Clone repository and return local path — hardened (R-W2-005).
+
+        Delegates to the kernel's ``clone_safety`` (single source, same as the kernel
+        provider): URL allowlist, timeout, size/file caps, escaping-symlink rejection,
+        guaranteed temp cleanup on failure, and one retry with the repository's default
+        branch when ``branch`` does not exist. The old body was a bare ``git clone``
+        with no timeout and a temp dir that leaked on any failure.
+        """
+        try:
+            from agos.kernel import clone_safety
+        except ImportError:
+            import clone_safety
+        return clone_safety.clone(url, branch=branch, depth=depth)
     
     def get_metadata(self, repo_path: str) -> Dict[str, Any]:
         """Get repository metadata."""
@@ -105,8 +107,12 @@ class FileSystemReader:
                 if filename.startswith(".") and not _is_relevant_hidden(
                         os.path.join(rel_dir, filename) if rel_dir != "." else filename):
                     continue
-                file_path = os.path.join(rel_dir, filename) if rel_dir != "." else filename
                 full_path = os.path.join(dirpath, filename)
+                # R-W2-005: a symlinked file may resolve outside the repository root —
+                # never read through it (dirs are already not followed by os.walk).
+                if os.path.islink(full_path):
+                    continue
+                file_path = os.path.join(rel_dir, filename) if rel_dir != "." else filename
                 
                 try:
                     size = os.path.getsize(full_path)
@@ -138,10 +144,19 @@ class RepositoryNormalizer:
         self.fetcher = fetcher
         self.reader = reader
     
-    def normalize(self, url: str, branch: str = "main") -> Dict[str, Any]:
-        """Normalize a repository."""
-        # Fetch
-        repo_path = self.fetcher.fetch(url, branch)
+    def normalize(self, url: str, branch: str = "main",
+                  repo_path: Optional[str] = None) -> Dict[str, Any]:
+        """Normalize a repository.
+
+        ``repo_path`` (R-W2-005): a path already fetched by the caller — used as is and
+        the caller owns its cleanup. Without it the normalizer fetches its own copy and
+        cleans it up in a ``finally`` — the previous body leaked that temp dir on every
+        call (the pipeline fetched one copy and never removed the normalizer's second).
+        """
+        # Fetch (unless the caller already did)
+        own_path = repo_path is None
+        if repo_path is None:
+            repo_path = self.fetcher.fetch(url, branch)
         
         try:
             # Get metadata

@@ -54,7 +54,7 @@
 | L1 | `agos-kernel/resolvers` | registry | 1 | 206 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 60 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos_kernel` | namespace | 1 | 172 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
-| L2 | `agos-kernel` | quality | 20 | 3645 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
+| L2 | `agos-kernel` | quality | 21 | 3895 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/agos_runtime` | boot | 1 | 139 | 0 | yes | yes | yes | L4 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
@@ -88,7 +88,7 @@
 | L2 | `agos-kernel/trust` | human-loop | 2 | 254 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/v2` | civilization | 2 | 228 | 0 | yes | no | yes | L1 | R-W1-009, R-W3-014 |
 | L2 | `agos-kernel/verification` | human-loop | 2 | 224 | 0 | yes | no | yes | L1 | R-W3-015 |
-| L2 | `agos-kernel/vertical_slices` | mission | 1 | 405 | 0 | yes | no | yes | L1 | R-W3-003 |
+| L2 | `agos-kernel/vertical_slices` | mission | 1 | 413 | 0 | yes | no | yes | L1 | R-W3-003 |
 | L2 | `cli.py` | boot | 1 | 29 | 0 | yes | no | yes | L1 | R-F-001, R-W3-001 |
 | L3 | `agos-kernel/adapters` | providers | 11 | 1343 | 9 | yes | no | yes | L1 | R-W3-011 |
 | L3 | `agos-kernel/agent_packs` | packs | 1 | 141 | 0 | yes | no | yes | L1 | R-W4-005 |
@@ -101,7 +101,7 @@
 | L3 | `agos-kernel/framework_packs` | packs | 1 | 135 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/language_packs` | packs | 1 | 107 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/model_packs` | packs | 1 | 149 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `agos-kernel/providers` | providers | 7 | 1535 | 26 | yes | yes | yes | L3 | R-W2-005, R-W3-010 |
+| L3 | `agos-kernel/providers` | providers | 7 | 1542 | 26 | yes | yes | yes | L3 | R-W2-005, R-W3-010 |
 | L3 | `agos-kernel/repository` | repository-intelligence | 2 | 309 | 2 | yes | no | yes | L1 | R-W2-006 |
 | L3 | `agos-kernel/sdk` | sdk | 2 | 353 | 4 | yes | no | yes | L1 | R-W4-001 |
 | L3 | `agos-kernel/sdks` | sdk | 3 | 545 | 9 | yes | no | no | L1 | R-W4-001 |
@@ -110,7 +110,7 @@
 | L3 | `agos-kernel/templates` | packs | 1 | 101 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/tool_packs` | packs | 1 | 144 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/workflows` | packs | 1 | 228 | 0 | yes | no | yes | L1 | R-W4-005 |
-| L3 | `rie` | repository-intelligence | 12 | 2543 | 20 | yes | no | yes | L1 | R-F-006, R-W2-006 |
+| L3 | `rie` | repository-intelligence | 12 | 2559 | 20 | yes | no | yes | L1 | R-F-006, R-W2-006 |
 | L4 | `agos-kernel/audit` | governance | 1 | 148 | 3 | yes | no | yes | L1 | R-W5-002 |
 | L4 | `agos-kernel/benchmark` | certification | 3 | 347 | 1 | yes | no | yes | L1 | R-W2-011, R-W5-003 |
 | L4 | `agos-kernel/brain` | core-brain | 2 | 258 | 0 | yes | no | yes | L1 | R-W1-011, R-W3-014 |
@@ -144,7 +144,7 @@
 | L5 | `meta` | registry | 7 | 626 | 0 | yes | no | no | L1 | R-W1-014, R-W3-017 |
 | L5 | `orchestration` | fabric | 1 | 161 | 12 | yes | no | no | L1 | R-W3-018 |
 | L5 | `resource` | object-model | 1 | 153 | 2 | yes | no | no | L1 | R-W3-017 |
-| L5 | `seos` | fabric | 5 | 1206 | 2 | yes | no | yes | L1 | R-F-005, R-W4-012 |
+| L5 | `seos` | fabric | 5 | 1212 | 2 | yes | no | yes | L1 | R-F-005, R-W4-012 |
 | L6 | `agos-kernel/ecosystem` | enterprise | 5 | 2258 | 102 | yes | no | no | L1 | R-W1-015, R-W4-009 |
 | L6 | `agos-kernel/enterprise` | enterprise | 5 | 2229 | 100 | yes | no | no | L1 | R-W1-015, R-W4-009 |
 | L6 | `agos-kernel/federation` | enterprise | 5 | 2034 | 98 | yes | no | no | L1 | R-W1-015, R-W4-009 |

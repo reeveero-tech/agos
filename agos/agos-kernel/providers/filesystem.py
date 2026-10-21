@@ -77,15 +77,16 @@ class GitProvider(Provider):
             return {"healthy": False, "error": str(e)}
     
     def clone(self, url: str, path: str, shallow: bool = False) -> bool:
-        """Clone repository."""
-        cmd = ["git", "clone"]
-        if shallow:
-            cmd.append("--depth=1")
-        cmd.extend([url, path])
-        
+        """Clone repository — hardened (R-W2-005).
+
+        Delegates to the kernel's ``clone_safety`` (single source) into the caller's
+        ``path``: allowlist, timeout, size/file caps and escaping-symlink rejection.
+        ``branch`` is not specified here, so git picks the default branch itself.
+        """
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            return result.returncode == 0
+            from clone_safety import clone as safe_clone
+            safe_clone(url, dest=path, depth=1 if shallow else None)
+            return True
         except Exception:
             return False
     

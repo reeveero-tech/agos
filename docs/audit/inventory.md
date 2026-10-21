@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 524
-- **functions**: 5747
+- **files**: 525
+- **functions**: 5754
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 522
-- **lines**: 89240
+- **import_ok**: 523
+- **lines**: 89527
 - **not_imported_by_others**: 254
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 20 | 3645 | 125 | 0 | 0 | 19 | 0 | 20 |
+| `agos-kernel` | 21 | 3895 | 132 | 0 | 0 | 20 | 0 | 20 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -93,7 +93,7 @@
 | `agos-kernel/platform_runtime` | 2 | 232 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/providers` | 7 | 1535 | 146 | 26 | 0 | 7 | 0 | 1 |
+| `agos-kernel/providers` | 7 | 1542 | 146 | 26 | 0 | 7 | 0 | 1 |
 | `agos-kernel/quality_gates` | 1 | 430 | 20 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/recommendation` | 2 | 175 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/registry` | 3 | 123 | 15 | 0 | 0 | 3 | 0 | 0 |
@@ -119,7 +119,7 @@
 | `agos-kernel/trust` | 2 | 254 | 12 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/v2` | 2 | 228 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/verification` | 2 | 224 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/vertical_slices` | 1 | 405 | 15 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/vertical_slices` | 1 | 413 | 15 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos_kernel` | 1 | 172 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `civilization` | 5 | 529 | 50 | 16 | 0 | 5 | 0 | 4 |
@@ -149,9 +149,9 @@
 | `products` | 5 | 556 | 78 | 15 | 0 | 5 | 0 | 4 |
 | `research` | 6 | 337 | 41 | 5 | 0 | 6 | 0 | 5 |
 | `resource` | 1 | 153 | 19 | 2 | 0 | 1 | 0 | 1 |
-| `rie` | 12 | 2543 | 96 | 20 | 0 | 12 | 0 | 11 |
+| `rie` | 12 | 2559 | 96 | 20 | 0 | 12 | 0 | 11 |
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
-| `seos` | 5 | 1206 | 68 | 2 | 0 | 5 | 0 | 4 |
+| `seos` | 5 | 1212 | 68 | 2 | 0 | 5 | 0 | 4 |
 
 ## Import failures (0)
 

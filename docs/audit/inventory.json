@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 524,
-  "lines": 89240,
-  "functions": 5747,
+  "files": 525,
+  "lines": 89527,
+  "functions": 5754,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 254,
-  "import_ok": 522,
+  "import_ok": 523,
   "import_fail": 0
  },
  "packages": {
@@ -23,14 +23,14 @@
    "import_fail": 0
   },
   "agos-kernel": {
-   "files": 20,
-   "lines": 3645,
-   "functions": 125,
+   "files": 21,
+   "lines": 3895,
+   "functions": 132,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 20,
-   "import_ok": 19,
+   "import_ok": 20,
    "import_fail": 0
   },
   "agos-kernel/adapters": {
@@ -838,7 +838,7 @@
   },
   "agos-kernel/providers": {
    "files": 7,
-   "lines": 1535,
+   "lines": 1542,
    "functions": 146,
    "stub_functions": 26,
    "hardcoded_paths": 0,
@@ -1124,7 +1124,7 @@
   },
   "agos-kernel/vertical_slices": {
    "files": 1,
-   "lines": 405,
+   "lines": 413,
    "functions": 15,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1454,7 +1454,7 @@
   },
   "rie": {
    "files": 12,
-   "lines": 2543,
+   "lines": 2559,
    "functions": 96,
    "stub_functions": 20,
    "hardcoded_paths": 0,
@@ -1476,7 +1476,7 @@
   },
   "seos": {
    "files": 5,
-   "lines": 1206,
+   "lines": 1212,
    "functions": 68,
    "stub_functions": 2,
    "hardcoded_paths": 0,
@@ -2328,6 +2328,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_clone_safety.py",
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
     "tests/test_language_weights.py",
@@ -5431,6 +5432,36 @@
    "resolved_imports": [],
    "imported_by": [
     "K:test_civilization_marketplace_connector"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/clone_safety.py",
+   "module": "clone_safety",
+   "root": "kernel",
+   "lines": 250,
+   "syntax_ok": true,
+   "classes": 1,
+   "functions": 7,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "os",
+    "subprocess",
+    "tempfile",
+    "pathlib",
+    "typing",
+    "shutil"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:clone_safety",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:providers",
+    "K:providers.filesystem",
+    "K:vertical_slices.repo_discovery.slice"
    ],
    "import_status": "OK"
   },
@@ -8613,6 +8644,7 @@
    "imported_by": [],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_clone_safety.py",
     "tests/test_language_weights.py",
     "tests/test_structure_fields.py"
    ],
@@ -9359,7 +9391,7 @@
    "path": "agos/agos-kernel/providers/__init__.py",
    "module": "providers",
    "root": "kernel",
-   "lines": 173,
+   "lines": 179,
    "syntax_ok": true,
    "classes": 5,
    "functions": 16,
@@ -9373,12 +9405,14 @@
     "typing",
     "contracts",
     "interfaces",
+    "clone_safety",
     "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:providers",
    "resolved_imports": [
+    "K:clone_safety",
     "K:contracts",
     "K:interfaces",
     "K:stack_detection"
@@ -9390,6 +9424,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_clone_safety.py",
     "tests/test_structure_fields.py"
    ],
    "import_status": "OK"
@@ -9454,7 +9489,7 @@
    "path": "agos/agos-kernel/providers/filesystem.py",
    "module": "providers.filesystem",
    "root": "kernel",
-   "lines": 283,
+   "lines": 284,
    "syntax_ok": true,
    "classes": 6,
    "functions": 26,
@@ -9482,12 +9517,14 @@
     "providers.base",
     "subprocess",
     "typing",
-    "providers.base"
+    "providers.base",
+    "clone_safety"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:providers.filesystem",
    "resolved_imports": [
+    "K:clone_safety",
     "K:providers.base"
    ],
    "imported_by": [
@@ -12151,7 +12188,7 @@
    "path": "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
    "module": "vertical_slices.repo_discovery.slice",
    "root": "kernel",
-   "lines": 405,
+   "lines": 413,
    "syntax_ok": true,
    "classes": 9,
    "functions": 15,
@@ -12176,14 +12213,17 @@
     "agos.kernel",
     "agos.kernel",
     "agos.kernel",
+    "agos.kernel",
     "stack_detection",
     "stack_detection",
-    "stack_detection"
+    "stack_detection",
+    "clone_safety"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:vertical_slices.repo_discovery.slice",
    "resolved_imports": [
+    "K:clone_safety",
     "K:stack_detection"
    ],
    "imported_by": [],
@@ -15178,7 +15218,7 @@
    "path": "agos/rie/application/__init__.py",
    "module": "rie.application",
    "root": "src",
-   "lines": 253,
+   "lines": 254,
    "syntax_ok": true,
    "classes": 2,
    "functions": 7,
@@ -15200,6 +15240,7 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_clone_safety.py",
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
     "tests/test_language_weights.py",
@@ -15419,7 +15460,7 @@
    "path": "agos/rie/infrastructure/__init__.py",
    "module": "rie.infrastructure",
    "root": "src",
-   "lines": 194,
+   "lines": 209,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -15434,7 +15475,9 @@
     "typing",
     "rie.domain",
     "rie.detectors",
-    "rie.detectors"
+    "agos.kernel",
+    "rie.detectors",
+    "clone_safety"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -15444,6 +15487,7 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_clone_safety.py",
     "tests/test_framework_detection.py"
    ],
    "import_status": "OK"
@@ -15586,7 +15630,7 @@
    "path": "agos/seos/workspace/__init__.py",
    "module": "seos.workspace",
    "root": "src",
-   "lines": 291,
+   "lines": 297,
    "syntax_ok": true,
    "classes": 7,
    "functions": 17,
@@ -15600,7 +15644,9 @@
     "os",
     "shutil",
     "subprocess",
-    "tempfile"
+    "tempfile",
+    "agos.kernel",
+    "clone_safety"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -15685,6 +15731,33 @@
     "K:registry.provider",
     "K:resolvers",
     "S:"
+   ]
+  },
+  {
+   "path": "tests/test_clone_safety.py",
+   "imports": [
+    "agos.kernel",
+    "agos.kernel.capabilities",
+    "agos.kernel.providers",
+    "agos.rie.application",
+    "agos.rie.infrastructure",
+    "glob",
+    "os",
+    "pytest",
+    "shutil",
+    "stat",
+    "subprocess",
+    "tempfile"
+   ],
+   "scripts": [
+    "main"
+   ],
+   "resolved": [
+    "K:capabilities",
+    "K:main",
+    "K:providers",
+    "S:rie.application",
+    "S:rie.infrastructure"
    ]
   },
   {

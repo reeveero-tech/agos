@@ -161,9 +161,10 @@ class RepositoryIntelligencePipeline:
         repo_path = self.fetcher.fetch(url, branch)
         
         try:
-            # Step 2: Normalize
+            # Step 2: Normalize — reuse the fetched copy (R-W2-005: one clone per run,
+            # the normalizer cleans it up itself; the finally below is a harmless no-op).
             print("[RIE] Normalizing repository")
-            normalized = self.normalizer.normalize(url, branch)
+            normalized = self.normalizer.normalize(url, branch, repo_path=repo_path)
             
             # Create detector context
             files_with_content = {}

@@ -95,15 +95,21 @@ class GitOperations:
     """Git operations handler."""
     
     def clone(self, url: str, path: str, branch: str = "main") -> bool:
-        """Clone a repository."""
+        """Clone a repository — hardened (R-W2-005).
+
+        Delegates to the kernel's ``clone_safety`` (single source): allowlist, timeout,
+        size/file caps, escaping-symlink rejection, and one retry with the repository's
+        default branch when ``branch`` does not exist. The old body swallowed every
+        error with a bare ``except:``.
+        """
         try:
-            subprocess.run(
-                ["git", "clone", "--branch", branch, url, path],
-                check=True,
-                capture_output=True
-            )
+            from agos.kernel import clone_safety
+        except ImportError:
+            import clone_safety
+        try:
+            clone_safety.clone(url, branch=branch, dest=path)
             return True
-        except:
+        except clone_safety.CloneRejected:
             return False
     
     def checkout(self, path: str, branch: str) -> bool:

@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 552,
+  "files_scanned": 554,
   "external_imports": [
     {
       "import": "a",
@@ -72,6 +72,7 @@
           "agos/agos-kernel/core/tests/test_golden_security.py",
           "agos/agos-kernel/core/tests/test_golden_serialization.py",
           "tests/test_bootstrap.py",
+          "tests/test_clone_safety.py",
           "tests/test_dependency_extraction.py",
           "tests/test_framework_detection.py",
           "tests/test_kernel_facade.py",
@@ -179,9 +180,9 @@
       "agos/agos-kernel/conftest.py",
       "agos/agos-kernel/providers/__init__.py",
       "agos/agos-kernel/providers/filesystem.py",
-      "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
       "agos/rie/infrastructure/__init__.py",
       "agos/seos/workspace/__init__.py",
+      "tests/test_clone_safety.py",
       "tests/test_dependency_extraction.py",
       "tests/test_framework_detection.py",
       "tests/test_language_weights.py",

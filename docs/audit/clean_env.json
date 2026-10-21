@@ -25,8 +25,8 @@
     ],
     "dev_group_absent": true
   },
-  "runtime_modules_probed": 491,
-  "runtime_modules_ok": 491,
+  "runtime_modules_probed": 492,
+  "runtime_modules_ok": 492,
   "not_ok_in_both_envs": [],
   "failures": []
 }
