@@ -6,8 +6,8 @@
 
 ## ملخص المستويات
 
-- **L0**: 15 حزمة
-- **L1**: 93 حزمة
+- **L0**: 13 حزمة
+- **L1**: 97 حزمة
 - **L2**: 9 حزمة
 - **L3**: 2 حزمة
 - **L4**: 2 حزمة
@@ -26,6 +26,7 @@
 
 | layer | package | concept | files | lines | stub fns | imports | connected | tested | level | roadmap items |
 |---|---|---|---|---|---|---|---|---|---|---|
+| L1 | `agos-kernel/agos_kernel` | namespace | 1 | 11 | 0 | yes | no | yes | L1 | R-F-003, R-F-005 |
 | L1 | `agos-kernel/architecture` | governance | 1 | 220 | 0 | yes | no | no | L1 | R-W1-001 |
 | L1 | `agos-kernel/bootstrap` | boot | 1 | 277 | 0 | yes | no | no | L1 | R-W3-001 |
 | L1 | `agos-kernel/bootstrapper` | boot | 1 | 187 | 0 | NO | yes | no | L0 | R-F-004, R-W3-001 |
@@ -33,7 +34,7 @@
 | L1 | `agos-kernel/context` | execution | 1 | 61 | 0 | yes | yes | no | L2 | R-W3-003 |
 | L1 | `agos-kernel/contract_engine` | contracts | 1 | 360 | 0 | yes | no | yes | L1 | R-W1-019 |
 | L1 | `agos-kernel/contracts` | contracts | 1 | 106 | 0 | yes | yes | no | L2 | R-W1-019 |
-| L1 | `agos-kernel/core` | core-brain | 21 | 3257 | 0 | NO | no | yes | L0 | R-F-002, R-F-008, R-W3-003, R-W1-022 |
+| L1 | `agos-kernel/core` | core-brain | 21 | 3257 | 0 | yes | no | yes | L1 | R-F-002, R-F-008, R-W3-003, R-W1-022 |
 | L1 | `agos-kernel/decision` | decision | 1 | 86 | 0 | NO | no | no | L0 | R-F-007, R-W3-004 |
 | L1 | `agos-kernel/decision-pipeline` | decision | 1 | 305 | 0 | NO | no | no | L0 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/diagnostics` | healing | 1 | 6 | 0 | NO | no | yes | L0 | R-F-007, R-W3-013 |
@@ -48,6 +49,7 @@
 | L1 | `agos-kernel/registry` | registry | 3 | 80 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/resolvers` | registry | 1 | 205 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 52 | 0 | yes | yes | no | L2 | R-W1-019 |
+| L1 | `agos_kernel` | namespace | 1 | 143 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
 | L2 | `agos-kernel` | quality | 19 | 3497 | 0 | NO | yes | yes | L0 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
@@ -119,7 +121,7 @@
 | L4 | `cognitive` | cognition | 11 | 609 | 6 | yes | no | no | L1 | R-W1-010, R-W3-016 |
 | L4 | `intelligence` | intelligence | 6 | 410 | 8 | yes | no | no | L1 | R-F-005, R-W1-006, R-W3-019 |
 | L4 | `research` | evolution | 6 | 337 | 5 | yes | no | no | L1 | R-W5-007 |
-| L5 | `agos-kernel/civilization` | civilization | 99 | 23488 | 120 | NO | no | yes | L0 | R-F-003, R-W1-009, R-W3-014 |
+| L5 | `agos-kernel/civilization` | civilization | 99 | 23492 | 120 | yes | no | yes | L1 | R-F-003, R-W1-009, R-W3-014 |
 | L5 | `civilization` | civilization | 5 | 529 | 16 | yes | no | no | L1 | R-F-005, R-W1-009, R-W3-014 |
 | L5 | `consolidation` | governance | 1 | 66 | 1 | yes | no | no | L1 | R-W1-001 |
 | L5 | `constitution` | governance | 2 | 264 | 1 | yes | no | no | L1 | R-W1-022 |

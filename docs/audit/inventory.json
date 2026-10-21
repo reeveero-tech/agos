@@ -1,14 +1,14 @@
 {
  "totals": {
-  "files": 503,
-  "lines": 86158,
-  "functions": 5588,
+  "files": 505,
+  "lines": 86316,
+  "functions": 5596,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 239,
-  "import_ok": 395,
-  "import_fail": 107
+  "not_imported_by_others": 240,
+  "import_ok": 487,
+  "import_fail": 17
  },
  "packages": {
   "agos-kernel": {
@@ -37,6 +37,17 @@
    "files": 1,
    "lines": 141,
    "functions": 6,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/agos_kernel": {
+   "files": 1,
+   "lines": 11,
+   "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -156,14 +167,14 @@
   },
   "agos-kernel/civilization": {
    "files": 99,
-   "lines": 23488,
+   "lines": 23492,
    "functions": 1279,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 35,
-   "import_ok": 16,
-   "import_fail": 83
+   "import_ok": 99,
+   "import_fail": 0
   },
   "agos-kernel/civilization_packs": {
    "files": 1,
@@ -261,8 +272,8 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 13,
-   "import_ok": 14,
-   "import_fail": 7
+   "import_ok": 21,
+   "import_fail": 0
   },
   "agos-kernel/crossdomain": {
    "files": 2,
@@ -1023,6 +1034,17 @@
    "import_ok": 1,
    "import_fail": 0
   },
+  "agos_kernel": {
+   "files": 1,
+   "lines": 143,
+   "functions": 8,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
+   "import_fail": 0
+  },
   "civilization": {
    "files": 5,
    "lines": 529,
@@ -1662,6 +1684,28 @@
    "resolved_imports": [],
    "imported_by": [
     "K:test_agent_model_tool"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/agos_kernel/__init__.py",
+   "module": "agos_kernel",
+   "root": "kernel",
+   "lines": 11,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:agos_kernel",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:core.tests.test_golden_runtime"
    ],
    "import_status": "OK"
   },
@@ -2444,7 +2488,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/artifact_system/artifact.py",
@@ -2475,7 +2519,7 @@
    "imported_by": [
     "K:civilization.artifact_system"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/artifact_system/run_artifact.py",
@@ -2500,7 +2544,7 @@
    "id": "K:civilization.artifact_system.run_artifact",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/audit_runtime/__init__.py",
@@ -2524,7 +2568,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/audit_runtime/audit.py",
@@ -2549,7 +2593,7 @@
    "imported_by": [
     "K:civilization.audit_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/autonomous_engineering/__init__.py",
@@ -2689,7 +2733,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/benchmark_runtime/benchmark.py",
@@ -2714,7 +2758,7 @@
    "imported_by": [
     "K:civilization.benchmark_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/__init__.py",
@@ -2752,7 +2796,7 @@
     "K:civilization.capabilities.security_analysis"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/architecture_analysis.py",
@@ -2779,7 +2823,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/code_quality.py",
@@ -2807,7 +2851,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/dependency_analysis.py",
@@ -2835,7 +2879,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/documentation_analysis.py",
@@ -2860,7 +2904,7 @@
    "imported_by": [
     "K:civilization.capabilities"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/engineering_report.py",
@@ -2887,7 +2931,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/knowledge_extraction.py",
@@ -2914,7 +2958,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/repository_analysis.py",
@@ -2943,7 +2987,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/repository_dna.py",
@@ -2971,7 +3015,7 @@
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capabilities/security_analysis.py",
@@ -2997,7 +3041,7 @@
    "imported_by": [
     "K:civilization.capabilities"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capability_runtime/__init__.py",
@@ -3023,7 +3067,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capability_runtime/contract.py",
@@ -3050,7 +3094,7 @@
     "K:civilization.capability_runtime",
     "K:civilization.capability_runtime.runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capability_runtime/run_capability.py",
@@ -3076,7 +3120,7 @@
    "id": "K:civilization.capability_runtime.run_capability",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/capability_runtime/runtime.py",
@@ -3107,7 +3151,7 @@
    "imported_by": [
     "K:civilization.capability_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/certification_runtime/__init__.py",
@@ -3131,7 +3175,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/certification_runtime/certification.py",
@@ -3157,7 +3201,7 @@
    "imported_by": [
     "K:civilization.certification_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/core/civilization_engine.py",
@@ -3196,7 +3240,7 @@
     "K:civilization.providers.github_provider"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/core/foundation.py",
@@ -3259,7 +3303,7 @@
     "K:civilization.engineering_brain.brain"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_brain/advanced_brain_batch.py",
@@ -3283,7 +3327,7 @@
    "id": "K:civilization.engineering_brain.advanced_brain_batch",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_brain/brain.py",
@@ -3309,7 +3353,7 @@
    "imported_by": [
     "K:civilization.engineering_brain"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_brain/brain_batch.py",
@@ -3333,7 +3377,7 @@
    "id": "K:civilization.engineering_brain.brain_batch",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_brain/run_advanced_brain.py",
@@ -3358,7 +3402,7 @@
    "id": "K:civilization.engineering_brain.run_advanced_brain",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_brain/run_brain.py",
@@ -3383,7 +3427,7 @@
    "id": "K:civilization.engineering_brain.run_brain",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_brain/run_brain_batch.py",
@@ -3408,7 +3452,7 @@
    "id": "K:civilization.engineering_brain.run_brain_batch",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/engineering_learning/__init__.py",
@@ -3548,7 +3592,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/evidence_system/evidence.py",
@@ -3575,7 +3619,7 @@
    "imported_by": [
     "K:civilization.evidence_system"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/foundation_integration/__init__.py",
@@ -3597,7 +3641,7 @@
     "K:civilization.foundation_integration.foundation"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/foundation_integration/foundation.py",
@@ -3655,7 +3699,7 @@
    "imported_by": [
     "K:civilization.foundation_integration"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/__init__.py",
@@ -3681,7 +3725,7 @@
     "K:civilization.intelligence_pipeline.stages"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/intelligence_package.py",
@@ -3707,7 +3751,7 @@
     "K:civilization.intelligence_pipeline",
     "K:civilization.intelligence_pipeline.pipeline"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py",
@@ -3740,7 +3784,7 @@
    "imported_by": [
     "K:civilization.intelligence_pipeline"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py",
@@ -3769,7 +3813,7 @@
    "id": "K:civilization.intelligence_pipeline.run_pipeline",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
@@ -3802,7 +3846,7 @@
     "K:civilization.intelligence_pipeline",
     "K:civilization.intelligence_pipeline.pipeline"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/__init__.py",
@@ -3830,13 +3874,13 @@
     "K:civilization.knowledge_graph.relationships"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
    "module": "civilization.knowledge_graph.builder",
    "root": "kernel",
-   "lines": 476,
+   "lines": 480,
    "syntax_ok": true,
    "classes": 2,
    "functions": 15,
@@ -3849,6 +3893,7 @@
     "typing",
     "dataclasses",
     "agos_kernel.civilization.knowledge_graph.nodes.base",
+    "agos_kernel.civilization.knowledge_graph.knowledge_graph",
     "agos_kernel.civilization.knowledge_graph.relationships",
     "subprocess"
    ],
@@ -3856,13 +3901,14 @@
    "importable_package_path": true,
    "id": "K:civilization.knowledge_graph.builder",
    "resolved_imports": [
+    "K:civilization.knowledge_graph.knowledge_graph",
     "K:civilization.knowledge_graph.nodes.base",
     "K:civilization.knowledge_graph.relationships"
    ],
    "imported_by": [
     "K:civilization.knowledge_graph"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py",
@@ -3895,10 +3941,11 @@
    ],
    "imported_by": [
     "K:civilization.knowledge_graph",
+    "K:civilization.knowledge_graph.builder",
     "K:civilization.knowledge_graph.query",
     "K:civilization.knowledge_graph.versioning"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/nodes/__init__.py",
@@ -3924,7 +3971,7 @@
     "K:civilization.knowledge_graph.nodes.engineering"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/nodes/base.py",
@@ -3957,7 +4004,7 @@
     "K:civilization.knowledge_graph.nodes.engineering",
     "K:civilization.knowledge_graph.query"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/nodes/code.py",
@@ -3983,7 +4030,7 @@
    "imported_by": [
     "K:civilization.knowledge_graph.nodes"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/nodes/engineering.py",
@@ -4009,7 +4056,7 @@
    "imported_by": [
     "K:civilization.knowledge_graph.nodes"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/query/__init__.py",
@@ -4038,7 +4085,7 @@
     "K:civilization.knowledge_graph.relationships"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/relationships/__init__.py",
@@ -4067,7 +4114,7 @@
     "K:civilization.knowledge_graph.knowledge_graph",
     "K:civilization.knowledge_graph.query"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/run_graph.py",
@@ -4100,7 +4147,7 @@
    "id": "K:civilization.knowledge_graph.run_graph",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py",
@@ -4128,7 +4175,7 @@
     "K:civilization.knowledge_graph.knowledge_graph"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_runtime/__init__.py",
@@ -4152,7 +4199,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/knowledge_runtime/knowledge.py",
@@ -4178,7 +4225,7 @@
    "imported_by": [
     "K:civilization.knowledge_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/mission_planner/__init__.py",
@@ -4206,7 +4253,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/mission_planner/execution_graph.py",
@@ -4233,7 +4280,7 @@
     "K:civilization.mission_planner",
     "K:civilization.mission_planner.planner"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/mission_planner/planner.py",
@@ -4263,7 +4310,7 @@
    "imported_by": [
     "K:civilization.mission_planner"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/mission_planner/run_planner.py",
@@ -4289,7 +4336,7 @@
    "id": "K:civilization.mission_planner.run_planner",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/mission_planner/task.py",
@@ -4316,7 +4363,7 @@
     "K:civilization.mission_planner",
     "K:civilization.mission_planner.planner"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/policy_runtime/__init__.py",
@@ -4340,7 +4387,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/policy_runtime/policy.py",
@@ -4366,7 +4413,7 @@
    "imported_by": [
     "K:civilization.policy_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/provider_runtime/__init__.py",
@@ -4392,7 +4439,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/provider_runtime/contract.py",
@@ -4417,7 +4464,7 @@
    "imported_by": [
     "K:civilization.provider_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/provider_runtime/run_provider.py",
@@ -4442,7 +4489,7 @@
    "id": "K:civilization.provider_runtime.run_provider",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/provider_runtime/runtime.py",
@@ -4469,7 +4516,7 @@
    "imported_by": [
     "K:civilization.provider_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/providers/__init__.py",
@@ -4495,7 +4542,7 @@
     "K:civilization.providers.github_provider"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/providers/filesystem_provider.py",
@@ -4523,7 +4570,7 @@
     "K:civilization.core.civilization_engine",
     "K:civilization.providers"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/providers/git_provider.py",
@@ -4550,7 +4597,7 @@
     "K:civilization.core.civilization_engine",
     "K:civilization.providers"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/providers/github_provider.py",
@@ -4579,7 +4626,7 @@
     "K:civilization.core.civilization_engine",
     "K:civilization.providers"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/reasoning_runtime/__init__.py",
@@ -4607,7 +4654,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/reasoning_runtime/decisions.py",
@@ -4635,7 +4682,7 @@
     "K:civilization.reasoning_runtime.engine",
     "K:civilization.reasoning_runtime.runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/reasoning_runtime/engine.py",
@@ -4663,7 +4710,7 @@
    "imported_by": [
     "K:civilization.reasoning_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/reasoning_runtime/run_reasoning.py",
@@ -4689,7 +4736,7 @@
    "id": "K:civilization.reasoning_runtime.run_reasoning",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/reasoning_runtime/runtime.py",
@@ -4720,7 +4767,7 @@
     "K:civilization.reasoning_runtime",
     "K:civilization.reasoning_runtime.engine"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/run_batch.py",
@@ -4875,7 +4922,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/telemetry_runtime/telemetry.py",
@@ -4902,7 +4949,7 @@
    "imported_by": [
     "K:civilization.telemetry_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/template_runtime/__init__.py",
@@ -4926,7 +4973,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/template_runtime/template.py",
@@ -4952,7 +4999,7 @@
    "imported_by": [
     "K:civilization.template_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/trust_engine/__init__.py",
@@ -4976,7 +5023,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/trust_engine/trust.py",
@@ -5003,7 +5050,7 @@
    "imported_by": [
     "K:civilization.trust_engine"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/validation_runtime/__init__.py",
@@ -5027,7 +5074,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/validation_runtime/validation.py",
@@ -5053,7 +5100,7 @@
    "imported_by": [
     "K:civilization.validation_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/workflow_runtime/__init__.py",
@@ -5077,7 +5124,7 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/workflow_runtime/workflow.py",
@@ -5103,7 +5150,7 @@
    "imported_by": [
     "K:civilization.workflow_runtime"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization_packs/library.py",
@@ -5437,7 +5484,7 @@
     "K:core.invariants.validator"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/invariants/benchmark.py",
@@ -5466,7 +5513,7 @@
    "imported_by": [
     "K:core.invariants"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/invariants/evidence.py",
@@ -5498,7 +5545,7 @@
    "imported_by": [
     "K:core.invariants"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/invariants/registry.py",
@@ -5525,7 +5572,7 @@
     "K:core.invariants",
     "K:core.invariants.validator"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/invariants/reporter.py",
@@ -5555,7 +5602,7 @@
    "imported_by": [
     "K:core.invariants"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/invariants/runtime.py",
@@ -5589,7 +5636,7 @@
     "K:core.invariants.reporter",
     "K:core.invariants.validator"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/invariants/validator.py",
@@ -5621,7 +5668,7 @@
     "K:core.invariants",
     "K:core.invariants.reporter"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'agos_kernel'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/seal.py",
@@ -5842,7 +5889,9 @@
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.tests.test_golden_runtime",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:agos_kernel"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -11411,6 +11460,33 @@
    "imported_by": [
     "K:test_domain_knowledge_workflow"
    ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos_kernel/__init__.py",
+   "module": "agos_kernel",
+   "root": "src",
+   "lines": 143,
+   "syntax_ok": true,
+   "classes": 2,
+   "functions": 8,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "importlib",
+    "importlib.abc",
+    "importlib.machinery",
+    "importlib.util",
+    "os",
+    "sys",
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "S:agos_kernel",
+   "resolved_imports": [],
+   "imported_by": [],
    "import_status": "OK"
   },
   {

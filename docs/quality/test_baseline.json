@@ -1,8 +1,6 @@
 {
  "known_failures": [
   "::agos.agos-kernel.test_validation",
-  "agos.agos-kernel.core.tests.test_golden_performance.TestKernelPerformance::test_kernel_imports_quickly",
-  "agos.agos-kernel.core.tests.test_golden_runtime.TestKernelRuntime::test_runtime_modules_are_importable",
   "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_file_permissions_are_restricted",
   "agos.agos-kernel.test_execution_implementation::test_adapters",
   "agos.agos-kernel.test_execution_implementation::test_execution_engine",

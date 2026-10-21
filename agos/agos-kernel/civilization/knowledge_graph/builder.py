@@ -14,6 +14,10 @@ from dataclasses import dataclass, field
 from agos_kernel.civilization.knowledge_graph.nodes.base import (
     GraphNode, NodeType, NodeMetadata
 )
+# R-F-003: GraphBuilder annotates and instantiates KnowledgeGraph but never imported it
+# (hidden while agos_kernel was unimportable). knowledge_graph.py does not import builder,
+# so there is no cycle.
+from agos_kernel.civilization.knowledge_graph.knowledge_graph import KnowledgeGraph
 
 try:
     from agos_kernel.civilization.knowledge_graph.relationships import (

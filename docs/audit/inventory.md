@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 503
-- **functions**: 5588
+- **files**: 505
+- **functions**: 5596
 - **hardcoded_paths**: 0
-- **import_fail**: 107
-- **import_ok**: 395
-- **lines**: 86158
-- **not_imported_by_others**: 239
+- **import_fail**: 17
+- **import_ok**: 487
+- **lines**: 86316
+- **not_imported_by_others**: 240
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -21,6 +21,7 @@
 | `agos-kernel` | 19 | 3497 | 116 | 0 | 0 | 17 | 1 | 19 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/agos_kernel` | 1 | 11 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/api` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/approval` | 2 | 184 | 11 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/architecture` | 1 | 220 | 10 | 0 | 0 | 1 | 0 | 1 |
@@ -31,7 +32,7 @@
 | `agos-kernel/brain` | 2 | 255 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 10 | 1766 | 137 | 26 | 0 | 10 | 0 | 1 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 99 | 23488 | 1279 | 120 | 0 | 16 | 83 | 35 |
+| `agos-kernel/civilization` | 99 | 23492 | 1279 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -40,7 +41,7 @@
 | `agos-kernel/context` | 1 | 61 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contracts` | 1 | 106 | 4 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/core` | 21 | 3257 | 146 | 0 | 0 | 14 | 7 | 13 |
+| `agos-kernel/core` | 21 | 3257 | 146 | 0 | 0 | 21 | 0 | 13 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 0 | 1 | 1 |
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 0 | 1 | 1 |
@@ -110,6 +111,7 @@
 | `agos-kernel/verification` | 2 | 224 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/vertical_slices` | 1 | 385 | 15 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
+| `agos_kernel` | 1 | 143 | 8 | 0 | 0 | 1 | 0 | 1 |
 | `civilization` | 5 | 529 | 50 | 16 | 0 | 5 | 0 | 4 |
 | `cloud` | 5 | 612 | 47 | 1 | 0 | 5 | 0 | 4 |
 | `cloud_collaboration` | 1 | 97 | 6 | 0 | 0 | 1 | 0 | 1 |
@@ -140,106 +142,7 @@
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1205 | 68 | 2 | 0 | 5 | 0 | 4 |
 
-## Import failures (107)
-
-### ERR ModuleNotFoundError — 96
-
-- `agos/agos-kernel/bootstrapper/__init__.py` — ERR ModuleNotFoundError: No module named 'event_engine'
-- `agos/agos-kernel/civilization/artifact_system/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/artifact_system/artifact.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/artifact_system/run_artifact.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/audit_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/audit_runtime/audit.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/benchmark_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/benchmark_runtime/benchmark.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/architecture_analysis.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/code_quality.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/dependency_analysis.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/documentation_analysis.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/engineering_report.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/knowledge_extraction.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/repository_analysis.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/repository_dna.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capabilities/security_analysis.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capability_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capability_runtime/contract.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capability_runtime/run_capability.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/capability_runtime/runtime.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/certification_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/certification_runtime/certification.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/core/civilization_engine.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/advanced_brain_batch.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/brain.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/brain_batch.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/run_advanced_brain.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/run_brain.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/engineering_brain/run_brain_batch.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/evidence_system/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/evidence_system/evidence.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/foundation_integration/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/foundation_integration/foundation.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/intelligence_pipeline/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/intelligence_pipeline/intelligence_package.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/intelligence_pipeline/stages.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/builder.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/nodes/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/nodes/base.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/nodes/code.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/nodes/engineering.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/query/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/relationships/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/run_graph.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/knowledge_runtime/knowledge.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/mission_planner/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/mission_planner/execution_graph.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/mission_planner/planner.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/mission_planner/run_planner.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/mission_planner/task.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/policy_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/policy_runtime/policy.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/provider_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/provider_runtime/contract.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/provider_runtime/run_provider.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/provider_runtime/runtime.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/providers/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/providers/filesystem_provider.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/providers/git_provider.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/providers/github_provider.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/reasoning_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/reasoning_runtime/decisions.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/reasoning_runtime/engine.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/reasoning_runtime/run_reasoning.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/reasoning_runtime/runtime.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/telemetry_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/telemetry_runtime/telemetry.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/template_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/template_runtime/template.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/trust_engine/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/trust_engine/trust.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/validation_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/validation_runtime/validation.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/workflow_runtime/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/civilization/workflow_runtime/workflow.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/__init__.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/benchmark.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/evidence.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/registry.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/reporter.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/runtime.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/core/invariants/validator.py` — ERR ModuleNotFoundError: No module named 'agos_kernel'
-- `agos/agos-kernel/diagnostics/__init__.py` — ERR ModuleNotFoundError: No module named 'diagnostics.runtime'
-- `agos/rie/adapters/__init__.py` — ERR ModuleNotFoundError: No module named 'application'
-- `agos/rie/application/__init__.py` — ERR ModuleNotFoundError: No module named 'contracts'
-- `agos/rie/application/dna_generator.py` — ERR ModuleNotFoundError: No module named 'contracts'
-- `agos/rie/application/scoring.py` — ERR ModuleNotFoundError: No module named 'contracts'
+## Import failures (17)
 
 ### ERR NotAPackagePath — 7
 
@@ -250,6 +153,15 @@
 - `agos/agos-kernel/resource-manager/__init__.py` — ERR NotAPackagePath: directory name contains '-'
 - `agos/agos-kernel/skill-engine/__init__.py` — ERR NotAPackagePath: directory name contains '-'
 - `agos/agos-kernel/state-store/__init__.py` — ERR NotAPackagePath: directory name contains '-'
+
+### ERR ModuleNotFoundError — 6
+
+- `agos/agos-kernel/bootstrapper/__init__.py` — ERR ModuleNotFoundError: No module named 'event_engine'
+- `agos/agos-kernel/diagnostics/__init__.py` — ERR ModuleNotFoundError: No module named 'diagnostics.runtime'
+- `agos/rie/adapters/__init__.py` — ERR ModuleNotFoundError: No module named 'application'
+- `agos/rie/application/__init__.py` — ERR ModuleNotFoundError: No module named 'contracts'
+- `agos/rie/application/dna_generator.py` — ERR ModuleNotFoundError: No module named 'contracts'
+- `agos/rie/application/scoring.py` — ERR ModuleNotFoundError: No module named 'contracts'
 
 ### ERR ImportError — 2
 
