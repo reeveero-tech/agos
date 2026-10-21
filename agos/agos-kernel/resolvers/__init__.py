@@ -168,7 +168,8 @@ class ProviderResolver:
         candidates.sort(key=lambda x: x[1].total, reverse=True)
         best_provider, best_score = candidates[0]
         
-        supported_skills = [s for s in required_skills if provider.supports_skill(s)]
+        # R-W3-001: skills of the *selected* provider (was the loop's last ``provider``)
+        supported_skills = [s for s in required_skills if best_provider.supports_skill(s)]
         
         return ProviderSelection(
             provider=best_provider,

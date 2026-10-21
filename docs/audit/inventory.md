@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 517
-- **functions**: 5608
+- **files**: 518
+- **functions**: 5628
 - **hardcoded_paths**: 0
 - **import_fail**: 1
-- **import_ok**: 514
-- **lines**: 86715
-- **not_imported_by_others**: 254
+- **import_ok**: 515
+- **lines**: 87004
+- **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -19,17 +19,18 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 19 | 3504 | 116 | 0 | 0 | 17 | 1 | 19 |
+| `agos-kernel` | 19 | 3520 | 116 | 0 | 0 | 17 | 1 | 19 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 11 | 0 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/agos_runtime` | 1 | 133 | 15 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/api` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/approval` | 2 | 184 | 11 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/architecture` | 1 | 220 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/audit` | 1 | 148 | 10 | 3 | 0 | 1 | 0 | 0 |
 | `agos-kernel/benchmark` | 3 | 347 | 17 | 1 | 0 | 3 | 0 | 0 |
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/bootstrapper` | 1 | 187 | 9 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 10 | 1766 | 137 | 26 | 0 | 10 | 0 | 1 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
@@ -48,7 +49,7 @@
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision_pipeline` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/diagnostics` | 2 | 18 | 0 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/discovery` | 1 | 329 | 17 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/discovery` | 1 | 435 | 22 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/domains` | 3 | 565 | 37 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/ecosystem` | 5 | 2258 | 211 | 102 | 0 | 5 | 0 | 4 |
@@ -79,7 +80,7 @@
 | `agos-kernel/marketplace` | 3 | 391 | 34 | 5 | 0 | 3 | 0 | 0 |
 | `agos-kernel/memory` | 3 | 394 | 19 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/mission` | 1 | 46 | 1 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/mission-engine` | 1 | 246 | 9 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/mission-engine` | 1 | 248 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/mission_engine` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/model_packs` | 1 | 149 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/models` | 1 | 292 | 22 | 0 | 0 | 1 | 0 | 1 |
@@ -97,7 +98,7 @@
 | `agos-kernel/recommendation` | 2 | 175 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/registry` | 3 | 80 | 13 | 0 | 0 | 3 | 0 | 1 |
 | `agos-kernel/repository` | 2 | 309 | 25 | 2 | 0 | 2 | 0 | 0 |
-| `agos-kernel/resolvers` | 1 | 205 | 8 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/resolvers` | 1 | 206 | 8 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/resource-manager` | 1 | 222 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/resource_manager` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/runtime` | 29 | 3373 | 148 | 0 | 0 | 29 | 0 | 9 |
@@ -121,7 +122,7 @@
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos_kernel` | 1 | 158 | 9 | 0 | 0 | 1 | 0 | 1 |
 | `civilization` | 5 | 529 | 50 | 16 | 0 | 5 | 0 | 4 |
-| `cli.py` | 1 | 28 | 1 | 0 | 0 | 1 | 0 | 1 |
+| `cli.py` | 1 | 29 | 1 | 0 | 0 | 1 | 0 | 1 |
 | `cloud` | 5 | 612 | 47 | 1 | 0 | 5 | 0 | 4 |
 | `cloud_collaboration` | 1 | 97 | 6 | 0 | 0 | 1 | 0 | 1 |
 | `cloud_execution` | 1 | 88 | 11 | 0 | 0 | 1 | 0 | 1 |

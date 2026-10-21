@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 517,
-  "lines": 86715,
-  "functions": 5608,
+  "files": 518,
+  "lines": 87004,
+  "functions": 5628,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 254,
-  "import_ok": 514,
+  "not_imported_by_others": 253,
+  "import_ok": 515,
   "import_fail": 1
  },
  "packages": {
@@ -24,7 +24,7 @@
   },
   "agos-kernel": {
    "files": 19,
-   "lines": 3504,
+   "lines": 3520,
    "functions": 116,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -59,6 +59,17 @@
    "files": 1,
    "lines": 11,
    "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/agos_runtime": {
+   "files": 1,
+   "lines": 133,
+   "functions": 15,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -134,12 +145,12 @@
   },
   "agos-kernel/bootstrapper": {
    "files": 1,
-   "lines": 187,
+   "lines": 217,
    "functions": 9,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 1,
    "import_fail": 0
   },
@@ -343,8 +354,8 @@
   },
   "agos-kernel/discovery": {
    "files": 1,
-   "lines": 329,
-   "functions": 17,
+   "lines": 435,
+   "functions": 22,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -684,7 +695,7 @@
   },
   "agos-kernel/mission-engine": {
    "files": 1,
-   "lines": 246,
+   "lines": 248,
    "functions": 9,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -882,7 +893,7 @@
   },
   "agos-kernel/resolvers": {
    "files": 1,
-   "lines": 205,
+   "lines": 206,
    "functions": 8,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1146,7 +1157,7 @@
   },
   "cli.py": {
    "files": 1,
-   "lines": 28,
+   "lines": 29,
    "functions": 1,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1835,6 +1846,35 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/agos_runtime/__init__.py",
+   "module": "agos_runtime",
+   "root": "kernel",
+   "lines": 133,
+   "syntax_ok": true,
+   "classes": 2,
+   "functions": 15,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "contextlib",
+    "io",
+    "dataclasses",
+    "typing",
+    "bootstrapper"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:agos_runtime",
+   "resolved_imports": [
+    "K:bootstrapper"
+   ],
+   "imported_by": [
+    "K:main"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/api/__init__.py",
    "module": "api",
    "root": "kernel",
@@ -2101,7 +2141,7 @@
    "path": "agos/agos-kernel/bootstrapper/__init__.py",
    "module": "bootstrapper",
    "root": "kernel",
-   "lines": 187,
+   "lines": 217,
    "syntax_ok": true,
    "classes": 2,
    "functions": 9,
@@ -2113,8 +2153,10 @@
     "datetime",
     "typing",
     "container",
+    "contract_engine",
     "discovery",
     "event_engine",
+    "events",
     "mission_engine",
     "pipeline",
     "resolvers",
@@ -2126,15 +2168,19 @@
    "id": "K:bootstrapper",
    "resolved_imports": [
     "K:container",
+    "K:contract_engine",
     "K:discovery",
     "K:event_engine",
+    "K:events",
     "K:mission_engine",
     "K:pipeline",
     "K:registry.capability",
     "K:registry.provider",
     "K:resolvers"
    ],
-   "imported_by": [],
+   "imported_by": [
+    "K:agos_runtime"
+   ],
    "import_status": "OK"
   },
   {
@@ -5478,6 +5524,7 @@
    "id": "K:contract_engine",
    "resolved_imports": [],
    "imported_by": [
+    "K:bootstrapper",
     "K:test_validation"
    ],
    "import_status": "OK"
@@ -6292,10 +6339,10 @@
    "path": "agos/agos-kernel/discovery/__init__.py",
    "module": "discovery",
    "root": "kernel",
-   "lines": 329,
+   "lines": 435,
    "syntax_ok": true,
    "classes": 7,
-   "functions": 17,
+   "functions": 22,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -6306,7 +6353,8 @@
     "datetime",
     "pathlib",
     "typing",
-    "interfaces"
+    "interfaces",
+    "inspect"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -6760,6 +6808,7 @@
    "id": "K:events",
    "resolved_imports": [],
    "imported_by": [
+    "K:bootstrapper",
     "K:pipeline",
     "K:test_validation"
    ],
@@ -8252,7 +8301,7 @@
    "path": "agos/agos-kernel/main.py",
    "module": "main",
    "root": "kernel",
-   "lines": 70,
+   "lines": 86,
    "syntax_ok": true,
    "classes": 0,
    "functions": 1,
@@ -8261,12 +8310,14 @@
    "imports": [
     "json",
     "sys",
+    "agos_runtime",
     "capabilities"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:main",
    "resolved_imports": [
+    "K:agos_runtime",
     "K:capabilities"
    ],
    "imported_by": [],
@@ -8467,7 +8518,7 @@
    "path": "agos/agos-kernel/mission-engine/__init__.py",
    "module": "mission_engine",
    "root": "kernel",
-   "lines": 246,
+   "lines": 248,
    "syntax_ok": true,
    "classes": 10,
    "functions": 9,
@@ -9422,7 +9473,7 @@
    "path": "agos/agos-kernel/resolvers/__init__.py",
    "module": "resolvers",
    "root": "kernel",
-   "lines": 205,
+   "lines": 206,
    "syntax_ok": true,
    "classes": 6,
    "functions": 8,
@@ -11926,7 +11977,7 @@
    "path": "agos/cli.py",
    "module": "cli",
    "root": "src",
-   "lines": 28,
+   "lines": 29,
    "syntax_ok": true,
    "classes": 0,
    "functions": 1,

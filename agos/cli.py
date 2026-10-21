@@ -2,8 +2,9 @@
 
 Runs the kernel's current working pipeline (``agos/agos-kernel/main.py``: clone a git
 repository and write ``RepositoryDNA.json``) from any directory once AGOS is installed.
-The boot path through ``Bootstrapper`` replaces this in R-W3-001; this wrapper stays as
-the stable command name.
+Since R-W3-001 ``main.py`` boots the kernel through ``agos_runtime.boot()`` /
+``Bootstrapper`` and runs the analysis as a mission; this wrapper stays as the stable
+command name.
 
     agos-analyze <git-url> [--branch main]
 """

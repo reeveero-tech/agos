@@ -43,6 +43,7 @@ MODULES = {
     K + "agos_kernel": ("L1", "namespace", ["R-F-003", "R-F-005"]),
     K + "bootstrapper": ("L1", "boot", ["R-F-004", "R-W3-001"]),
     K + "bootstrap": ("L1", "boot", ["R-W3-001"]),
+    K + "agos_runtime": ("L2", "boot", ["R-W3-001"]),  # single boot entry point
     K + "diagnostics": ("L1", "healing", ["R-F-007", "R-W3-013"]),
     K + "architecture": ("L1", "governance", ["R-W1-001"]),
     K + "policies": ("L1", "governance", ["R-W4-005"]),

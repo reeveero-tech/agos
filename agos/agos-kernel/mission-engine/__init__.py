@@ -73,8 +73,10 @@ class MissionParser:
             return input_data
         
         if isinstance(input_data, dict):
+            # R-W3-001: a dict without an id gets a fresh one (was "", so every such
+            # mission shared the empty id and its events could not be told apart).
             return Mission(
-                id=input_data.get("id", ""),
+                id=input_data.get("id") or Mission().id,
                 name=input_data.get("name", ""),
                 description=input_data.get("description", ""),
                 capability=input_data.get("capability", ""),

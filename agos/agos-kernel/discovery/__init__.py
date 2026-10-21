@@ -10,6 +10,30 @@ from typing import Any, Dict, List, Optional, Type
 from interfaces import ICapability, IProvider
 
 
+def kernel_root() -> str:
+    """Kernel root directory (the parent of this package) — R-W3-001.
+
+    The loaders historically defaulted to ``os.path.dirname(__file__)`` — the
+    ``discovery`` package itself — where no ``capabilities``/``providers`` exist, so a
+    default boot always discovered nothing. The kernel root is the correct default.
+    """
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _ensure_on_path(path: str) -> None:
+    """Make ``path`` importable without shadowing earlier entries (ADR-0001)."""
+    if path not in sys.path:
+        sys.path.append(path)
+
+
+def _is_concrete_subclass(attr: Any, base: type, module_name: str) -> bool:
+    """A concrete implementation of ``base`` *defined in* ``module_name``."""
+    import inspect
+    return (isinstance(attr, type) and issubclass(attr, base) and attr is not base
+            and getattr(attr, "__module__", "") == module_name
+            and not inspect.isabstract(attr))
+
+
 @dataclass
 class Manifest:
     """Manifest for a discovered component."""
@@ -109,7 +133,7 @@ class CapabilityLoader:
     
     def __init__(self, base_path: Optional[str] = None):
         if base_path is None:
-            base_path = os.path.dirname(__file__)
+            base_path = kernel_root()
         self.base_path = base_path
         self.capabilities_path = os.path.join(base_path, "capabilities")
     
@@ -121,10 +145,20 @@ class CapabilityLoader:
             result.errors.append(f"Capabilities directory not found: {self.capabilities_path}")
             return result
         
-        for item in os.listdir(self.capabilities_path):
+        # R-W3-001: implementations defined in the package root (capabilities/__init__.py)
+        for manifest in self._discover_root_capabilities():
+            result.manifests.append(manifest)
+            result.discovered += 1
+            if manifest.errors:
+                result.failed += 1
+                result.errors.extend(manifest.errors)
+            else:
+                result.loaded += 1
+        
+        for item in sorted(os.listdir(self.capabilities_path)):
             item_path = os.path.join(self.capabilities_path, item)
             
-            if item.startswith(".") or not os.path.isdir(item_path):
+            if item.startswith((".", "_")) or not os.path.isdir(item_path):
                 continue
             
             manifest = self._discover_capability(item, item_path)
@@ -153,7 +187,7 @@ class CapabilityLoader:
         try:
             module_name = f"capabilities.{name}"
             if module_name not in sys.modules:
-                sys.path.insert(0, self.base_path)
+                _ensure_on_path(self.base_path)
                 importlib.import_module(module_name)
             
             module = sys.modules[module_name]
@@ -185,13 +219,49 @@ class CapabilityLoader:
         manifest.loaded_at = datetime.utcnow()
         return manifest
     
+    def _discover_root_capabilities(self) -> List[Manifest]:
+        """Discover every concrete ``ICapability`` defined in ``capabilities/__init__.py``.
+
+        R-W3-001: the kernel's real capability (``RepositoryAnalysisCapability``) lives in
+        the package root, which the sub-directory scan never looked at.
+        """
+        manifests: List[Manifest] = []
+        try:
+            _ensure_on_path(self.base_path)
+            module = importlib.import_module("capabilities")
+        except Exception as e:
+            return [Manifest(id="capabilities", name="capabilities", version="1.0.0",
+                             description="Capability package root", path=self.capabilities_path,
+                             class_name="", errors=[f"Failed to load: {e}"],
+                             loaded_at=datetime.utcnow())]
+        for attr_name in sorted(dir(module)):
+            attr = getattr(module, attr_name)
+            if not _is_concrete_subclass(attr, ICapability, module.__name__):
+                continue
+            manifest = Manifest(id=attr_name, name=attr_name, version="1.0.0",
+                                description=f"Capability: {attr_name}",
+                                path=self.capabilities_path, class_name=attr_name,
+                                metadata={"module": module.__name__})
+            try:
+                instance = attr()
+                manifest.id = getattr(instance, "id", instance.name)
+                manifest.name = instance.name
+                manifest.version = getattr(instance, "version", "1.0.0")
+                manifest.description = instance.description
+                manifest.skills = list(instance.skills)
+            except Exception as e:
+                manifest.errors.append(f"Failed to instantiate: {e}")
+            manifest.loaded_at = datetime.utcnow()
+            manifests.append(manifest)
+        return manifests
+    
     def load_capability(self, manifest: Manifest) -> Optional[ICapability]:
         """Load a capability from manifest."""
         if manifest.errors:
             return None
         
         try:
-            module_name = f"capabilities.{os.path.basename(manifest.path)}"
+            module_name = manifest.metadata.get("module") or f"capabilities.{os.path.basename(manifest.path)}"
             module = sys.modules.get(module_name)
             if not module:
                 return None
@@ -209,7 +279,7 @@ class ProviderLoader:
     
     def __init__(self, base_path: Optional[str] = None):
         if base_path is None:
-            base_path = os.path.dirname(__file__)
+            base_path = kernel_root()
         self.base_path = base_path
         self.providers_path = os.path.join(base_path, "providers")
     
@@ -224,8 +294,10 @@ class ProviderLoader:
         # Look for provider implementations in __init__.py
         init_path = os.path.join(self.providers_path, "__init__.py")
         if os.path.isfile(init_path):
-            manifest = self._discover_provider_from_init(init_path)
-            if manifest:
+            # R-W3-001: every concrete IProvider, without reloading the module (a reload
+            # re-creates the classes and breaks isinstance checks across the kernel).
+            # ``_discover_provider_from_init`` (first class only) is kept for callers.
+            for manifest in self._discover_providers_from_init(init_path):
                 result.manifests.append(manifest)
                 result.discovered += 1
                 if manifest.errors:
@@ -255,7 +327,7 @@ class ProviderLoader:
             if module_name in sys.modules:
                 importlib.reload(sys.modules[module_name])
             else:
-                sys.path.insert(0, self.base_path)
+                _ensure_on_path(self.base_path)
                 importlib.import_module(module_name)
             
             module = sys.modules[module_name]
@@ -284,6 +356,40 @@ class ProviderLoader:
         manifest.loaded_at = datetime.utcnow()
         return manifest
     
+    def _discover_providers_from_init(self, path: str) -> List[Manifest]:
+        """All concrete ``IProvider`` implementations defined in ``providers/__init__.py``."""
+        parent_dir = os.path.dirname(path)
+        try:
+            _ensure_on_path(self.base_path)
+            module = importlib.import_module("providers")
+        except Exception as e:
+            return [Manifest(id="providers", name="providers", version="1.0.0",
+                             description="Provider package root", path=parent_dir,
+                             class_name="", errors=[f"Failed to load: {e}"],
+                             loaded_at=datetime.utcnow())]
+        manifests: List[Manifest] = []
+        for attr_name in sorted(dir(module)):
+            attr = getattr(module, attr_name)
+            if not _is_concrete_subclass(attr, IProvider, module.__name__):
+                continue
+            manifest = Manifest(id=attr_name, name=attr_name, version="1.0.0",
+                                description=f"Provider: {attr_name}", path=parent_dir,
+                                class_name=attr_name, metadata={"module": module.__name__})
+            try:
+                instance = attr()
+                manifest.name = instance.name
+                manifest.version = getattr(instance, "version", "1.0.0")
+            except Exception as e:
+                manifest.errors.append(f"Failed to instantiate: {e}")
+            manifest.loaded_at = datetime.utcnow()
+            manifests.append(manifest)
+        if not manifests:
+            manifests.append(Manifest(id="providers", name="providers", version="1.0.0",
+                                      description="Provider package root", path=parent_dir,
+                                      class_name="", loaded_at=datetime.utcnow(),
+                                      errors=["No IProvider implementation found in providers"]))
+        return manifests
+    
     def load_provider(self, manifest: Manifest) -> Optional[IProvider]:
         """Load a provider from manifest."""
         if manifest.errors:
@@ -307,7 +413,7 @@ class AutoDiscovery:
     """Automatically discovers and registers all capabilities and providers."""
     
     def __init__(self, base_path: Optional[str] = None):
-        self.base_path = base_path or os.path.dirname(__file__)
+        self.base_path = base_path or kernel_root()
         self.capability_loader = CapabilityLoader(self.base_path)
         self.provider_loader = ProviderLoader(self.base_path)
     

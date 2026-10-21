@@ -5,6 +5,10 @@ AGOS Kernel - Main Entry Point
 Runs a full, real Repository Analysis pipeline end-to-end:
 clone -> read -> detect languages/frameworks -> generate DNA.
 
+Boot path (R-W3-001): ``agos_runtime.boot()`` -> ``Bootstrapper`` -> discovery ->
+registries -> contract validation -> ``MissionEngine`` -> ``ExecutionPipeline`` ->
+``RepositoryAnalysis`` capability (resolved, not hard-wired).
+
 Usage:
     python main.py <github_url> [--branch <branch>]
 
@@ -14,7 +18,8 @@ Example:
 import json
 import sys
 
-from capabilities import RepositoryAnalysisCapability
+import agos_runtime
+from capabilities import RepositoryAnalysisCapability  # noqa: F401 - public re-export kept (G2)
 
 
 def main():
@@ -29,18 +34,29 @@ def main():
     if len(sys.argv) > 3 and sys.argv[2] == "--branch":
         branch = sys.argv[3]
 
-    print("[AGOS] Starting Kernel v0.1.0")
+    kernel = agos_runtime.boot()
+    print(f"[AGOS] Starting Kernel v{kernel.result.kernel_version}")
+    if not kernel.ready:
+        print(kernel.boot_log, end="")
+        print(f"[FAILURE] Kernel boot failed: {'; '.join(kernel.errors)}")
+        sys.exit(1)
+    print(f"[AGOS] Booted via Bootstrapper: {len(kernel.result.loaded_capabilities)} capabilities, "
+          f"{len(kernel.result.loaded_providers)} providers ({kernel.result.duration_ms}ms)")
     print(f"[AGOS] Mission: Analyze {url}")
     print("=" * 60)
 
-    capability = RepositoryAnalysisCapability()
-
     print("\n[EXECUTING] Starting mission execution...\n")
     try:
-        dna = capability.execute({"url": url, "branch": branch})
+        outcome = kernel.analyze(url, branch=branch)
     except Exception as e:
         print(f"[FAILURE] Mission failed: {e}")
         sys.exit(1)
+    if outcome.state.value != "completed":
+        print(f"[FAILURE] Mission failed: {outcome.error}")
+        sys.exit(1)
+    dna = outcome.result
+    print(f"[AGOS] Mission {outcome.mission_id} completed via "
+          f"{' -> '.join(e['step'] for e in outcome.events)}")
 
     print("\n" + "=" * 60)
     print("[RESULT]")

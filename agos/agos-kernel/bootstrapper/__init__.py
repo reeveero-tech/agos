@@ -5,8 +5,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from container import Container, Lifetime, LifetimeManager
-from discovery import AutoDiscovery
+from contract_engine import ContractEngine, ContractType
+from discovery import AutoDiscovery, kernel_root
 from event_engine import EventEngine
+from events import EventBus
 from mission_engine import MissionEngine
 from pipeline import ExecutionPipeline
 from resolvers import CapabilityResolver, ProviderResolver
@@ -48,11 +50,16 @@ class Bootstrapper:
     
     def __init__(self, base_path: Optional[str] = None):
         if base_path is None:
-            base_path = os.path.dirname(os.path.abspath(__file__))
+            # R-W3-001: the kernel root, where capabilities/ and providers/ live. The old
+            # default (this package's own directory) made every default boot fail with
+            # "No capabilities loaded".
+            base_path = kernel_root()
         self.base_path = base_path
         
         self.container: Optional[Container] = None
         self.event_engine: Optional[EventEngine] = None
+        self.event_bus: Optional[EventBus] = None
+        self.contract_engine: Optional[ContractEngine] = None
         self.mission_engine: Optional[MissionEngine] = None
         self.result: Optional[BootstrapResult] = None
     
@@ -131,6 +138,10 @@ class Bootstrapper:
         result = self._discovery.discover_capabilities()
         
         for manifest in result.manifests:
+            if manifest.errors:
+                # Not fatal: e.g. catalogue sub-packages that hold no ICapability yet
+                # (wired by R-W3-002). Recorded so nothing is silently ignored.
+                self.result.warnings.extend(f"capability {manifest.id}: {e}" for e in manifest.errors)
             if not manifest.errors:
                 capability = self._discovery.load_capability(manifest)
                 if capability:
@@ -142,6 +153,8 @@ class Bootstrapper:
         result = self._discovery.discover_providers()
         
         for manifest in result.manifests:
+            if manifest.errors:
+                self.result.warnings.extend(f"provider {manifest.id}: {e}" for e in manifest.errors)
             if not manifest.errors:
                 provider = self._discovery.load_provider(manifest)
                 if provider:
@@ -156,11 +169,26 @@ class Bootstrapper:
         if len(self.result.loaded_providers) == 0:
             self.result.errors.append("No providers loaded")
             return False
-        return True
+        # R-W3-001: every loaded component passes the contract engine (step 6).
+        self.contract_engine = ContractEngine()
+        valid = True
+        checks = [(ContractType.CAPABILITY, c) for c in self._capability_registry.list_all()]
+        checks += [(ContractType.PROVIDER, p) for p in self._provider_registry.list_all()]
+        for contract_type, component in checks:
+            verdict = self.contract_engine.validate(contract_type, component)
+            self.contract_engine.registry.register(verdict)
+            if not verdict.is_valid:
+                valid = False
+                self.result.errors.extend(
+                    f"{contract_type.value} {verdict.contract_id}: {e.message}" for e in verdict.errors)
+        return valid
     
     def _initialize_event_engine(self) -> None:
         """Initialize event engine."""
         self.event_engine = EventEngine()
+        # R-W3-001: the pipeline publishes on an EventBus; it was given ``None``, so
+        # the first mission crashed on ``None.publish``.
+        self.event_bus = EventBus()
     
     def _initialize_mission_engine(self) -> None:
         """Initialize mission engine."""
@@ -168,7 +196,7 @@ class Bootstrapper:
         provider_resolver = ProviderResolver(self._provider_registry, self._capability_registry)
         
         pipeline = ExecutionPipeline(
-            event_bus=None,
+            event_bus=self.event_bus,
             capability_resolver=capability_resolver,
             provider_resolver=provider_resolver
         )
@@ -180,6 +208,8 @@ class Bootstrapper:
         return {
             "container": self.container,
             "event_engine": self.event_engine,
+            "event_bus": self.event_bus,
+            "contract_engine": self.contract_engine,
             "mission_engine": self.mission_engine,
             "capability_registry": self._capability_registry,
             "provider_registry": self._provider_registry,

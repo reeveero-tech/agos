@@ -21,7 +21,7 @@ L0  القانون والمواصفات                            (constitution
 3. كل تنفيذ يمر عبر مشغّل المهام (المادة 15) وينتج أحداثاً (المادة 6).
 4. الطبقات العليا تتصل بالنواة **بالتسجيل** في السجل الموحد (R-W3-002)، لا بالاستيراد العكسي.
 
-## مسار الإقلاع المعتمد (الهدف — R-W3-001)
+## مسار الإقلاع المعتمد (منفّذ — R-W3-001)
 
 ```
 agos_runtime.boot()
@@ -32,6 +32,14 @@ agos_runtime.boot()
        6 EventEngine    7 MissionEngine → ExecutionPipeline → Skills → Providers
        8 platform layers register (L4–L6)  9 kernel ready
 ```
+
+**الحالة بعد R-W3-001:** الخطوات 1–7 و9 تعمل فعلاً. `main.py` و`agos-analyze` يقلعان عبر
+`agos_runtime.boot()`، والتحليل يجري مهمةً في هذا المسار:
+`MissionEngine` ← `ExecutionPipeline` ← `CapabilityResolver` ← `ProviderResolver` ← `RepositoryAnalysis`،
+وتُنشر أحداثها الأربعة على `EventBus` النواة. أما الخطوة 8، تسجيل طبقات المنصة، فتُستكمل في R-W3-002.
+ما تبقى للبنود اللاحقة:
+- القدرة تستدعي `LocalRepositoryProvider` مباشرة، لا الموفّر المحلول. هذا نطاق R-W3-003.
+- القدرات الفرعية `capabilities/analysis|repository|technology` والموفّرون المبنيون على `providers.base.Provider` غير مسجلين بعد، ويظهرون **تحذيرات** إقلاع. هذا نطاق R-W3-002.
 
 ## مساحات الأسماء (ADR-0001)
 | الكود | الاستيراد القديم (يبقى يعمل) | الاستيراد الموحد |

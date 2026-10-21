@@ -7,10 +7,10 @@
 ## ملخص المستويات
 
 - **L0**: 1 حزمة
-- **L1**: 113 حزمة
-- **L2**: 14 حزمة
+- **L1**: 112 حزمة
+- **L2**: 15 حزمة
 - **L3**: 2 حزمة
-- **L4**: 2 حزمة
+- **L4**: 3 حزمة
 
 ## الطبقات
 
@@ -30,17 +30,17 @@
 | L1 | `agos-kernel/agos_kernel` | namespace | 1 | 11 | 0 | yes | no | yes | L1 | R-F-003, R-F-005 |
 | L1 | `agos-kernel/architecture` | governance | 1 | 220 | 0 | yes | no | no | L1 | R-W1-001 |
 | L1 | `agos-kernel/bootstrap` | boot | 1 | 277 | 0 | yes | no | no | L1 | R-W3-001 |
-| L1 | `agos-kernel/bootstrapper` | boot | 1 | 187 | 0 | yes | yes | no | L2 | R-F-004, R-W3-001 |
+| L1 | `agos-kernel/bootstrapper` | boot | 1 | 217 | 0 | yes | yes | no | L2 | R-F-004, R-W3-001 |
 | L1 | `agos-kernel/container` | boot | 1 | 165 | 0 | yes | yes | no | L2 | R-W3-001 |
 | L1 | `agos-kernel/context` | execution | 1 | 61 | 0 | yes | yes | no | L2 | R-W3-003 |
-| L1 | `agos-kernel/contract_engine` | contracts | 1 | 360 | 0 | yes | no | yes | L1 | R-W1-019 |
+| L1 | `agos-kernel/contract_engine` | contracts | 1 | 360 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos-kernel/contracts` | contracts | 1 | 106 | 0 | yes | yes | no | L2 | R-W1-019 |
 | L1 | `agos-kernel/core` | core-brain | 21 | 3260 | 0 | yes | no | yes | L1 | R-F-002, R-F-008, R-W3-003, R-W1-022 |
 | L1 | `agos-kernel/decision` | decision | 1 | 86 | 0 | yes | no | no | L1 | R-F-007, R-W3-004 |
 | L1 | `agos-kernel/decision-pipeline` | decision | 1 | 305 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/decision_pipeline` | decision | 1 | 15 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/diagnostics` | healing | 2 | 18 | 0 | yes | no | yes | L1 | R-F-007, R-W3-013 |
-| L1 | `agos-kernel/discovery` | registry | 1 | 329 | 0 | yes | yes | no | L2 | R-W3-002 |
+| L1 | `agos-kernel/discovery` | registry | 1 | 435 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/event-engine` | events | 1 | 211 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
 | L1 | `agos-kernel/event_engine` | events | 1 | 15 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
 | L1 | `agos-kernel/events` | events | 1 | 75 | 0 | yes | yes | yes | L4 | R-W3-005 |
@@ -51,10 +51,11 @@
 | L1 | `agos-kernel/models` | object-model | 1 | 292 | 0 | yes | no | no | L1 | R-W1-012 |
 | L1 | `agos-kernel/policies` | governance | 1 | 109 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L1 | `agos-kernel/registry` | registry | 3 | 80 | 0 | yes | yes | no | L2 | R-W3-002 |
-| L1 | `agos-kernel/resolvers` | registry | 1 | 205 | 0 | yes | yes | no | L2 | R-W3-002 |
+| L1 | `agos-kernel/resolvers` | registry | 1 | 206 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 60 | 0 | yes | yes | no | L2 | R-W1-019 |
 | L1 | `agos_kernel` | namespace | 1 | 158 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
-| L2 | `agos-kernel` | quality | 19 | 3504 | 0 | NO | yes | yes | L0 | R-F-002, R-F-008, R-Q-001 |
+| L2 | `agos-kernel` | quality | 19 | 3520 | 0 | NO | yes | yes | L0 | R-F-002, R-F-008, R-Q-001 |
+| L2 | `agos-kernel/agos_runtime` | boot | 1 | 133 | 0 | yes | yes | no | L2 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/collaboration` | human-loop | 2 | 238 | 0 | yes | no | yes | L1 | R-W3-015 |
@@ -66,7 +67,7 @@
 | L2 | `agos-kernel/hardening` | quality | 1 | 404 | 0 | yes | no | no | L1 | R-F-007, R-Q-007 |
 | L2 | `agos-kernel/healing` | healing | 2 | 195 | 4 | yes | no | yes | L1 | R-W3-013 |
 | L2 | `agos-kernel/longrunning` | mission | 1 | 1 | 0 | yes | no | no | L1 | R-W3-003 |
-| L2 | `agos-kernel/mission-engine` | mission | 1 | 246 | 0 | yes | yes | no | L2 | R-F-004, R-W3-003 |
+| L2 | `agos-kernel/mission-engine` | mission | 1 | 248 | 0 | yes | yes | no | L2 | R-F-004, R-W3-003 |
 | L2 | `agos-kernel/mission_engine` | mission | 1 | 15 | 0 | yes | yes | no | L2 | R-F-004, R-W3-003 |
 | L2 | `agos-kernel/observability` | observability | 1 | 441 | 0 | yes | no | no | L1 | R-W3-008 |
 | L2 | `agos-kernel/orchestrator` | cloud | 2 | 362 | 1 | yes | no | yes | L1 | R-W4-008 |
@@ -88,7 +89,7 @@
 | L2 | `agos-kernel/v2` | civilization | 2 | 228 | 0 | yes | no | yes | L1 | R-W1-009, R-W3-014 |
 | L2 | `agos-kernel/verification` | human-loop | 2 | 224 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/vertical_slices` | mission | 1 | 385 | 0 | yes | no | no | L1 | R-W3-003 |
-| L2 | `cli.py` | boot | 1 | 28 | 0 | yes | no | no | L1 | R-F-001, R-W3-001 |
+| L2 | `cli.py` | boot | 1 | 29 | 0 | yes | no | no | L1 | R-F-001, R-W3-001 |
 | L3 | `agos-kernel/adapters` | providers | 11 | 1343 | 9 | yes | no | yes | L1 | R-W3-011 |
 | L3 | `agos-kernel/agent_packs` | packs | 1 | 141 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/capabilities` | repository-intelligence | 10 | 1766 | 26 | yes | yes | yes | L3 | R-W2-001, R-W2-002, R-W2-003, R-W2-004, R-W2-007 |
