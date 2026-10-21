@@ -1,4 +1,16 @@
 #!/bin/bash
+# =============================================================================
+# DEPRECATED (R-G-007, ADR-0002): legacy script from the Replit environment.
+# It targets a DIFFERENT repository (reeveero-tech/All-hand) with hardcoded
+# /workspace paths and is NOT part of this repository's workflow.
+# Kept (never deleted) per GOVERNANCE.md rule G2. Use normal `git push` with the
+# governance hooks instead: bash tools/governance/install_hooks.sh
+# To run it anyway (not recommended): AGOS_ALLOW_LEGACY_PUSH=1 bash push_to_github.sh
+# =============================================================================
+if [ "${AGOS_ALLOW_LEGACY_PUSH:-0}" != "1" ]; then
+  echo "push_to_github.sh is deprecated (see docs/architecture/DEPRECATIONS.md). Set AGOS_ALLOW_LEGACY_PUSH=1 to force." >&2
+  exit 2
+fi
 # Push to GitHub using API
 
 REPO="reeveero-tech/All-hand"

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# AGOS governance (GOVERNANCE.md): G1 atomic documentation + G2 no deletion.
+exec python3 "$(git rev-parse --show-toplevel)/tools/governance/check_commit.py" --staged --skip-message

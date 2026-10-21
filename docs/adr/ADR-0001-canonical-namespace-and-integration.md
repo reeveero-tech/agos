@@ -1,0 +1,29 @@
+# ADR-0001 — مساحة الأسماء الموحدة ونموذج الربط
+
+- **الحالة:** مقبول (Accepted) — 2026-10-21
+- **البنود:** R-F-003, R-F-004, R-F-005, R-W1-001
+
+## السياق
+الجرد الآلي (`docs/audit/inventory.md`) أثبت أن الكود مكتوب على **ثلاثة جذور استيراد متعارضة**:
+1. `agos/agos-kernel/` — النواة، باستيراد مطلق من المستوى الأعلى (`from container import ...`).
+2. `agos/` — الوحدات الخارجية (cognitive, foundation, fabric, ...).
+3. `agos/rie/` — يستورد `domain` و`contracts` كأنه جذر مستقل.
+
+ونتج عن ذلك:
+- 83 ملفاً في `agos-kernel/civilization` تستورد حزمة `agos_kernel` **غير موجودة** (المجلد اسمه `agos-kernel` بشرطة) ← منظومة كاملة (~23 ألف سطر) ميتة.
+- 8 حزم بأسماء فيها شرطة (`event-engine`, `mission-engine`, `skill-engine`, `decision-pipeline`, `execution-context`, `resource-manager`, `state-store`) غير قابلة للاستيراد ← `bootstrapper` (مسار الإقلاع المصمم) ميت.
+- 9 أسماء متصادمة بين الجذرين: `civilization ecosystem enterprise evolution execution governance intelligence observatory sdk`.
+
+## القرار
+بما أن الحذف وإعادة التسمية ممنوعان (GOVERNANCE G2)، يُحل التعارض **بالإضافة فقط**:
+
+1. **حزمة الاسم المستعار `agos_kernel`** (`agos/agos-kernel/agos_kernel/__init__.py`): مستورد مسار (meta-path finder) يجعل `agos_kernel.X` **نفس كائن الوحدة** `X` في النواة (هوية واحدة، لا نسختين).
+2. **حزم الأسماء البديلة للمجلدات ذات الشرطة**: `event_engine/`, `mission_engine/`, ... كل منها `__init__.py` يوجّه `__path__` إلى المجلد الأصلي ويحمّل شيفرته. المجلد الأصلي يبقى مصدر الحقيقة.
+3. **مساحة اسم موحدة للوحدات الخارجية**: `agos/__init__.py` يجعل كل وحدة خارجية قابلة للعنونة كـ `agos.<name>`، والنواة كـ `agos.kernel`. التصادم يختفي لأن الخارجي دائماً تحت البادئة `agos.`.
+4. **الاستيرادات المطلقة داخل الوحدات الخارجية** (`from cloud.models`) تُحسَّن إلى استيرادات نسبية، و`rie` كذلك.
+5. **نقطة دخول واحدة** `agos_runtime` (R-W3-001) تقلع النواة عبر `Bootstrapper` وتسجّل كل الطبقات في السجل الموحد.
+
+## النتائج
+- لا يُحذف ولا يُنقل أي ملف.
+- كل الطرق القديمة للاستيراد تبقى تعمل، وتضاف الطرق الموحدة.
+- مقياس النجاح: `import_fail = 0` في الجرد الآلي.

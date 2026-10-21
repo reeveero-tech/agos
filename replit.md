@@ -1,3 +1,5 @@
+> **DEPRECATED (R-G-007):** هذه وثيقة بيئة Replit السابقة، محفوظة للتاريخ ولا تُحذف (GOVERNANCE G2). نقطة البداية الحالية: [README.md](README.md) ثم [PROJECT_STATE.md](PROJECT_STATE.md).
+
 # AGOS - Autonomous General Orchestration System
 
 A Python-based autonomous engineering system that clones, analyzes, and generates a structured "DNA" profile (languages, frameworks, dependencies, config, docs, security posture) of any Git repository, built from a large capability/provider/skill component library.

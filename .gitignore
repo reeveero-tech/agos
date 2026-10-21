@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+# Generated at runtime by agos-kernel/main.py
+RepositoryDNA.json
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

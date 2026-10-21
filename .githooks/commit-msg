@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# AGOS governance: full check including the roadmap id in the commit message.
+exec python3 "$(git rev-parse --show-toplevel)/tools/governance/check_commit.py" --staged --msg-file "$1"
