@@ -130,8 +130,38 @@ class LanguageDetector(IDetector):
         )
 
 
+def _stack_detection():
+    """The kernel's canonical manifest-based detector (R-W2-001).
+
+    Resolved through the unified namespace (``agos.kernel.stack_detection``); when RIE is
+    imported from a legacy root without the ``agos`` package on the path, the same file is
+    loaded directly so there is still exactly one detection rule.
+    """
+    try:
+        from agos.kernel import stack_detection
+        return stack_detection
+    except ImportError:
+        import importlib.util
+        import sys
+        from pathlib import Path
+        name = "stack_detection"
+        if name in sys.modules:
+            return sys.modules[name]
+        init = Path(__file__).resolve().parents[2] / "agos-kernel" / name / "__init__.py"
+        spec = importlib.util.spec_from_file_location(name, init)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        return module
+
+
 class FrameworkDetector(IDetector):
-    """Detects frameworks."""
+    """Detects frameworks from dependency manifests (R-W2-001).
+
+    ``FRAMEWORK_PATTERNS`` below is the historical text-pattern table; it is kept for
+    reference only. Text mentions are not evidence — the decision is made by
+    ``stack_detection.detect_stack`` on manifest contents (``context.get_file_content``).
+    """
     
     FRAMEWORK_PATTERNS = {
         "Django": ["django", "django.db", "from django"],
@@ -161,21 +191,27 @@ class FrameworkDetector(IDetector):
     def detect(self, context: DetectorContext) -> DetectorResult:
         start = datetime.now(timezone.utc)
         
-        detected_frameworks = set()
+        # Runtimes/ecosystems implied by manifest *names* (Python, Node.js, Go, ...). These
+        # used to be reported as "frameworks"; they are now reported under "runtimes".
+        runtimes = set()
+        for path in context.files:
+            name = path.rsplit("/", 1)[-1]
+            if name == "package.json":
+                runtimes.add("Node.js")
+            elif name in ("requirements.txt", "pyproject.toml", "setup.py", "setup.cfg", "Pipfile"):
+                runtimes.add("Python")
+            elif name == "go.mod":
+                runtimes.add("Go")
+            elif name == "Cargo.toml":
+                runtimes.add("Rust")
+            elif name == "Gemfile":
+                runtimes.add("Ruby")
         
-        for path, data in context.files.items():
-            # Check by filename
-            path_lower = path.lower()
-            if "package.json" in path:
-                detected_frameworks.add("Node.js")
-            elif "requirements.txt" in path or "pyproject.toml" in path:
-                detected_frameworks.add("Python")
-            elif "go.mod" in path:
-                detected_frameworks.add("Go")
-            elif "Cargo.toml" in path:
-                detected_frameworks.add("Rust")
-            elif "Gemfile" in path:
-                detected_frameworks.add("Ruby")
+        sd = _stack_detection()
+        manifests = {path: context.get_file_content(path)
+                     for path in context.files if sd.is_manifest(path)}
+        report = sd.detect_stack(manifests)
+        runtimes.update(report.runtimes)
         
         duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
@@ -183,7 +219,10 @@ class FrameworkDetector(IDetector):
             name=self.name,
             success=True,
             features={
-                "frameworks": sorted(list(detected_frameworks))
+                "frameworks": list(report.frameworks),
+                "runtimes": sorted(runtimes),
+                "framework_evidence": [e.to_dict() for e in report.evidence],
+                "manifest_errors": dict(report.errors),
             },
             duration_ms=duration_ms
         )

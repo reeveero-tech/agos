@@ -5,6 +5,35 @@
 
 ## [غير مُصدَر]
 
+### 0017 — كشف الأطر من ملفات الاعتماديات بالأدلة، وتوحيد الكواشف الستة — 2026-10-21 — R-W2-001
+#### أُصلح
+- **الإيجابيات الكاذبة في كشف الأطر** (التدقيق §3.6). ذِكر اسم إطار في README أو توثيق أو نص شيفرة أو اسم ملف (`app.py` و`manage.py` و`settings.py` و`config.ru` و`pages/`) لم يعد دليلاً. `psf/requests` كان ينتج `Express, Flask, Next.js, Vue`، وصار `[]`.
+- **سلك ميت في rie:** `DetectorContext.get_file_content` كان يقرأ `metadata["_content"]`، والمطبِّع لا يملؤه أبداً. صار يحمل محتوى ملفات الاعتماديات فقط.
+- **ستة كواشف متعارضة** كان كلٌّ منها يقرر «ما الأطر؟» بقاعدته: القدرة الحية، وrie، وcivilization، وintelligence، وtechnology، وrepo_discovery. صارت كلها واجهات لقاعدة واحدة.
+#### أُضيف
+- **الوحدة `agos/agos-kernel/stack_detection/`** (`agos.kernel.stack_detection`). تعتمد على المكتبة القياسية فقط، وتحلل 13 صيغة ملف اعتماديات:
+  - requirements* وpyproject (PEP 621 وPoetry وPDM وdependency-groups) وsetup.cfg؛
+  - setup.py عبر AST دون تنفيذ؛
+  - Pipfile وpackage.json وGemfile وcomposer.json وpom.xml وGradle وgo.mod وCargo.toml وpubspec.yaml.
+- **قواعد الوحدة:**
+  - مطابقة تامة للأسماء؛
+  - نطاقات (`runtime`/`peer` تُحتسب؛ `dev`/`optional`/`build`/`indirect`/`example` أدلة فقط)؛
+  - تخطي المجلدات المُورَّدة؛
+  - تسجيل الملفات المشوهة في `errors`.
+- **حقلان في `RepositoryDNA`:** `framework_evidence` و`runtimes`، في آخر الصنف وفي `to_dict()`. وأُضيف `framework_evidence` إلى مخرجات الكواشف الأخرى.
+- **`tests/test_framework_detection.py`** (61 اختباراً): الذهبيان A وB على الوحدة وعلى المسارات الستة، و21 كناري صيغ، و16 كناري نطاقات، واختبار شبكي على `psf/requests`.
+- **`stack_detection`** في `tools/audit/module_map.py`.
+#### تغيّر
+- `features["frameworks"]` في rie صارت أطراً حقيقية، وانتقلت بيئات التشغيل إلى `features["runtimes"]`.
+- المسار الحي لم يعد يضع Python أو Node.js في `frameworks`.
+- `TechnologyDetectionCapability.execute` يقبل `contents`، وبلا محتوى لا يدّعي أي إطار.
+- الجداول والدوال النصية القديمة **محفوظة** مرجعاً غير مستعمل (لا حذف): `_detect_frameworks_by_text` (×2)، و`LEGACY_FRAMEWORK_MARKERS`، و`FRAMEWORK_PATTERNS`.
+#### النتيجة
+- **الاختبارات:** 316 / 0 / 0 / 0. التحذيرات 38، وكلها R-Q-001.
+- **الجرد وسجل الوحدات:** فشل الاستيراد 0 / 522. المستويات 0 / 112 / 8 / 2 / 12. `unmapped = []`.
+- **البيئات والتبعيات:** البيئة النظيفة 491 / 491، ومشاكل التبعيات 0.
+- **القياس اليدوي:** أنتج `fastapi/full-stack-fastapi-template` ‏`FastAPI, React`، وأنتج `spring-projects/spring-petclinic` ‏`Spring`.
+
 ### 0016 — توقيت UTC واعٍ بالمنطقة بدل `datetime.utcnow()` — 2026-10-21 — R-F-012
 **أُصلح**
 - 265 استدعاءً لـ`datetime.utcnow` في 105 ملفات صارت `datetime.now(timezone.utc)`، وأُضيف `timezone` إلى استيراد `datetime` في كل ملف منها.

@@ -217,10 +217,24 @@ class RepositoryDiscoveryMission:
             if list(Path(repo_path).rglob(f"*{ext}")):
                 techs["languages"].append(lang)
         
+        # R-W2-001: Node.js/.NET are runtimes, not frameworks — reported under "runtimes".
+        techs["runtimes"] = []
         if list(Path(repo_path).rglob("package.json")):
-            techs["frameworks"].append("Node.js")
+            techs["runtimes"].append("Node.js")
         if list(Path(repo_path).rglob("*.csproj")):
-            techs["frameworks"].append(".NET")
+            techs["runtimes"].append(".NET")
+        
+        # Frameworks: only from dependency manifests (canonical kernel detector).
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        stack = stack_detection.detect_stack(stack_detection.read_manifests(repo_path))
+        techs["frameworks"] = list(stack.frameworks)
+        for runtime in stack.runtimes:
+            if runtime not in techs["runtimes"]:
+                techs["runtimes"].append(runtime)
+        techs["framework_evidence"] = [e.to_dict() for e in stack.evidence]
         
         return techs
     

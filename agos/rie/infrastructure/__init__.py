@@ -151,8 +151,18 @@ class RepositoryNormalizer:
                 }
                 for f in files if not f.is_dir
             }
+            # R-W2-001: keep the contents of dependency manifests (only those — small and
+            # few) so detectors can read them via DetectorContext.get_file_content, which
+            # reads metadata["_content"]. Before this, contents were read and discarded.
+            from ..detectors import _stack_detection
+            is_manifest = _stack_detection().is_manifest
+            manifest_content = {
+                f.path: f.content
+                for f in files if not f.is_dir and f.content is not None and is_manifest(f.path)
+            }
             
             return {
+                "_content": manifest_content,
                 "url": metadata["url"],
                 "name": metadata["name"],
                 "owner": metadata["owner"],

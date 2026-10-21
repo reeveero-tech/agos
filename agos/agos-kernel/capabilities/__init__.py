@@ -85,11 +85,14 @@ class RepositoryAnalysisCapability(ICapability):
             print(f"[CAPABILITY] Detecting languages")
             languages = self._detect_languages(snapshot)
             print(f"[CAPABILITY] Detecting frameworks")
-            frameworks = self._detect_frameworks(snapshot)
+            stack = self._detect_stack(snapshot)
+            frameworks = stack.frameworks
             
             # Step 5: Generate DNA
             print(f"[CAPABILITY] Generating DNA")
             dna = self._generate_dna(snapshot, languages, frameworks)
+            dna.framework_evidence = [e.to_dict() for e in stack.evidence]
+            dna.runtimes = list(stack.runtimes)
             if revision:
                 cache[cache_key] = copy.deepcopy(dna)
             
@@ -151,8 +154,34 @@ class RepositoryAnalysisCapability(ICapability):
         
         return sorted(list(languages))
     
+    @staticmethod
+    def _manifest_files(snapshot: RepositorySnapshot) -> Dict[str, Optional[str]]:
+        """{relative path: content} for dependency manifests only (R-W2-001)."""
+        from stack_detection import is_manifest
+        return {f.path: f.content for f in snapshot.files
+                if not f.is_dir and is_manifest(f.path)}
+    
+    def _detect_stack(self, snapshot: RepositorySnapshot):
+        """Full stack report (frameworks + evidence + runtimes) from manifests only."""
+        from stack_detection import detect_stack
+        return detect_stack(self._manifest_files(snapshot))
+    
     def _detect_frameworks(self, snapshot: RepositorySnapshot) -> List[str]:
-        """Detect frameworks from files and dependencies."""
+        """Detect frameworks from dependency manifests, never from file text (R-W2-001).
+        
+        A framework is reported only when it is a runtime/peer dependency in a real
+        manifest (requirements*.txt, pyproject.toml, setup.cfg/py, Pipfile, package.json,
+        Gemfile, composer.json, pom.xml, build.gradle). See ``stack_detection``.
+        """
+        return self._detect_stack(snapshot).frameworks
+    
+    def _detect_frameworks_by_text(self, snapshot: RepositorySnapshot) -> List[str]:
+        """Legacy text matcher (kept for reference, NOT used — R-W2-001).
+
+        It matched framework names anywhere in any file, so a README mentioning
+        express/flask/vue made all of them "detected" and psf/requests came out as
+        ``Express, Flask, Next.js, Vue`` (docs/audit/AUDIT-2026-10-21.md §3.6).
+        """
         frameworks = set()
         
         framework_patterns = {

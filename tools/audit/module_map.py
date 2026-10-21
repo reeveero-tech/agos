@@ -82,6 +82,7 @@ MODULES = {
     K + "finalization": ("L2", "quality", ["R-W5-002"]),
     # ---------------- L3 capability fabric ----------------
     K + "capabilities": ("L3", "repository-intelligence", ["R-W2-001", "R-W2-002", "R-W2-003", "R-W2-004", "R-W2-007"]),
+    K + "stack_detection": ("L3", "repository-intelligence", ["R-W2-001", "R-W2-002", "R-W2-006"]),
     K + "providers": ("L3", "providers", ["R-W2-005", "R-W3-010"]),
     K + "skills": ("L3", "skills", ["R-W3-009"]),
     K + "adapters": ("L3", "providers", ["R-W3-011"]),

@@ -84,6 +84,12 @@ class RepositoryDNA:
     generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     snapshot_path: str = ""
     
+    # R-W2-001: evidence behind ``frameworks`` (one entry per framework dependency found in a
+    # manifest, counted or not) and the runtimes implied by the manifests. Python/Node.js are
+    # runtimes, not frameworks. Appended last so positional construction is unchanged.
+    framework_evidence: List[Dict[str, Any]] = field(default_factory=list)
+    runtimes: List[str] = field(default_factory=list)
+    
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -101,5 +107,7 @@ class RepositoryDNA:
             "readme_summary": self.readme_summary,
             "license": self.license,
             "generated_at": self.generated_at.isoformat(),
-            "snapshot_path": self.snapshot_path
+            "snapshot_path": self.snapshot_path,
+            "framework_evidence": self.framework_evidence,
+            "runtimes": self.runtimes,
         }

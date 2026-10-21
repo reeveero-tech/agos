@@ -124,11 +124,34 @@ class RepositoryFingerprintStage(PipelineStage):
         return not any(ex in str(path) for ex in excluded)
 
 
+def _stack_detection():
+    """The kernel's canonical manifest-based framework detector (R-W2-001)."""
+    try:
+        from agos.kernel import stack_detection
+    except ImportError:
+        import stack_detection
+    return stack_detection
+
+
 class TechnologyDetectionStage(PipelineStage):
     """Stage 2: Detect technologies."""
     
     name = "technology_detection"
     description = "Detect technologies used in repository"
+    
+    # Historical file-name markers, kept for reference only (R-W2-001: not evidence).
+    LEGACY_FRAMEWORK_MARKERS = {
+        'Django': ['manage.py', 'settings.py'],
+        'Flask': ['app.py', 'flask'],
+        'FastAPI': ['fastapi'],
+        'React': ['react'],
+        'Vue': ['vue'],
+        'Angular': ['angular'],
+        'Express': ['express'],
+        'Spring': ['spring'],
+        'Next.js': ['next.config'],
+        'Rails': ['config.ru'],
+    }
     
     def process(self, repo_path: str, context: Dict) -> StageResult:
         """Detect technologies."""
@@ -166,24 +189,15 @@ class TechnologyDetectionStage(PipelineStage):
                 if marker in files:
                     technologies['languages'][lang] = True
         
-        # Frameworks
-        framework_markers = {
-            'Django': ['manage.py', 'settings.py'],
-            'Flask': ['app.py', 'flask'],
-            'FastAPI': ['fastapi'],
-            'React': ['react'],
-            'Vue': ['vue'],
-            'Angular': ['angular'],
-            'Express': ['express'],
-            'Spring': ['spring'],
-            'Next.js': ['next.config'],
-            'Rails': ['config.ru'],
-        }
-        
-        for framework, markers in framework_markers.items():
-            for marker in markers:
-                if marker in files:
-                    technologies['frameworks'].append(framework)
+        # Frameworks (R-W2-001): decided from dependency manifests only. File names such as
+        # app.py / manage.py / settings.py / config.ru are not evidence of a framework.
+        sd = _stack_detection()
+        stack = sd.detect_stack(sd.read_manifests(repo))
+        technologies['frameworks'] = list(stack.frameworks)
+        technologies['framework_evidence'] = [e.to_dict() for e in stack.evidence]
+        for runtime in stack.runtimes:
+            if runtime not in technologies['runtimes']:
+                technologies['runtimes'].append(runtime)
         
         # Build systems
         build_markers = {

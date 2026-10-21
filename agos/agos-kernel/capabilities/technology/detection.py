@@ -2,7 +2,7 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Mapping, Optional, Set
 
 
 @dataclass
@@ -16,6 +16,9 @@ class TechnologyDetection:
     containers: List[str] = field(default_factory=list)
     cloud_providers: List[str] = field(default_factory=list)
     confidence: float = 1.0
+    # R-W2-001: why each framework is (or is not) reported, and which manifests were read.
+    framework_evidence: List[Dict[str, Any]] = field(default_factory=list)
+    manifests_read: List[str] = field(default_factory=list)
 
 
 LANGUAGE_PATTERNS = {
@@ -39,6 +42,9 @@ LANGUAGE_PATTERNS = {
     "CSS": [".css", ".scss", ".sass", ".less"],
 }
 
+# Historical path patterns (kept for reference; R-W2-001: a path is not evidence of a
+# framework — "app.py" is not Flask, "pages/" is not Next.js). Frameworks are decided by
+# ``stack_detection`` from manifest contents passed to ``execute(..., contents=...)``.
 FRAMEWORK_PATTERNS = {
     "Django": ["django", "settings.py"],
     "Flask": ["flask", "app.py"],
@@ -95,8 +101,13 @@ class TechnologyDetectionCapability:
         self.name = "TechnologyDetection"
         self.version = "1.0.0"
     
-    def execute(self, file_paths: List[str]) -> TechnologyDetection:
-        """Detect technologies from file paths."""
+    def execute(self, file_paths: List[str],
+                contents: Optional[Mapping[str, Optional[str]]] = None) -> TechnologyDetection:
+        """Detect technologies from file paths.
+
+        Frameworks need evidence (R-W2-001): pass ``contents`` = {path: text} for the
+        dependency manifests. With paths alone no framework is claimed.
+        """
         detection = TechnologyDetection(id=str(uuid.uuid4()))
         
         paths_lower = [p.lower() for p in file_paths]
@@ -108,12 +119,17 @@ class TechnologyDetectionCapability:
                     detection.languages.append(lang)
                     break
         
-        # Detect frameworks
-        for framework, patterns in FRAMEWORK_PATTERNS.items():
-            for pattern in patterns:
-                if any(pattern.lower() in p for p in paths_lower):
-                    detection.frameworks.append(framework)
-                    break
+        # Detect frameworks — from manifest contents only (R-W2-001)
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        manifests = {p: (contents or {}).get(p) for p in file_paths
+                     if stack_detection.is_manifest(p) and (contents or {}).get(p) is not None}
+        stack = stack_detection.detect_stack(manifests)
+        detection.frameworks.extend(stack.frameworks)
+        detection.framework_evidence = [e.to_dict() for e in stack.evidence]
+        detection.manifests_read = list(stack.manifests)
         
         # Detect package managers
         for pm, patterns in PACKAGE_MANAGERS.items():

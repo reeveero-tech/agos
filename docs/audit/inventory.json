@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 523,
-  "lines": 87800,
-  "functions": 5684,
+  "files": 524,
+  "lines": 88631,
+  "functions": 5724,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 254,
-  "import_ok": 521,
+  "import_ok": 522,
   "import_fail": 0
  },
  "packages": {
@@ -167,8 +167,8 @@
   },
   "agos-kernel/capabilities": {
    "files": 10,
-   "lines": 1794,
-   "functions": 138,
+   "lines": 1839,
+   "functions": 141,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -189,8 +189,8 @@
   },
   "agos-kernel/civilization": {
    "files": 99,
-   "lines": 23496,
-   "functions": 1279,
+   "lines": 23510,
+   "functions": 1280,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -277,7 +277,7 @@
   },
   "agos-kernel/contracts": {
    "files": 1,
-   "lines": 106,
+   "lines": 114,
    "functions": 4,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 16,
-   "lines": 4220,
-   "functions": 135,
+   "lines": 4245,
+   "functions": 136,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1034,6 +1034,17 @@
    "import_ok": 10,
    "import_fail": 0
   },
+  "agos-kernel/stack_detection": {
+   "files": 1,
+   "lines": 676,
+   "functions": 34,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
+  },
   "agos-kernel/state-store": {
    "files": 1,
    "lines": 286,
@@ -1113,7 +1124,7 @@
   },
   "agos-kernel/vertical_slices": {
    "files": 1,
-   "lines": 385,
+   "lines": 399,
    "functions": 15,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1443,8 +1454,8 @@
   },
   "rie": {
    "files": 12,
-   "lines": 2419,
-   "functions": 95,
+   "lines": 2468,
+   "functions": 96,
    "stub_functions": 20,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -2276,10 +2287,10 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 285,
+   "lines": 314,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 9,
+   "functions": 12,
    "stub_functions": 3,
    "abstract_functions": 0,
    "imports": [
@@ -2293,6 +2304,8 @@
     "contracts",
     "interfaces",
     "providers",
+    "stack_detection",
+    "stack_detection",
     "providers",
     "shutil"
    ],
@@ -2302,14 +2315,16 @@
    "resolved_imports": [
     "K:contracts",
     "K:interfaces",
-    "K:providers"
+    "K:providers",
+    "K:stack_detection"
    ],
    "imported_by": [
     "K:main",
     "K:test_validation"
    ],
    "tested_by_external": [
-    "tests/test_bootstrap.py"
+    "tests/test_bootstrap.py",
+    "tests/test_framework_detection.py"
    ],
    "import_status": "OK"
   },
@@ -2543,7 +2558,7 @@
    "path": "agos/agos-kernel/capabilities/technology/detection.py",
    "module": "capabilities.technology.detection",
    "root": "kernel",
-   "lines": 146,
+   "lines": 162,
    "syntax_ok": true,
    "classes": 2,
    "functions": 2,
@@ -2553,14 +2568,21 @@
     "uuid",
     "dataclasses",
     "datetime",
-    "typing"
+    "typing",
+    "agos.kernel",
+    "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:capabilities.technology.detection",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:stack_detection"
+   ],
    "imported_by": [
     "K:test_capability_program"
+   ],
+   "tested_by_external": [
+    "tests/test_framework_detection.py"
    ],
    "import_status": "OK"
   },
@@ -4021,10 +4043,10 @@
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
    "module": "civilization.intelligence_pipeline.stages",
    "root": "kernel",
-   "lines": 552,
+   "lines": 566,
    "syntax_ok": true,
    "classes": 9,
-   "functions": 17,
+   "functions": 18,
    "stub_functions": 1,
    "abstract_functions": 1,
    "imports": [
@@ -4037,16 +4059,23 @@
     "dataclasses",
     "datetime",
     "subprocess",
+    "agos.kernel",
     "hashlib",
-    "uuid"
+    "uuid",
+    "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.intelligence_pipeline.stages",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:stack_detection"
+   ],
    "imported_by": [
     "K:civilization.intelligence_pipeline",
     "K:civilization.intelligence_pipeline.pipeline"
+   ],
+   "tested_by_external": [
+    "tests/test_framework_detection.py"
    ],
    "import_status": "OK"
   },
@@ -5600,7 +5629,7 @@
    "path": "agos/agos-kernel/contracts/__init__.py",
    "module": "contracts",
    "root": "kernel",
-   "lines": 106,
+   "lines": 114,
    "syntax_ok": true,
    "classes": 4,
    "functions": 4,
@@ -8178,10 +8207,10 @@
    "path": "agos/agos-kernel/intelligence/repository/analyzer.py",
    "module": "intelligence.repository.analyzer",
    "root": "kernel",
-   "lines": 445,
+   "lines": 470,
    "syntax_ok": true,
    "classes": 1,
-   "functions": 14,
+   "functions": 15,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8189,17 +8218,23 @@
     "re",
     "pathlib",
     "typing",
-    "intelligence.repository.models"
+    "intelligence.repository.models",
+    "agos.kernel",
+    "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:intelligence.repository.analyzer",
    "resolved_imports": [
-    "K:intelligence.repository.models"
+    "K:intelligence.repository.models",
+    "K:stack_detection"
    ],
    "imported_by": [
     "K:intelligence",
     "K:intelligence.engine"
+   ],
+   "tested_by_external": [
+    "tests/test_framework_detection.py"
    ],
    "import_status": "OK"
   },
@@ -11180,6 +11215,42 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/stack_detection/__init__.py",
+   "module": "stack_detection",
+   "root": "kernel",
+   "lines": 676,
+   "syntax_ok": true,
+   "classes": 3,
+   "functions": 34,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "ast",
+    "configparser",
+    "json",
+    "os",
+    "re",
+    "xml.etree.ElementTree",
+    "dataclasses",
+    "pathlib",
+    "typing",
+    "tomllib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:stack_detection",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:capabilities",
+    "K:capabilities.technology.detection",
+    "K:civilization.intelligence_pipeline.stages",
+    "K:intelligence.repository.analyzer",
+    "K:vertical_slices.repo_discovery.slice"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/state-store/__init__.py",
    "module": "state_store",
    "root": "kernel",
@@ -12043,7 +12114,7 @@
    "path": "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
    "module": "vertical_slices.repo_discovery.slice",
    "root": "kernel",
-   "lines": 385,
+   "lines": 399,
    "syntax_ok": true,
    "classes": 9,
    "functions": 15,
@@ -12064,13 +12135,20 @@
     "dataclasses",
     "datetime",
     "pathlib",
-    "typing"
+    "typing",
+    "agos.kernel",
+    "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:vertical_slices.repo_discovery.slice",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:stack_detection"
+   ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_framework_detection.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15079,6 +15157,7 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_framework_detection.py",
     "tests/test_rie_pipeline.py"
    ],
    "import_status": "OK"
@@ -15163,10 +15242,10 @@
    "path": "agos/rie/detectors/__init__.py",
    "module": "rie.detectors",
    "root": "src",
-   "lines": 476,
+   "lines": 515,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 33,
+   "functions": 34,
    "stub_functions": 14,
    "abstract_functions": 3,
    "imports": [
@@ -15176,7 +15255,11 @@
     "typing",
     "rie.detectors.ai_detector",
     "rie.detectors.capability_detector",
-    "rie.detectors.architecture_detector"
+    "rie.detectors.architecture_detector",
+    "agos.kernel",
+    "importlib.util",
+    "sys",
+    "pathlib"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -15290,7 +15373,7 @@
    "path": "agos/rie/infrastructure/__init__.py",
    "module": "rie.infrastructure",
    "root": "src",
-   "lines": 168,
+   "lines": 178,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -15302,7 +15385,8 @@
     "subprocess",
     "tempfile",
     "typing",
-    "rie.domain"
+    "rie.domain",
+    "rie.detectors"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -15311,6 +15395,9 @@
     "S:rie"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_framework_detection.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15571,6 +15658,36 @@
    ],
    "scripts": [],
    "resolved": []
+  },
+  {
+   "path": "tests/test_framework_detection.py",
+   "imports": [
+    "agos.kernel",
+    "agos.kernel.capabilities",
+    "agos.kernel.capabilities.technology.detection",
+    "agos.kernel.civilization.intelligence_pipeline.stages",
+    "agos.kernel.intelligence.repository.analyzer",
+    "agos.kernel.vertical_slices.repo_discovery.slice",
+    "agos.rie.application",
+    "agos.rie.infrastructure",
+    "asyncio",
+    "json",
+    "os",
+    "pytest",
+    "setuptools",
+    "shutil",
+    "subprocess"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:capabilities",
+    "K:capabilities.technology.detection",
+    "K:civilization.intelligence_pipeline.stages",
+    "K:intelligence.repository.analyzer",
+    "K:vertical_slices.repo_discovery.slice",
+    "S:rie.application",
+    "S:rie.infrastructure"
+   ]
   },
   {
    "path": "tests/test_import_health.py",

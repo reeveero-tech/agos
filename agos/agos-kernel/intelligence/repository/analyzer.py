@@ -243,7 +243,32 @@ class RepositoryAnalyzer:
         self.genome.metrics.languages = languages
     
     def _detect_frameworks(self) -> None:
-        """Detect frameworks."""
+        """Detect frameworks from dependency manifests only (R-W2-001).
+
+        Delegates to the kernel's ``stack_detection``; names are mapped onto the
+        ``Framework`` enum, frameworks the enum does not model are kept in
+        ``self.framework_evidence`` only.
+        """
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        stack = stack_detection.detect_stack(stack_detection.read_manifests(self.root_path))
+        detected = set()
+        for name in stack.frameworks:
+            key = name.lower().replace(".", "").replace(" ", "")
+            try:
+                detected.add(Framework(key))
+            except ValueError:
+                continue
+        self.framework_evidence = [e.to_dict() for e in stack.evidence]
+        self.genome.frameworks = detected
+    
+    def _detect_frameworks_by_text(self) -> None:
+        """Legacy text matcher (kept for reference, NOT used — R-W2-001).
+
+        Any ``.py`` file containing e.g. "next" or "spring" marked the framework as used.
+        """
         detected = set()
         
         # Check package.json for JS frameworks
