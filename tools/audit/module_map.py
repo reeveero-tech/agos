@@ -154,6 +154,12 @@ MODULES = {
     K.rstrip("/"): ("L2", "quality", ["R-F-002", "R-F-008", "R-Q-001"]),
 }
 
+# R-F-004: importable alias packages share the map entry of the hyphenated source dir.
+for _hyphen in ("event-engine", "mission-engine", "skill-engine", "decision-pipeline",
+                "execution-context", "resource-manager", "state-store"):
+    if K + _hyphen in MODULES:
+        MODULES[K + _hyphen.replace("-", "_")] = MODULES[K + _hyphen]
+
 DOC_PACKAGES = {
     "constitution (README)": ("L0", "governance", ["R-W1-022"]),
     "agos-canon": ("L0", "governance", ["R-W1-007", "R-W1-022"]),

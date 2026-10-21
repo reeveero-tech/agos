@@ -41,7 +41,10 @@ class SkillResult:
     status: SkillStatus
     output: Optional[Any] = None
     error: Optional[str] = None
-    started_at: datetime
+    # R-F-004: a non-default field after defaults made this module unimportable
+    # (TypeError at class creation). All call sites pass started_at by keyword; the
+    # default only applies when it is omitted.
+    started_at: datetime = field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = None
     duration_ms: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)

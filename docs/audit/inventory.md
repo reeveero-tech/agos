@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 505
+- **files**: 512
 - **functions**: 5596
 - **hardcoded_paths**: 0
-- **import_fail**: 17
-- **import_ok**: 487
-- **lines**: 86316
-- **not_imported_by_others**: 240
+- **import_fail**: 8
+- **import_ok**: 503
+- **lines**: 86424
+- **not_imported_by_others**: 243
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -28,7 +28,7 @@
 | `agos-kernel/audit` | 1 | 148 | 10 | 3 | 0 | 1 | 0 | 0 |
 | `agos-kernel/benchmark` | 3 | 347 | 17 | 1 | 0 | 3 | 0 | 0 |
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/bootstrapper` | 1 | 187 | 9 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/bootstrapper` | 1 | 187 | 9 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/brain` | 2 | 255 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 10 | 1766 | 137 | 26 | 0 | 10 | 0 | 1 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
@@ -44,18 +44,21 @@
 | `agos-kernel/core` | 21 | 3257 | 146 | 0 | 0 | 21 | 0 | 13 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 0 | 1 | 1 |
-| `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/decision_pipeline` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/diagnostics` | 1 | 6 | 0 | 0 | 0 | 0 | 1 | 0 |
 | `agos-kernel/discovery` | 1 | 329 | 17 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/domains` | 3 | 565 | 37 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/ecosystem` | 5 | 2258 | 211 | 102 | 0 | 5 | 0 | 4 |
 | `agos-kernel/enterprise` | 5 | 2229 | 221 | 100 | 0 | 5 | 0 | 4 |
-| `agos-kernel/event-engine` | 1 | 211 | 27 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/event-engine` | 1 | 211 | 27 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/event_engine` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/events` | 1 | 75 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/evolution` | 4 | 1264 | 96 | 44 | 0 | 4 | 0 | 4 |
 | `agos-kernel/execution` | 5 | 1460 | 87 | 0 | 0 | 5 | 0 | 0 |
-| `agos-kernel/execution-context` | 1 | 248 | 21 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/execution-context` | 1 | 248 | 21 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/execution_context` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/expansion` | 2 | 182 | 15 | 1 | 0 | 2 | 0 | 1 |
 | `agos-kernel/experience` | 2 | 156 | 8 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/extension` | 2 | 312 | 28 | 5 | 0 | 2 | 0 | 0 |
@@ -63,7 +66,7 @@
 | `agos-kernel/finalization` | 1 | 1142 | 37 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/framework_packs` | 1 | 135 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/governance` | 2 | 535 | 32 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 16 | 4220 | 135 | 0 | 0 | 16 | 0 | 4 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
@@ -75,7 +78,8 @@
 | `agos-kernel/marketplace` | 3 | 391 | 34 | 5 | 0 | 3 | 0 | 0 |
 | `agos-kernel/memory` | 3 | 394 | 19 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/mission` | 1 | 46 | 1 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/mission-engine` | 1 | 246 | 9 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/mission-engine` | 1 | 246 | 9 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/mission_engine` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/model_packs` | 1 | 149 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/models` | 1 | 292 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/observability` | 1 | 441 | 39 | 0 | 0 | 1 | 0 | 1 |
@@ -93,7 +97,8 @@
 | `agos-kernel/registry` | 3 | 80 | 13 | 0 | 0 | 3 | 0 | 1 |
 | `agos-kernel/repository` | 2 | 309 | 25 | 2 | 0 | 2 | 0 | 0 |
 | `agos-kernel/resolvers` | 1 | 205 | 8 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/resource-manager` | 1 | 222 | 22 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/resource-manager` | 1 | 222 | 22 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/resource_manager` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/runtime` | 29 | 3373 | 148 | 0 | 0 | 29 | 0 | 9 |
 | `agos-kernel/scheduler` | 1 | 273 | 23 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/sdk` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
@@ -101,9 +106,11 @@
 | `agos-kernel/self_hosting` | 1 | 379 | 16 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/shared` | 1 | 52 | 2 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/simulation` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
-| `agos-kernel/skill-engine` | 1 | 206 | 17 | 1 | 0 | 0 | 1 | 1 |
+| `agos-kernel/skill-engine` | 1 | 209 | 17 | 1 | 0 | 1 | 0 | 1 |
+| `agos-kernel/skill_engine` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skills` | 10 | 1651 | 243 | 48 | 0 | 10 | 0 | 3 |
-| `agos-kernel/state-store` | 1 | 286 | 25 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/state-store` | 1 | 286 | 25 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/state_store` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/templates` | 1 | 101 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/tool_packs` | 1 | 144 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/trust` | 2 | 254 | 12 | 0 | 0 | 2 | 0 | 0 |
@@ -142,21 +149,10 @@
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1205 | 68 | 2 | 0 | 5 | 0 | 4 |
 
-## Import failures (17)
+## Import failures (8)
 
-### ERR NotAPackagePath — 7
+### ERR ModuleNotFoundError — 5
 
-- `agos/agos-kernel/decision-pipeline/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-- `agos/agos-kernel/event-engine/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-- `agos/agos-kernel/execution-context/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-- `agos/agos-kernel/mission-engine/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-- `agos/agos-kernel/resource-manager/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-- `agos/agos-kernel/skill-engine/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-- `agos/agos-kernel/state-store/__init__.py` — ERR NotAPackagePath: directory name contains '-'
-
-### ERR ModuleNotFoundError — 6
-
-- `agos/agos-kernel/bootstrapper/__init__.py` — ERR ModuleNotFoundError: No module named 'event_engine'
 - `agos/agos-kernel/diagnostics/__init__.py` — ERR ModuleNotFoundError: No module named 'diagnostics.runtime'
 - `agos/rie/adapters/__init__.py` — ERR ModuleNotFoundError: No module named 'application'
 - `agos/rie/application/__init__.py` — ERR ModuleNotFoundError: No module named 'contracts'
@@ -171,10 +167,6 @@
 ### ERR TypeError — 1
 
 - `agos/agos-kernel/decision/__init__.py` — ERR TypeError: type 'Result' is not subscriptable
-
-### ERR NameError — 1
-
-- `agos/agos-kernel/hardening/runtime.py` — ERR NameError: name 'Tuple' is not defined
 
 ## Syntax errors (0)
 

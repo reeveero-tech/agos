@@ -1,14 +1,14 @@
 {
  "totals": {
-  "files": 505,
-  "lines": 86316,
+  "files": 512,
+  "lines": 86424,
   "functions": 5596,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 240,
-  "import_ok": 487,
-  "import_fail": 17
+  "not_imported_by_others": 243,
+  "import_ok": 503,
+  "import_fail": 8
  },
  "packages": {
   "agos-kernel": {
@@ -129,8 +129,8 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/brain": {
    "files": 2,
@@ -305,8 +305,19 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/decision_pipeline": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/diagnostics": {
    "files": 1,
@@ -381,9 +392,20 @@
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/event_engine": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/events": {
    "files": 1,
@@ -426,8 +448,19 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/execution_context": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/expansion": {
    "files": 2,
@@ -514,8 +547,8 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/healing": {
    "files": 2,
@@ -645,9 +678,20 @@
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/mission_engine": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 0,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/model_packs": {
    "files": 1,
@@ -844,8 +888,19 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/resource_manager": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/runtime": {
    "files": 29,
@@ -926,14 +981,25 @@
   },
   "agos-kernel/skill-engine": {
    "files": 1,
-   "lines": 206,
+   "lines": 209,
    "functions": 17,
    "stub_functions": 1,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/skill_engine": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/skills": {
    "files": 10,
@@ -954,8 +1020,19 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
+  },
+  "agos-kernel/state_store": {
+   "files": 1,
+   "lines": 15,
+   "functions": 0,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/templates": {
    "files": 1,
@@ -2002,13 +2079,15 @@
    "resolved_imports": [
     "K:container",
     "K:discovery",
+    "K:event_engine",
+    "K:mission_engine",
     "K:pipeline",
     "K:registry.capability",
     "K:registry.provider",
     "K:resolvers"
    ],
    "imported_by": [],
-   "import_status": "ERR ModuleNotFoundError: No module named 'event_engine'"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/brain/__init__.py",
@@ -6069,7 +6148,7 @@
   },
   {
    "path": "agos/agos-kernel/decision-pipeline/__init__.py",
-   "module": "decision-pipeline",
+   "module": "decision_pipeline",
    "root": "kernel",
    "lines": 305,
    "syntax_ok": true,
@@ -6085,11 +6164,32 @@
     "uuid"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:decision-pipeline",
+   "importable_package_path": true,
+   "alias_of": "decision-pipeline",
+   "id": "K:decision_pipeline",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/decision_pipeline/__init__.py",
+   "module": "decision_pipeline",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:decision_pipeline",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/diagnostics/__init__.py",
@@ -6516,7 +6616,7 @@
   },
   {
    "path": "agos/agos-kernel/event-engine/__init__.py",
-   "module": "event-engine",
+   "module": "event_engine",
    "root": "kernel",
    "lines": 211,
    "syntax_ok": true,
@@ -6532,11 +6632,36 @@
     "uuid"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:event-engine",
+   "importable_package_path": true,
+   "alias_of": "event-engine",
+   "id": "K:event_engine",
    "resolved_imports": [],
-   "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "imported_by": [
+    "K:bootstrapper"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/event_engine/__init__.py",
+   "module": "event_engine",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:event_engine",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:bootstrapper"
+   ],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/events/__init__.py",
@@ -6803,7 +6928,7 @@
   },
   {
    "path": "agos/agos-kernel/execution-context/__init__.py",
-   "module": "execution-context",
+   "module": "execution_context",
    "root": "kernel",
    "lines": 248,
    "syntax_ok": true,
@@ -6819,11 +6944,32 @@
     "uuid"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:execution-context",
+   "importable_package_path": true,
+   "alias_of": "execution-context",
+   "id": "K:execution_context",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/execution_context/__init__.py",
+   "module": "execution_context",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:execution_context",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/expansion/__init__.py",
@@ -7242,7 +7388,7 @@
    "id": "K:hardening.runtime",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR NameError: name 'Tuple' is not defined"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/healing/__init__.py",
@@ -8235,7 +8381,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:context",
-    "K:mission-engine",
+    "K:mission_engine",
     "K:pipeline",
     "K:resolvers",
     "K:test_validation"
@@ -8244,7 +8390,7 @@
   },
   {
    "path": "agos/agos-kernel/mission-engine/__init__.py",
-   "module": "mission-engine",
+   "module": "mission_engine",
    "root": "kernel",
    "lines": 246,
    "syntax_ok": true,
@@ -8260,13 +8406,38 @@
     "mission"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:mission-engine",
+   "importable_package_path": true,
+   "alias_of": "mission-engine",
+   "id": "K:mission_engine",
    "resolved_imports": [
     "K:mission"
    ],
-   "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "imported_by": [
+    "K:bootstrapper"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/mission_engine/__init__.py",
+   "module": "mission_engine",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:mission_engine",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:bootstrapper"
+   ],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/model_packs/library.py",
@@ -9211,7 +9382,7 @@
   },
   {
    "path": "agos/agos-kernel/resource-manager/__init__.py",
-   "module": "resource-manager",
+   "module": "resource_manager",
    "root": "kernel",
    "lines": 222,
    "syntax_ok": true,
@@ -9225,11 +9396,32 @@
     "typing"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:resource-manager",
+   "importable_package_path": true,
+   "alias_of": "resource-manager",
+   "id": "K:resource_manager",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/resource_manager/__init__.py",
+   "module": "resource_manager",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:resource_manager",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/runtime/__init__.py",
@@ -10300,9 +10492,9 @@
   },
   {
    "path": "agos/agos-kernel/skill-engine/__init__.py",
-   "module": "skill-engine",
+   "module": "skill_engine",
    "root": "kernel",
-   "lines": 206,
+   "lines": 209,
    "syntax_ok": true,
    "classes": 9,
    "functions": 17,
@@ -10316,11 +10508,32 @@
     "typing"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:skill-engine",
+   "importable_package_path": true,
+   "alias_of": "skill-engine",
+   "id": "K:skill_engine",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/skill_engine/__init__.py",
+   "module": "skill_engine",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:skill_engine",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/skills/analysis/operations.py",
@@ -10576,7 +10789,7 @@
   },
   {
    "path": "agos/agos-kernel/state-store/__init__.py",
-   "module": "state-store",
+   "module": "state_store",
    "root": "kernel",
    "lines": 286,
    "syntax_ok": true,
@@ -10592,11 +10805,32 @@
     "uuid"
    ],
    "hardcoded_paths": 0,
-   "importable_package_path": false,
-   "id": "K:state-store",
+   "importable_package_path": true,
+   "alias_of": "state-store",
+   "id": "K:state_store",
    "resolved_imports": [],
    "imported_by": [],
-   "import_status": "ERR NotAPackagePath: directory name contains '-'"
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/state_store/__init__.py",
+   "module": "state_store",
+   "root": "kernel",
+   "lines": 15,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:state_store",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/templates/library.py",

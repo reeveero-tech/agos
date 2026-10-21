@@ -5,6 +5,18 @@
 
 ## [غير مُصدَر]
 
+### 0004 — أسماء قابلة للاستيراد للمجلدات ذات الشرطة — 2026-10-21 — R-F-004
+**أُضيف**
+- 7 حزم بديلة في `agos/agos-kernel/`: `event_engine`, `mission_engine`, `skill_engine`, `decision_pipeline`, `execution_context`, `resource_manager`, `state_store` — كل منها يوجّه `__path__` إلى المجلد الأصلي وينفّذ شيفرته (المجلد الأصلي مصدر الحقيقة، لم يُنقل ولم يُسمَّ).
+- `tools/audit/inventory.py`: `alias_module_name()` — فحص الملفات ذات الشرطة عبر اسمها البديل.
+- `tools/audit/module_map.py`: الحزم البديلة ترث مدخل المجلد الأصلي.
+
+**أُصلح (أخطاء كامنة ظهرت بالإحياء)**
+- `skill-engine/__init__.py`: `SkillResult.started_at` حقل بلا قيمة افتراضية بعد حقول افتراضية ← `TypeError` عند تعريف الصنف؛ أُعطي `default_factory=datetime.utcnow` (كل الاستدعاءات بالاسم).
+- `hardening/runtime.py`: `Tuple` مستخدم قبل استيراده المتأخر ← أُضيف إلى استيراد `typing` العلوي.
+
+**النتيجة:** `bootstrapper` و`hardening.runtime` يُستوردان؛ أعطال الاستيراد 17 ← 8؛ L0 13 ← 4.
+
 ### 0003 — الاسم المستعار agos_kernel — 2026-10-21 — R-F-003
 **أُضيف**
 - `agos/agos_kernel/__init__.py`: حزمة `agos_kernel` مع مستورد مسار (meta-path finder) يجعل `agos_kernel.X` **نفس كائن** الوحدة `X` في النواة؛ ويعيد تصدير `__version__`/`__phase__` للنواة؛ لا يحجب الأسماء المتصادمة التسعة.

@@ -11,7 +11,7 @@ import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple  # R-F-004: Tuple was used before its late import (line ~332)
 import random
 
 

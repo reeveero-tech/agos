@@ -3,5 +3,5 @@
  "failed": 12,
  "errors": 16,
  "skipped": 0,
- "pytest_summary": "12 failed, 105 passed, 40 warnings, 16 errors in 4.11s"
+ "pytest_summary": "12 failed, 105 passed, 40 warnings, 16 errors in 4.21s"
 }

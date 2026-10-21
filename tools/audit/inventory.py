@@ -53,6 +53,27 @@ def module_name(path: Path) -> str:
     return ".".join(parts)
 
 
+def alias_module_name(path: Path) -> str | None:
+    """R-F-004: importable name of a file inside a hyphenated dir that has an alias package.
+
+    ``agos-kernel/event-engine/__init__.py`` -> ``event_engine`` when
+    ``agos-kernel/event_engine/__init__.py`` declares ``__agos_alias_of__ = "event-engine"``.
+    """
+    root = root_for(path)
+    rel = path.relative_to(root).with_suffix("")
+    parts = list(rel.parts)
+    if "-" not in parts[0] or any("-" in p for p in parts[1:]):
+        return None
+    alias = parts[0].replace("-", "_")
+    init = root / alias / "__init__.py"
+    if not init.is_file() or f'__agos_alias_of__ = "{parts[0]}"' not in init.read_text(encoding="utf-8"):
+        return None
+    parts[0] = alias
+    if parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
 def is_stub(fn: ast.AST) -> bool:
     """A function whose body does nothing meaningful."""
     body = list(fn.body)
@@ -100,6 +121,9 @@ def analyse(path: Path) -> dict:
         "hardcoded_paths": len(HARDCODED.findall(text)),
         "importable_package_path": "-" not in str(path.relative_to(root_for(path))),
     }
+    alias = alias_module_name(path)
+    if alias:
+        info["module"], info["alias_of"], info["importable_package_path"] = alias, info["module"], True
     try:
         tree = ast.parse(text)
     except SyntaxError as e:
