@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel runtime integrity.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 import sys
@@ -16,7 +21,7 @@ class TestKernelRuntime:
     @pytest.fixture
     def runtime_dir(self):
         """Get runtime directory."""
-        return Path('/home/runner/workspace/agos/agos-kernel/runtime')
+        return Path(str(_AGOS_KERNEL / 'runtime'))
     
     def test_runtime_directory_exists(self, runtime_dir):
         """Runtime directory must exist."""
@@ -24,14 +29,14 @@ class TestKernelRuntime:
     
     def test_runtime_has_main_entry(self):
         """Runtime must have a main entry point."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         main_file = kernel_dir / 'main.py'
         assert main_file.exists(), "Kernel main.py must exist"
     
     def test_runtime_modules_are_importable(self):
         """Core runtime modules must be importable."""
         # This tests that the kernel can bootstrap
-        sys.path.insert(0, str(Path('/home/runner/workspace/agos')))
+        sys.path.insert(0, str(Path(str(_AGOS_ROOT))))
         
         try:
             import agos_kernel
@@ -41,7 +46,7 @@ class TestKernelRuntime:
     
     def test_runtime_core_modules(self):
         """Core runtime modules must exist."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         required_modules = [
             'core',
@@ -61,7 +66,7 @@ class TestRuntimeIntegrity:
     
     def test_runtime_has_no_circular_imports_in_core(self):
         """Core runtime must not have circular imports."""
-        sys.path.insert(0, str(Path('/home/runner/workspace/agos')))
+        sys.path.insert(0, str(Path(str(_AGOS_ROOT))))
         
         # Import core modules individually to detect circular imports
         try:
@@ -72,7 +77,7 @@ class TestRuntimeIntegrity:
     
     def test_runtime_starts_cleanly(self):
         """Runtime must start without errors."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         main_file = kernel_dir / 'main.py'
         
         if not main_file.exists():

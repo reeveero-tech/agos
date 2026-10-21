@@ -1,18 +1,7 @@
 {
  "known_failures": [
   "::agos.agos-kernel.test_validation",
-  "agos.agos-kernel.core.tests.test_golden_compatibility.TestAPCompatibility::test_kernel_has_version",
-  "agos.agos-kernel.core.tests.test_golden_contracts.TestKernelContracts::test_contracts_directory_exists",
-  "agos.agos-kernel.core.tests.test_golden_events.TestKernelEvents::test_events_directory_exists",
   "agos.agos-kernel.core.tests.test_golden_performance.TestKernelPerformance::test_kernel_imports_quickly",
-  "agos.agos-kernel.core.tests.test_golden_recovery.TestKernelResilience::test_kernel_logs_errors",
-  "agos.agos-kernel.core.tests.test_golden_recovery.TestRecoveryCapabilities::test_kernel_has_checkpoint_mechanism",
-  "agos.agos-kernel.core.tests.test_golden_recovery.TestRecoveryCapabilities::test_kernel_has_state_snapshots",
-  "agos.agos-kernel.core.tests.test_golden_recovery.TestRecoveryCapabilities::test_kernel_state_is_recoverable",
-  "agos.agos-kernel.core.tests.test_golden_registry.TestKernelRegistry::test_registry_directory_exists",
-  "agos.agos-kernel.core.tests.test_golden_runtime.TestKernelRuntime::test_runtime_core_modules",
-  "agos.agos-kernel.core.tests.test_golden_runtime.TestKernelRuntime::test_runtime_directory_exists",
-  "agos.agos-kernel.core.tests.test_golden_runtime.TestKernelRuntime::test_runtime_has_main_entry",
   "agos.agos-kernel.core.tests.test_golden_runtime.TestKernelRuntime::test_runtime_modules_are_importable",
   "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_file_permissions_are_restricted",
   "agos.agos-kernel.test_execution_implementation::test_adapters",
@@ -34,5 +23,14 @@
   "agos.agos-kernel.test_runtime::test_scheduler",
   "agos.agos-kernel.test_runtime::test_session",
   "agos.agos-kernel.test_runtime::test_state"
- ]
+ ],
+ "revealed": {
+  "agos.agos-kernel.core.tests.test_golden_compatibility.TestDependencyCompatibility::test_kernel_uses_only_standard_library_or_declared": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): تبعيات خارجية غير معلنة — الإصلاح في R-Q-009",
+  "agos.agos-kernel.core.tests.test_golden_registry.TestRegistryIntegrity::test_registry_has_version": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): مدخلات السجل registry/ بلا حقل version — الإصلاح في R-Q-009",
+  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_eval_usage": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): استخدامات eval() حقيقية في النواة — الإصلاح في R-Q-009",
+  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_exec_usage": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): استخدامات exec() حقيقية في النواة — الإصلاح في R-Q-009",
+  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_hardcoded_secrets": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): كلمات مرور/مفاتيح وهمية في ملفات الاختبار تطابق نمط الأسرار — الإصلاح في R-Q-009",
+  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_sql_injection_patterns": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): أنماط بناء SQL بالنصوص — الإصلاح في R-Q-009",
+  "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_imports_are_safe": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): استيرادات غير آمنة (pickle/subprocess…) — الإصلاح في R-Q-009"
+ }
 }

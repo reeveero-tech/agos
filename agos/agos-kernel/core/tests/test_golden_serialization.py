@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel serialization is stable and reversible.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 import json
@@ -16,7 +21,7 @@ class TestSerialization:
     
     def test_kernel_contracts_are_json_serializable(self):
         """All kernel contracts must be JSON serializable."""
-        contracts_dir = Path('/home/runner/workspace/agos/agos-kernel/contracts')
+        contracts_dir = Path(str(_AGOS_KERNEL / 'contracts'))
         
         if not contracts_dir.exists():
             pytest.skip("Contracts directory not found")
@@ -34,7 +39,7 @@ class TestSerialization:
     
     def test_kernel_events_are_json_serializable(self):
         """All kernel events must be JSON serializable."""
-        events_dir = Path('/home/runner/workspace/agos/agos-kernel/events')
+        events_dir = Path(str(_AGOS_KERNEL / 'events'))
         
         if not events_dir.exists():
             pytest.skip("Events directory not found")
@@ -52,7 +57,7 @@ class TestSerialization:
     
     def test_kernel_lock_file_is_valid(self):
         """Kernel lock file must be valid JSON."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         lock_file = kernel_dir / 'finalization' / 'KERNEL_LOCK.json'
         
         if not lock_file.exists():
@@ -71,7 +76,7 @@ class TestSerializationStability:
     
     def test_contract_structure_is_stable(self):
         """Contract JSON structure must be stable."""
-        contracts_dir = Path('/home/runner/workspace/agos/agos-kernel/contracts')
+        contracts_dir = Path(str(_AGOS_KERNEL / 'contracts'))
         
         if not contracts_dir.exists():
             pytest.skip("Contracts directory not found")
@@ -87,7 +92,7 @@ class TestSerializationStability:
     
     def test_event_structure_is_stable(self):
         """Event JSON structure must be stable."""
-        events_dir = Path('/home/runner/workspace/agos/agos-kernel/events')
+        events_dir = Path(str(_AGOS_KERNEL / 'events'))
         
         if not events_dir.exists():
             pytest.skip("Events directory not found")

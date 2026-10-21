@@ -1,4 +1,9 @@
 """AGOS Self-Hosting Runtime."""
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import asyncio
 import hashlib
 import json
@@ -71,7 +76,7 @@ class SelfHostingRuntime:
     """AGOS Self-Hosting Runtime."""
     
     def __init__(self):
-        self.agos_path = os.environ.get("AGOS_PATH", "/home/runner/workspace/agos/agos-kernel")
+        self.agos_path = os.environ.get("AGOS_PATH", str(_AGOS_KERNEL))
         self.capabilities = {c.value: True for c in SelfHostingCapability}
         self.history: List[SelfHostingReport] = []
         self.evidence: List[Dict] = []

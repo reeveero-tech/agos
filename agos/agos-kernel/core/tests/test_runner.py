@@ -6,6 +6,11 @@ Main entry point for running all Golden Tests.
 Every Pull Request executes this suite.
 Failure blocks merge.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import subprocess
@@ -120,7 +125,7 @@ def run_quick_check():
     print("Running quick validation...")
     
     # Check critical directories exist
-    kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+    kernel_dir = Path(str(_AGOS_KERNEL))
     
     required_dirs = [
         'core',

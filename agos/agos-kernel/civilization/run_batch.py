@@ -3,12 +3,17 @@
 Batch Test Runner for EXECUTION-000009-000012
 PHASE-02: Foundation Runtime Systems
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, '/home/runner/workspace/agos')
+sys.path.insert(0, str(_AGOS_ROOT))
 
 
 def run_evidence_tests():
@@ -177,7 +182,7 @@ def main():
         print("✓ EXECUTION-000012: Universal Validation Runtime")
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'batch_000009_000012_results.json', 'w') as f:

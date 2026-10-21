@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Test script for Engineering Intelligence Platform."""
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[1])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
-sys.path.insert(0, '/home/runner/workspace/agos/agos-kernel')
+sys.path.insert(0, str(_AGOS_KERNEL))
 
 from intelligence import (
     EngineeringIntelligencePlatform,
@@ -14,7 +19,7 @@ def test_repository_analysis():
     print("Testing Repository Analysis")
     print("=" * 60)
     
-    platform = EngineeringIntelligencePlatform("/home/runner/workspace/agos/agos-kernel")
+    platform = EngineeringIntelligencePlatform(str(_AGOS_KERNEL))
     report = platform.analyze()
     
     # Repository
@@ -129,7 +134,7 @@ def test_query_engine():
     print("Testing Query Engine")
     print("=" * 60)
     
-    platform = EngineeringIntelligencePlatform("/home/runner/workspace/agos/agos-kernel")
+    platform = EngineeringIntelligencePlatform(str(_AGOS_KERNEL))
     report = platform.analyze()
     
     # Test queries

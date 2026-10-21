@@ -5,6 +5,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 Tests that verify kernel contracts remain stable.
 Every contract must be backward compatible.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 import json
@@ -18,7 +23,7 @@ class TestKernelContracts:
     @pytest.fixture
     def contracts_dir(self):
         """Get contracts directory."""
-        return Path('/home/runner/workspace/agos/agos-kernel/contracts')
+        return Path(str(_AGOS_KERNEL / 'contracts'))
     
     @pytest.fixture
     def contract_manifest(self):
@@ -81,7 +86,7 @@ class TestContractBackwardCompatibility:
     
     def test_contract_version_exists(self):
         """All contracts must have a version."""
-        contracts_dir = Path('/home/runner/workspace/agos/agos-kernel/contracts')
+        contracts_dir = Path(str(_AGOS_KERNEL / 'contracts'))
         
         if not contracts_dir.exists():
             pytest.skip("Contracts directory not found")

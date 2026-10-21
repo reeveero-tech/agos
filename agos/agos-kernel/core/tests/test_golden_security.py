@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel security characteristics.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 from pathlib import Path
@@ -16,7 +21,7 @@ class TestKernelSecurity:
     @pytest.fixture
     def kernel_dir(self):
         """Get kernel directory."""
-        return Path('/home/runner/workspace/agos/agos-kernel')
+        return Path(str(_AGOS_KERNEL))
     
     def test_no_hardcoded_secrets(self, kernel_dir):
         """Kernel must not contain hardcoded secrets."""
@@ -115,7 +120,7 @@ class TestSecurityBestPractices:
     
     def test_imports_are_safe(self):
         """Kernel should use safe import patterns."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         unsafe_patterns = ['__import__', 'importlib.import_module(']
         violations = []

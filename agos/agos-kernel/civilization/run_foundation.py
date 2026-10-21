@@ -5,6 +5,11 @@ PHASE-02: Foundation Civilization
 
 Run this script to test the Foundation Civilization capabilities.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
@@ -13,7 +18,7 @@ from pathlib import Path
 
 # Setup path
 current_dir = Path(__file__).parent
-repo_root = current_dir.parent.parent  # /home/runner/workspace/agos
+repo_root = current_dir.parent.parent  # <AGOS_ROOT>
 sys.path.insert(0, str(repo_root))
 
 
@@ -30,12 +35,12 @@ def test_repository_analyzer():
     print("\n[1/5] Testing Repository Analyzer...")
     module = _load_module(
         'repository_analysis',
-        '/home/runner/workspace/agos/agos-kernel/civilization/capabilities/repository_analysis.py'
+        str(_AGOS_KERNEL / 'civilization/capabilities/repository_analysis.py')
     )
     RepositoryAnalyzer = module.RepositoryAnalyzer
     
     analyzer = RepositoryAnalyzer()
-    result = analyzer.analyze('/home/runner/workspace/agos')
+    result = analyzer.analyze(str(_AGOS_ROOT))
     
     print(f"  ✓ Repository: {result.get('name')}")
     print(f"  ✓ Files: {result.get('file_count')}")
@@ -50,12 +55,12 @@ def test_architecture_analyzer():
     print("\n[2/5] Testing Architecture Analyzer...")
     module = _load_module(
         'architecture_analysis',
-        '/home/runner/workspace/agos/agos-kernel/civilization/capabilities/architecture_analysis.py'
+        str(_AGOS_KERNEL / 'civilization/capabilities/architecture_analysis.py')
     )
     ArchitectureAnalyzer = module.ArchitectureAnalyzer
     
     analyzer = ArchitectureAnalyzer()
-    result = analyzer.analyze('/home/runner/workspace/agos')
+    result = analyzer.analyze(str(_AGOS_ROOT))
     
     print(f"  ✓ Modules: {result['metrics']['total_modules']}")
     print(f"  ✓ Classes: {result['metrics']['total_classes']}")
@@ -70,12 +75,12 @@ def test_dependency_analyzer():
     print("\n[3/5] Testing Dependency Analyzer...")
     module = _load_module(
         'dependency_analysis',
-        '/home/runner/workspace/agos/agos-kernel/civilization/capabilities/dependency_analysis.py'
+        str(_AGOS_KERNEL / 'civilization/capabilities/dependency_analysis.py')
     )
     DependencyAnalyzer = module.DependencyAnalyzer
     
     analyzer = DependencyAnalyzer()
-    result = analyzer.analyze('/home/runner/workspace/agos')
+    result = analyzer.analyze(str(_AGOS_ROOT))
     
     print(f"  ✓ Total Dependencies: {result['total_dependencies']}")
     print(f"  ✓ Internal Modules: {result['metrics']['internal_deps']}")
@@ -89,12 +94,12 @@ def test_repository_dna():
     print("\n[4/5] Testing Repository DNA Generator...")
     module = _load_module(
         'repository_dna',
-        '/home/runner/workspace/agos/agos-kernel/civilization/capabilities/repository_dna.py'
+        str(_AGOS_KERNEL / 'civilization/capabilities/repository_dna.py')
     )
     RepositoryDNA = module.RepositoryDNA
     
     dna_gen = RepositoryDNA()
-    dna = dna_gen.generate('/home/runner/workspace/agos')
+    dna = dna_gen.generate(str(_AGOS_ROOT))
     
     print(f"  ✓ DNA Version: {dna['version']}")
     print(f"  ✓ Structure: {dna['fragments']['structure']}")
@@ -109,12 +114,12 @@ def test_knowledge_extraction():
     print("\n[5/5] Testing Knowledge Extraction...")
     module = _load_module(
         'knowledge_extraction',
-        '/home/runner/workspace/agos/agos-kernel/civilization/capabilities/knowledge_extraction.py'
+        str(_AGOS_KERNEL / 'civilization/capabilities/knowledge_extraction.py')
     )
     KnowledgeExtractor = module.KnowledgeExtractor
     
     extractor = KnowledgeExtractor()
-    knowledge = extractor.extract('/home/runner/workspace/agos')
+    knowledge = extractor.extract(str(_AGOS_ROOT))
     
     print(f"  ✓ Modules: {len(knowledge['modules'])}")
     print(f"  ✓ Classes: {len(knowledge['classes'])}")
@@ -160,7 +165,7 @@ def run_foundation_test():
         print("SUCCESS: Foundation Civilization is OPERATIONAL")
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'foundation_test_results.json', 'w') as f:

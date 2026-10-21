@@ -3,12 +3,17 @@
 Enterprise Civilization Platform Batch 2 Test Runner
 PHASE-07: EXECUTION-000011-000020
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, '/home/runner/workspace/agos')
+sys.path.insert(0, str(_AGOS_ROOT))
 
 
 def test_mission_center():
@@ -227,7 +232,7 @@ def main():
         print("="*60)
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'enterprise_batch2_000011_000020_results.json', 'w') as f:

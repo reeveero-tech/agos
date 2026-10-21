@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel recovery capabilities.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 import json
@@ -15,7 +20,7 @@ class TestRecoveryCapabilities:
     
     def test_kernel_has_state_snapshots(self):
         """Kernel must support state snapshots."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         # Look for state-related directories
         state_dirs = ['state-store', 'state', 'snapshots']
@@ -35,7 +40,7 @@ class TestRecoveryCapabilities:
     
     def test_kernel_has_checkpoint_mechanism(self):
         """Kernel must support checkpointing."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         # Look for checkpoint-related files
         checkpoint_patterns = ['checkpoint', 'snapshot', 'backup', 'state']
@@ -58,7 +63,7 @@ class TestRecoveryCapabilities:
     
     def test_kernel_state_is_recoverable(self):
         """Kernel state must be recoverable from files."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         # Must have some serializable state
         json_files = list(kernel_dir.rglob('*.json'))
@@ -73,7 +78,7 @@ class TestKernelResilience:
     
     def test_kernel_has_error_boundaries(self):
         """Kernel must have error handling."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         main_file = kernel_dir / 'main.py'
         
         if not main_file.exists():
@@ -94,7 +99,7 @@ class TestKernelResilience:
     
     def test_kernel_logs_errors(self):
         """Kernel must have error logging."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         # Look for logging patterns
         logging_patterns = ['logging', 'log.', 'print(']

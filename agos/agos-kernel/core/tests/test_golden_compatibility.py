@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel compatibility with Python standards.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 import sys
@@ -20,7 +25,7 @@ class TestPythonCompatibility:
     
     def test_core_modules_python3_syntax(self):
         """Core modules must use valid Python 3 syntax."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         syntax_errors = []
         for py_file in kernel_dir.rglob('*.py'):
@@ -42,7 +47,7 @@ class TestAPCompatibility:
     
     def test_kernel_has_version(self):
         """Kernel must expose version."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         # Check for version in various places
         has_version = False
@@ -71,7 +76,7 @@ class TestDependencyCompatibility:
     
     def test_kernel_uses_only_standard_library_or_declared(self):
         """Kernel should use only standard library or declared dependencies."""
-        kernel_dir = Path('/home/runner/workspace/agos/agos-kernel')
+        kernel_dir = Path(str(_AGOS_KERNEL))
         
         # List of standard library modules
         stdlib = {

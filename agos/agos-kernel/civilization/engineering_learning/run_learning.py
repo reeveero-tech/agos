@@ -3,12 +3,17 @@
 Engineering Learning Platform Test Runner
 PHASE-05: EXECUTION-000001-000010
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, '/home/runner/workspace/agos')
+sys.path.insert(0, str(_AGOS_ROOT))
 
 
 def test_learning_core():
@@ -228,7 +233,7 @@ def main():
         print("="*60)
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'learning_000001_000010_results.json', 'w') as f:

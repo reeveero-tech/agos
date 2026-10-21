@@ -1,4 +1,9 @@
 """SLICE-000001: Repository Discovery Vertical Slice."""
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import asyncio
 import hashlib
 import json
@@ -350,7 +355,7 @@ async def test_slice():
     print("SLICE-000001: Repository Discovery")
     print("=" * 60)
     
-    results = await execute_repo_discovery_slice(repo_path="/home/runner/workspace/agos")
+    results = await execute_repo_discovery_slice(repo_path=str(_AGOS_ROOT))
     
     print(f"\nStatus: {results['status']}")
     print(f"Duration: {results['timeline']['total_duration_ms']:.2f}ms")

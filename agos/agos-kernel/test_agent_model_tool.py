@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Test script for Agent, Model, and Tool Packs."""
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[1])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
-sys.path.insert(0, '/home/runner/workspace/agos/agos-kernel')
+sys.path.insert(0, str(_AGOS_KERNEL))
 
 from agent_packs.library import AgentPackLibrary, get_library as get_agent_library
 from model_packs.library import ModelPackLibrary, get_library as get_model_library

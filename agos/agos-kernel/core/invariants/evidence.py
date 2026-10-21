@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000002
 
 Generates verifiable evidence for kernel invariant compliance.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 from typing import Dict, List, Optional
 from datetime import datetime
@@ -58,7 +63,7 @@ class EvidenceGenerator:
     """
     
     def __init__(self, kernel_root: Optional[Path] = None):
-        self.kernel_root = kernel_root or Path('/home/runner/workspace/agos/agos-kernel')
+        self.kernel_root = kernel_root or Path(str(_AGOS_KERNEL))
     
     def generate_evidence(
         self,

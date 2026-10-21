@@ -4,6 +4,11 @@ PHASE-02: Foundation Civilization
 
 The main engine for the Foundation Civilization.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -52,7 +57,7 @@ class CivilizationEngine:
         self.foundation = Foundation(self.config)
         self.stats = CivilizationEngineStats()
         self.started_at = datetime.utcnow()
-        self._output_dir = Path("/home/runner/workspace/agos/agos-kernel/civilization/output")
+        self._output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
     
     def initialize(self) -> bool:
         """Initialize the civilization engine."""
@@ -254,7 +259,7 @@ def run_civilization():
     
     # Process the current repository (AGOS itself)
     print("\nProcessing AGOS Kernel repository...")
-    results = engine.process_repository("/home/runner/workspace/agos")
+    results = engine.process_repository(str(_AGOS_ROOT))
     
     print("\n" + "=" * 70)
     print("CIVILIZATION ENGINE STATS")

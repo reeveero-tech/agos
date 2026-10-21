@@ -5,6 +5,11 @@ PHASE-02: EXECUTION-000003 - Engineering Intelligence Pipeline
 
 Test the Engineering Intelligence Pipeline.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
@@ -12,7 +17,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Add to path
-sys.path.insert(0, '/home/runner/workspace/agos')
+sys.path.insert(0, str(_AGOS_ROOT))
 
 
 def test_intelligence_package():
@@ -63,7 +68,7 @@ def test_technology_detection():
     """Test technology detection."""
     print("\n[3/6] Testing Technology Detection...")
     
-    repo_path = Path('/home/runner/workspace/agos/agos-kernel')
+    repo_path = Path(str(_AGOS_KERNEL))
     files = [f.name for f in repo_path.rglob('*') if f.is_file()]
     
     technologies = {
@@ -82,7 +87,7 @@ def test_language_analysis():
     """Test language analysis."""
     print("\n[4/6] Testing Language Analysis...")
     
-    repo_path = Path('/home/runner/workspace/agos/agos-kernel')
+    repo_path = Path(str(_AGOS_KERNEL))
     
     extensions = {'.py': 'Python', '.js': 'JavaScript', '.ts': 'TypeScript'}
     counts = {}
@@ -105,7 +110,7 @@ def test_architecture_analysis():
     
     import ast
     
-    repo_path = Path('/home/runner/workspace/agos/agos-kernel')
+    repo_path = Path(str(_AGOS_KERNEL))
     py_files = list(repo_path.rglob('*.py'))
     
     classes = 0
@@ -146,7 +151,7 @@ def test_evidence_generation():
         'signatures': [],
     }
     
-    repo_path = Path('/home/runner/workspace/agos/agos-kernel')
+    repo_path = Path(str(_AGOS_KERNEL))
     
     for py_file in list(repo_path.rglob('*.py'))[:10]:
         try:
@@ -225,7 +230,7 @@ def run_pipeline_tests():
         print("SUCCESS: Engineering Intelligence Pipeline is OPERATIONAL")
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         output = {

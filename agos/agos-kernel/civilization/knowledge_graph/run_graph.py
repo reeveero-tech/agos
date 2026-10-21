@@ -5,6 +5,11 @@ PHASE-02: EXECUTION-000002 - Engineering Knowledge Graph
 
 Test the Knowledge Graph capabilities.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
@@ -17,7 +22,7 @@ import uuid
 import hashlib
 
 # Add to path
-sys.path.insert(0, '/home/runner/workspace/agos')
+sys.path.insert(0, str(_AGOS_ROOT))
 
 
 def test_knowledge_graph_runtime():
@@ -115,7 +120,7 @@ def test_graph_builder():
     print("\n[4/5] Testing Graph Builder...")
     
     # Count Python files
-    repo_path = Path('/home/runner/workspace/agos/agos-kernel')
+    repo_path = Path(str(_AGOS_KERNEL))
     py_files = list(repo_path.rglob('*.py'))
     
     classes_found = 0
@@ -215,7 +220,7 @@ def run_graph_tests():
         print("SUCCESS: Engineering Knowledge Graph is OPERATIONAL")
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'knowledge_graph_test_results.json', 'w') as f:

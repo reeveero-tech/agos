@@ -67,12 +67,21 @@ def main() -> int:
                                 "skipped": res["skipped"], "pytest_summary": res["summary"]}, indent=1) + "\n")
     print(f"passed={res['passed']} failed={len(res['failed'])} errors={len(res['errors'])} skipped={res['skipped']}")
 
+    data = json.loads(BASELINE.read_text()) if BASELINE.exists() else {}
+    # "revealed": failures that were hidden by a vacuous test (e.g. scanning a path that did
+    # not exist) and became real once that test was fixed. Each entry must name its reason
+    # and the roadmap item that will fix it. They are tracked, never silently accepted.
+    revealed = {k: v for k, v in data.get("revealed", {}).items()}
     if a.update_baseline or not BASELINE.exists():
-        BASELINE.write_text(json.dumps({"known_failures": sorted(bad)}, indent=1) + "\n")
-        print(f"baseline written: {len(bad)} known failures")
+        revealed = {k: v for k, v in revealed.items() if k in bad}
+        out = {"known_failures": sorted(bad - set(revealed))}
+        if revealed:
+            out["revealed"] = dict(sorted(revealed.items()))
+        BASELINE.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
+        print(f"baseline written: {len(out['known_failures'])} known + {len(revealed)} revealed failures")
         return 0
 
-    known = set(json.loads(BASELINE.read_text())["known_failures"])
+    known = set(data["known_failures"]) | set(revealed)
     new = sorted(bad - known)
     fixed = sorted(known - bad)
     for f in fixed:

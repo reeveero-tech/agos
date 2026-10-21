@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel performance characteristics.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 import time
@@ -16,7 +21,7 @@ class TestKernelPerformance:
     @pytest.fixture
     def kernel_dir(self):
         """Get kernel directory."""
-        return Path('/home/runner/workspace/agos/agos-kernel')
+        return Path(str(_AGOS_KERNEL))
     
     def test_kernel_imports_quickly(self, kernel_dir):
         """Kernel must import within acceptable time."""
@@ -26,7 +31,7 @@ class TestKernelPerformance:
         # Measure import time
         start = time.time()
         result = subprocess.run(
-            [sys.executable, '-c', 'import sys; sys.path.insert(0, "/home/runner/workspace/agos"); import agos_kernel'],
+            [sys.executable, '-c', ('import sys; sys.path.insert(0, "' + str(_AGOS_ROOT) + '"); import agos_kernel')],
             capture_output=True,
             timeout=5
         )
@@ -86,7 +91,7 @@ class TestPerformanceBaselines:
         for _ in range(3):
             start = time.time()
             result = subprocess.run(
-                [sys.executable, '-c', 'import sys; sys.path.insert(0, "/home/runner/workspace/agos")'],
+                [sys.executable, '-c', ('import sys; sys.path.insert(0, "' + str(_AGOS_ROOT) + '")')],
                 capture_output=True,
                 timeout=5
             )

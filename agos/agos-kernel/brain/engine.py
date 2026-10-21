@@ -1,10 +1,15 @@
 """Universal Engineering Brain."""
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import sys
-sys.path.insert(0, '/home/runner/workspace/agos/agos-kernel')
+sys.path.insert(0, str(_AGOS_KERNEL))
 
 from knowledge.runtime import KnowledgeRuntime
 from memory.runtime import MemoryRuntime, MemoryType, MemoryPriority

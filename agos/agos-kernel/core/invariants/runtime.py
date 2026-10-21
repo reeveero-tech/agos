@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000002
 
 Runtime system for executing and monitoring kernel invariants.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import ast
 import os
@@ -70,7 +75,7 @@ class InvariantRuntime:
         for parent in current.parents:
             if (parent / 'agos-kernel').exists():
                 return parent / 'agos-kernel'
-        return Path('/home/runner/workspace/agos/agos-kernel')
+        return Path(str(_AGOS_KERNEL))
     
     def verify_all(self) -> Dict[str, InvariantResult]:
         """Run all invariant checks."""

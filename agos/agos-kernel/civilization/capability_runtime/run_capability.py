@@ -5,6 +5,11 @@ PHASE-02: EXECUTION-000006 - Universal Capability Runtime
 
 Test the Universal Capability Runtime.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import sys
 import json
@@ -12,7 +17,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Add to path
-sys.path.insert(0, '/home/runner/workspace/agos')
+sys.path.insert(0, str(_AGOS_ROOT))
 
 
 def test_capability_contract():
@@ -232,7 +237,7 @@ def run_capability_tests():
         print("SUCCESS: Universal Capability Runtime is OPERATIONAL")
         
         # Save results
-        output_dir = Path('/home/runner/workspace/agos/agos-kernel/civilization/output')
+        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
         output_dir.mkdir(parents=True, exist_ok=True)
         
         output = {

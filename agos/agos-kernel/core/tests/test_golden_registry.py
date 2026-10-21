@@ -4,6 +4,11 @@ EXECUTION-KERNEL-FINALIZATION-000003
 
 Tests that verify kernel registry integrity.
 """
+# R-F-002 portable paths (see tools/migrate/portable_paths.py)
+import os as _agos_os
+from pathlib import Path as _AgosPath
+_AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+_AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 import pytest
 from pathlib import Path
@@ -15,7 +20,7 @@ class TestKernelRegistry:
     @pytest.fixture
     def registry_dir(self):
         """Get registry directory."""
-        return Path('/home/runner/workspace/agos/agos-kernel/registry')
+        return Path(str(_AGOS_KERNEL / 'registry'))
     
     def test_registry_directory_exists(self, registry_dir):
         """Registry directory must exist."""
@@ -23,7 +28,7 @@ class TestKernelRegistry:
     
     def test_registry_has_required_components(self):
         """Registry must have required components."""
-        registry_dir = Path('/home/runner/workspace/agos/agos-kernel/registry')
+        registry_dir = Path(str(_AGOS_KERNEL / 'registry'))
         
         if not registry_dir.exists():
             pytest.skip("Registry directory not found")
@@ -38,7 +43,7 @@ class TestRegistryIntegrity:
     
     def test_registry_entries_are_valid(self):
         """Registry entries must be valid."""
-        registry_dir = Path('/home/runner/workspace/agos/agos-kernel/registry')
+        registry_dir = Path(str(_AGOS_KERNEL / 'registry'))
         
         if not registry_dir.exists():
             pytest.skip("Registry directory not found")
@@ -54,7 +59,7 @@ class TestRegistryIntegrity:
     
     def test_registry_has_version(self):
         """Registry must track versions."""
-        registry_dir = Path('/home/runner/workspace/agos/agos-kernel/registry')
+        registry_dir = Path(str(_AGOS_KERNEL / 'registry'))
         
         if not registry_dir.exists():
             pytest.skip("Registry directory not found")
