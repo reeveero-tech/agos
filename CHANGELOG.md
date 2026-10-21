@@ -5,6 +5,25 @@
 
 ## [غير مُصدَر]
 
+### 0011 — واجهة النواة AGOSKernel — 2026-10-21 — R-F-008
+**أُضيف**
+- `agos/agos-kernel/core/kernel.py`:
+  - `AGOSKernel`: الدورة `start`/`shutdown`، ومدير السياق، و`health()`، والسجلات.
+  - `MissionManager`: يزامن كائن `Mission` مع النتيجة.
+  - `MissionResult`، و`KernelState`، و`KernelNotRunning`.
+  - يُصدَّر كل ذلك كسولاً من `core`، ويقوم فوق `agos_runtime.boot()`.
+- `agos/agos-kernel/diagnostics/health.py`: الصنفان `KernelHealthService` و`KernelHealthReport`. يفحصان أربعة أشياء حقيقية: القدرات، والموفّرين، والعقود، وتغطية المهارات، ويستعملان أنواع `observability`.
+- `agos/agos-kernel/conftest.py`: كل دالة في `test_validation` تُرجع `False` تُحسب فاشلة (لم يكن pytest يرى ذلك)، والدوال الشبكية تُتخطى بسبب صريح عند انقطاع الشبكة.
+- `capabilities`: ذاكرة تحليل مفتاحها `(url, branch, commit)` عبر `git ls-remote`، لأن التحليل idempotent (المادة 14). ويمكن تعطيلها بـ`{"cache": False}`.
+- `tests/test_kernel_facade.py`: 8 اختبارات.
+
+**النتيجة:**
+- `test_validation.py` يُجمع، وينجح 8/8 فعلياً تحت pytest وتحت `main()`. يشمل ذلك 100 مهمة متتالية على OpenHands في نحو 43 ثانية.
+- **أعطال الاستيراد 0 من 521 لأول مرة.**
+- الحزم في L0 صارت 0.
+- الاختبارات 146 ← 162 ناجحاً.
+- خط الأساس تقدّم إلى 15 فشلاً معروفاً.
+
 ### 0010 — مسار الإقلاع الوحيد — 2026-10-21 — R-W3-001
 **أُضيف**
 - `agos/agos-kernel/agos_runtime/__init__.py`: نقطة الدخول `boot()`، وتعيد مقبض `KernelRuntime` يحمل السجلات وناقل الأحداث ومحرك المهام ومحرك العقود، وفيه `run()` و`analyze()` و`summary()` و`require_ready()`.

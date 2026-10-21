@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 518
-- **functions**: 5628
+- **files**: 521
+- **functions**: 5655
 - **hardcoded_paths**: 0
-- **import_fail**: 1
-- **import_ok**: 515
-- **lines**: 87004
-- **not_imported_by_others**: 253
+- **import_fail**: 0
+- **import_ok**: 519
+- **lines**: 87410
+- **not_imported_by_others**: 254
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 19 | 3520 | 116 | 0 | 0 | 17 | 1 | 19 |
+| `agos-kernel` | 20 | 3579 | 118 | 0 | 0 | 19 | 0 | 20 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 11 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -32,7 +32,7 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 10 | 1766 | 137 | 26 | 0 | 10 | 0 | 1 |
+| `agos-kernel/capabilities` | 10 | 1794 | 138 | 26 | 0 | 10 | 0 | 1 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
 | `agos-kernel/civilization` | 99 | 23496 | 1279 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
@@ -43,12 +43,12 @@
 | `agos-kernel/context` | 1 | 61 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contracts` | 1 | 106 | 4 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/core` | 21 | 3260 | 146 | 0 | 0 | 21 | 0 | 13 |
+| `agos-kernel/core` | 22 | 3438 | 162 | 0 | 0 | 22 | 0 | 14 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision_pipeline` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/diagnostics` | 2 | 18 | 0 | 0 | 0 | 2 | 0 | 0 |
+| `agos-kernel/diagnostics` | 3 | 159 | 8 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/discovery` | 1 | 435 | 22 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/domains` | 3 | 565 | 37 | 0 | 0 | 3 | 0 | 0 |
@@ -84,7 +84,7 @@
 | `agos-kernel/mission_engine` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/model_packs` | 1 | 149 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/models` | 1 | 292 | 22 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/observability` | 1 | 441 | 39 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/observability` | 1 | 441 | 39 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/observatory` | 2 | 182 | 15 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/optimization` | 2 | 221 | 10 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/orchestrator` | 2 | 362 | 26 | 1 | 0 | 2 | 0 | 0 |
@@ -152,11 +152,7 @@
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1206 | 68 | 2 | 0 | 5 | 0 | 4 |
 
-## Import failures (1)
-
-### ERR ImportError — 1
-
-- `agos/agos-kernel/test_validation.py` — ERR ImportError: cannot import name 'AGOSKernel' from 'core' (<repo>/agos/agos-kernel/core/__init__.py)
+## Import failures (0)
 
 ## Syntax errors (0)
 

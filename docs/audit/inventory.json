@@ -1,14 +1,14 @@
 {
  "totals": {
-  "files": 518,
-  "lines": 87004,
-  "functions": 5628,
+  "files": 521,
+  "lines": 87410,
+  "functions": 5655,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 253,
-  "import_ok": 515,
-  "import_fail": 1
+  "not_imported_by_others": 254,
+  "import_ok": 519,
+  "import_fail": 0
  },
  "packages": {
   "__init__.py": {
@@ -23,15 +23,15 @@
    "import_fail": 0
   },
   "agos-kernel": {
-   "files": 19,
-   "lines": 3520,
-   "functions": 116,
+   "files": 20,
+   "lines": 3579,
+   "functions": 118,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 19,
-   "import_ok": 17,
-   "import_fail": 1
+   "not_imported_by_others": 20,
+   "import_ok": 19,
+   "import_fail": 0
   },
   "agos-kernel/adapters": {
    "files": 11,
@@ -167,8 +167,8 @@
   },
   "agos-kernel/capabilities": {
    "files": 10,
-   "lines": 1766,
-   "functions": 137,
+   "lines": 1794,
+   "functions": 138,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -287,14 +287,14 @@
    "import_fail": 0
   },
   "agos-kernel/core": {
-   "files": 21,
-   "lines": 3260,
-   "functions": 146,
+   "files": 22,
+   "lines": 3438,
+   "functions": 162,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 13,
-   "import_ok": 21,
+   "not_imported_by_others": 14,
+   "import_ok": 22,
    "import_fail": 0
   },
   "agos-kernel/crossdomain": {
@@ -342,14 +342,14 @@
    "import_fail": 0
   },
   "agos-kernel/diagnostics": {
-   "files": 2,
-   "lines": 18,
-   "functions": 0,
+   "files": 3,
+   "lines": 159,
+   "functions": 8,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 2,
+   "import_ok": 3,
    "import_fail": 0
   },
   "agos-kernel/discovery": {
@@ -744,7 +744,7 @@
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 1,
    "import_fail": 0
   },
@@ -1870,6 +1870,7 @@
     "K:bootstrapper"
    ],
    "imported_by": [
+    "K:core.kernel",
     "K:main"
    ],
    "import_status": "OK"
@@ -2254,13 +2255,14 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 257,
+   "lines": 285,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 8,
+   "functions": 9,
    "stub_functions": 3,
    "abstract_functions": 0,
    "imports": [
+    "copy",
     "os",
     "subprocess",
     "dataclasses",
@@ -5427,6 +5429,30 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/conftest.py",
+   "module": "conftest",
+   "root": "kernel",
+   "lines": 59,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 2,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "inspect",
+    "subprocess",
+    "functools",
+    "pytest"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:conftest",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/connectors/library.py",
    "module": "connectors.library",
    "root": "kernel",
@@ -5525,6 +5551,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:bootstrapper",
+    "K:diagnostics.health",
     "K:test_validation"
    ],
    "import_status": "OK"
@@ -5559,14 +5586,15 @@
    "path": "agos/agos-kernel/core/__init__.py",
    "module": "core",
    "root": "kernel",
-   "lines": 6,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
-   "functions": 0,
+   "functions": 1,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "core.autonomous"
+    "core.autonomous",
+    "core"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -5842,6 +5870,39 @@
     "K:core.invariants",
     "K:core.invariants.reporter"
    ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/core/kernel.py",
+   "module": "core.kernel",
+   "root": "kernel",
+   "lines": 166,
+   "syntax_ok": true,
+   "classes": 5,
+   "functions": 15,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "datetime",
+    "enum",
+    "typing",
+    "shared",
+    "mission",
+    "agos_runtime",
+    "diagnostics"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:core.kernel",
+   "resolved_imports": [
+    "K:agos_runtime",
+    "K:diagnostics",
+    "K:mission",
+    "K:shared"
+   ],
+   "imported_by": [],
    "import_status": "OK"
   },
   {
@@ -6298,16 +6359,50 @@
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "diagnostics.runtime"
+    "diagnostics.runtime",
+    "diagnostics.health"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:diagnostics",
    "resolved_imports": [
+    "K:diagnostics.health",
     "K:diagnostics.runtime"
    ],
    "imported_by": [
+    "K:core.kernel",
     "K:test_validation"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/diagnostics/health.py",
+   "module": "diagnostics.health",
+   "root": "kernel",
+   "lines": 141,
+   "syntax_ok": true,
+   "classes": 2,
+   "functions": 8,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "datetime",
+    "typing",
+    "observability",
+    "contract_engine",
+    "contract_engine"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:diagnostics.health",
+   "resolved_imports": [
+    "K:contract_engine",
+    "K:observability"
+   ],
+   "imported_by": [
+    "K:diagnostics"
    ],
    "import_status": "OK"
   },
@@ -8507,6 +8602,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:context",
+    "K:core.kernel",
     "K:mission_engine",
     "K:pipeline",
     "K:resolvers",
@@ -8635,7 +8731,9 @@
    "importable_package_path": true,
    "id": "K:observability",
    "resolved_imports": [],
-   "imported_by": [],
+   "imported_by": [
+    "K:diagnostics.health"
+   ],
    "import_status": "OK"
   },
   {
@@ -10553,6 +10651,7 @@
    "id": "K:shared",
    "resolved_imports": [],
    "imported_by": [
+    "K:core.kernel",
     "K:decision",
     "K:interfaces"
    ],
@@ -11569,7 +11668,7 @@
     "K:providers"
    ],
    "imported_by": [],
-   "import_status": "ERR ImportError: cannot import name 'AGOSKernel' from 'core' (<repo>/agos/agos-kernel/core/__init__.py)"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/tool_packs/library.py",

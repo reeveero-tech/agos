@@ -1,4 +1,5 @@
 """Repository Analysis Capability."""
+import copy
 import os
 import subprocess
 from dataclasses import field
@@ -52,6 +53,18 @@ class RepositoryAnalysisCapability(ICapability):
         else:
             raise ValueError("Invalid input type")
         
+        # R-F-008: analysis is a pure function of (url, branch, commit) — Constitution
+        # Art. 14 (idempotent). Resolve the branch head cheaply (git ls-remote) and reuse a
+        # DNA already produced for that exact commit; a new commit is a new key, so the
+        # cache can never serve stale results. Opt out with {"cache": False}.
+        use_cache = input_data.get("cache", True) if isinstance(input_data, dict) else True
+        revision = self._remote_revision(url, branch) if use_cache else None
+        cache_key = (url, branch, revision)
+        cache = self.__dict__.setdefault("_dna_cache", {})
+        if revision and cache_key in cache:
+            print(f"[CAPABILITY] Reusing DNA of {url}@{revision[:12]} (same commit)")
+            return copy.deepcopy(cache[cache_key])
+        
         # Import provider here to avoid circular imports
         from providers import LocalRepositoryProvider
         provider = LocalRepositoryProvider()
@@ -77,6 +90,8 @@ class RepositoryAnalysisCapability(ICapability):
             # Step 5: Generate DNA
             print(f"[CAPABILITY] Generating DNA")
             dna = self._generate_dna(snapshot, languages, frameworks)
+            if revision:
+                cache[cache_key] = copy.deepcopy(dna)
             
             return dna
             
@@ -87,6 +102,19 @@ class RepositoryAnalysisCapability(ICapability):
                 parent = os.path.dirname(repo_path)
                 if os.path.exists(parent):
                     shutil.rmtree(parent, ignore_errors=True)
+    
+    @staticmethod
+    def _remote_revision(url: str, branch: str) -> Optional[str]:
+        """Commit id at the head of ``branch`` in ``url``, or ``None`` if it cannot be read."""
+        try:
+            out = subprocess.run(["git", "ls-remote", url, f"refs/heads/{branch}"],
+                                 capture_output=True, text=True, timeout=60)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        if out.returncode != 0 or not out.stdout.strip():
+            return None
+        sha = out.stdout.split()[0]
+        return sha if len(sha) >= 40 else None
     
     def _detect_languages(self, snapshot: RepositorySnapshot) -> List[str]:
         """Detect programming languages."""

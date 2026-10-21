@@ -1,6 +1,5 @@
 {
  "known_failures": [
-  "::agos.agos-kernel.test_validation",
   "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_file_permissions_are_restricted",
   "agos.agos-kernel.test_intelligence::test_architecture_analysis",
   "agos.agos-kernel.test_intelligence::test_capability_discovery",
