@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 525
-- **functions**: 5765
+- **functions**: 5773
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 523
-- **lines**: 90410
+- **lines**: 90996
 - **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 21 | 3895 | 132 | 0 | 0 | 20 | 0 | 20 |
+| `agos-kernel` | 21 | 4434 | 132 | 0 | 0 | 20 | 0 | 20 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -32,7 +32,7 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 10 | 2696 | 152 | 26 | 0 | 10 | 0 | 0 |
+| `agos-kernel/capabilities` | 10 | 2717 | 159 | 26 | 0 | 10 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
 | `agos-kernel/civilization` | 99 | 23507 | 1280 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
@@ -43,7 +43,7 @@
 | `agos-kernel/context` | 1 | 61 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contracts` | 1 | 124 | 4 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/core` | 24 | 3675 | 180 | 0 | 0 | 24 | 0 | 15 |
+| `agos-kernel/core` | 24 | 3695 | 181 | 0 | 0 | 24 | 0 | 15 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
@@ -58,7 +58,7 @@
 | `agos-kernel/event_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/events` | 1 | 75 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/evolution` | 4 | 1264 | 96 | 44 | 0 | 4 | 0 | 4 |
-| `agos-kernel/execution` | 5 | 1460 | 87 | 0 | 0 | 5 | 0 | 0 |
+| `agos-kernel/execution` | 5 | 1466 | 87 | 0 | 0 | 5 | 0 | 0 |
 | `agos-kernel/execution-context` | 1 | 248 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/execution_context` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/expansion` | 2 | 182 | 15 | 1 | 0 | 2 | 0 | 1 |

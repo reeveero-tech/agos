@@ -148,5 +148,25 @@ def run_quick_check():
     return True
 
 
+def test_runner_logic():
+    """R-Q-001: كان هذا الملف بلا أي اختبار (مشغل سكربت فقط) — اختبار فعلي لمنطقه.
+
+    - الفحص السريع ينجح فعلاً (الأدلة الحراسية موجودة).
+    - ملفات golden التسعة التي يشغلها ``run_golden_tests`` موجودة كلها — لا مسار وهمي.
+    """
+    # 1) الفحص السريع: الأدلة الحراسية موجودة فعلاً
+    assert run_quick_check() is True
+    # 2) ملفات golden التسعة موجودة فعلاً (قائمة run_golden_tests لا تشير لوهم)
+    expected = {
+        'test_golden_compatibility.py', 'test_golden_contracts.py',
+        'test_golden_events.py', 'test_golden_runtime.py',
+        'test_golden_registry.py', 'test_golden_serialization.py',
+        'test_golden_recovery.py', 'test_golden_performance.py',
+        'test_golden_security.py',
+    }
+    actual = {p.name for p in TEST_DIR.glob("test_golden_*.py")}
+    assert actual == expected, (actual ^ expected)
+
+
 if __name__ == '__main__':
     sys.exit(run_golden_tests())

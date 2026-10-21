@@ -22,18 +22,26 @@ def test_language_packs():
     library = get_lang_library()
     print(f"✓ Language Pack Library initialized")
     print(f"  Total packs: {len(library.packs)}")
+    # R-Q-001: تأكيد فعلي — النطاق الموثق LANGUAGE-PACK-000001..000040 = 40
+    assert len(library.packs) == 40, len(library.packs)
     
     for i, (name, pack) in enumerate(list(library.packs.items())[:10]):
         print(f"  {i+1}. {pack.metadata.name} ({', '.join(pack.metadata.extensions[:2])})")
+        # المفتاح معرف (cpp/react) والاسم معروض (C++/React) — التطابق بالمعرف لا بالاسم
+        assert pack.metadata.name, (name, pack.metadata.name)
+        assert library.get(name) is pack
     
     print(f"  ... and {len(library.packs) - 10} more")
     
     # Detect language
     python = library.detect("main.py")
     print(f"\n✓ Detected: {python.metadata.name}")
-    
     js = library.detect("app.jsx")
     print(f"✓ Detected: {js.metadata.name}")
+    # R-Q-001: الكشف فعلي — الامتداد المعلن يعود بحزمته الصحيحة
+    assert python.metadata.name == "Python", python.metadata.name
+    assert js.metadata.name == "JavaScript", js.metadata.name
+    assert python is not js                       # حزمتان مختلفتان لا نفس المرجع
 
 
 def test_framework_packs():
@@ -45,9 +53,14 @@ def test_framework_packs():
     library = get_fwk_library()
     print(f"✓ Framework Pack Library initialized")
     print(f"  Total packs: {len(library.packs)}")
+    # R-Q-001: تأكيد فعلي — الرصيد الفعلي 59 حزمة (الوثيقة تقول «1-60» — فرق موثق في سجل العمل)
+    assert len(library.packs) == 59, len(library.packs)
     
     for i, (name, pack) in enumerate(list(library.packs.items())[:10]):
         print(f"  {i+1}. {pack.metadata.name} ({pack.metadata.category})")
+        # المفتاح معرف (react) والاسم معروض (React) — الاسترجاع بالمفتاح يعيد الحزمة نفسها
+        assert pack.metadata.name, (name, pack.metadata.name)
+        assert library.get(name) is pack
     
     print(f"  ... and {len(library.packs) - 10} more")
     
@@ -55,6 +68,9 @@ def test_framework_packs():
     react = library.get("react")
     if react:
         print(f"\n✓ Framework: {react.metadata.name}")
+    # R-Q-001: حزمة react موجودة
+    assert react is not None, "react framework pack missing"
+    assert react.metadata.name == "React", react.metadata.name
 
 
 def test_cloud_packs():
@@ -66,15 +82,23 @@ def test_cloud_packs():
     library = get_cloud_library()
     print(f"✓ Cloud Pack Library initialized")
     print(f"  Total packs: {len(library.packs)}")
+    # R-Q-001: تأكيد فعلي — النطاق الموثق CLOUD-PACK-000001..000030 = 30
+    assert len(library.packs) == 30, len(library.packs)
     
     for i, (name, pack) in enumerate(list(library.packs.items())[:10]):
         print(f"  {i+1}. {pack.metadata.name} ({pack.metadata.category})")
+        # المفتاح معرف (react) والاسم معروض (React) — الاسترجاع بالمفتاح يعيد الحزمة نفسها
+        assert pack.metadata.name, (name, pack.metadata.name)
+        assert library.get(name) is pack
     
     print(f"  ... and {len(library.packs) - 10} more")
     
     # List by category
     paas = library.list_by_category("paas")
     print(f"\n✓ PaaS providers: {[p.metadata.name for p in paas]}")
+    # R-Q-001: تصنيف paas غير فارغ وكل أعضائه من الفئة نفسها فعلاً
+    assert paas, "paas category is empty"
+    assert all(p.metadata.category == "paas" for p in paas)
 
 
 def main():

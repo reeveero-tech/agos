@@ -31,6 +31,7 @@ def assert_condition(condition: bool, message: str):
 
 def test_module_imports():
     """Smoke-import every capability/provider/skill module."""
+    _before = len(FAILURES)   # R-Q-001: الفشل المسجل يجب أن يُفشل اختبار pytest فعلاً
     print("\n--- Module import smoke test ---")
     modules = [
         "capabilities",
@@ -49,10 +50,13 @@ def test_module_imports():
             assert_condition(True, f"Imported {mod_name}")
         except Exception as e:
             assert_condition(False, f"Import {mod_name} ({e})")
+    # R-Q-001: أي فشل استيراد يُفشل الاختبار — لا مجرد طباعة
+    assert len(FAILURES) == _before, FAILURES[_before:]
 
 
 def test_repository_analysis_pipeline():
     """Run the real repository analysis pipeline against a live git repo on disk."""
+    _before = len(FAILURES)   # R-Q-001: الفشل المسجل يجب أن يُفشل اختبار pytest فعلاً
     print("\n--- Repository Analysis pipeline (local self-repo) ---")
     from providers import LocalRepositoryProvider
 
@@ -66,10 +70,13 @@ def test_repository_analysis_pipeline():
 
     snapshot = provider.Read(repo_root)
     assert_condition(len(snapshot.files) > 0, "Read repository snapshot has files")
+    # R-Q-001: أي فشل مسجل يُفشل الاختبار — لا مجرد طباعة
+    assert len(FAILURES) == _before, FAILURES[_before:]
 
 
 def test_autonomous_core():
     """Exercise the AutonomousCore mission lifecycle."""
+    _before = len(FAILURES)   # R-Q-001: الفشل المسجل يجب أن يُفشل اختبار pytest فعلاً
     print("\n--- AutonomousCore mission lifecycle ---")
     from uuid import uuid4
     from core import AutonomousCore, Mission, MissionStatus
@@ -83,6 +90,8 @@ def test_autonomous_core():
     assert_condition(core.validate(mission), "Mission validated")
     assert_condition(core.execute(mission), "Mission execution started")
     assert_condition(mission.status == MissionStatus.EXECUTING, "Mission status is EXECUTING")
+    # R-Q-001: أي فشل مسجل يُفشل الاختبار — لا مجرد طباعة
+    assert len(FAILURES) == _before, FAILURES[_before:]
 
 
 def main():

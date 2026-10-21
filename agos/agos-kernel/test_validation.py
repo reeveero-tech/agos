@@ -68,6 +68,7 @@ def test_cold_start():
     )
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -96,6 +97,7 @@ def test_warm_start():
         success = False
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -122,6 +124,7 @@ def test_mission_execution():
     )
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -147,6 +150,7 @@ def test_repository_analysis():
         f"Analysis failed: {result.error}"
     ):
         kernel.shutdown()
+        assert False, f"Analysis failed: {result.error}"  # R-Q-001: الفشل يُفشل الاختبار فعلاً
         return False
     
     dna = result.data
@@ -162,6 +166,7 @@ def test_repository_analysis():
         assert_test("Repository analysis: has primary language", dna.primary_language != "")
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -190,6 +195,7 @@ def test_failure_recovery():
     )
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -229,6 +235,7 @@ def test_stress():
     )
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -257,6 +264,7 @@ def test_diagnostics():
         print(f"   Status: {report.status}")
     
     kernel.shutdown()
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 
@@ -289,6 +297,7 @@ def test_contracts():
     ):
         success = False
     
+    assert success  # R-Q-001: pytest يتجاهل قيم الإرجاع — الفشل يُفشل الاختبار فعلاً
     return success
 
 

@@ -47,6 +47,9 @@ async def test_execution_engine():
         rollback_on_failure=True,
     )
     print(f"✓ Policy created: timeout={policy.timeout_seconds}s, retries={policy.max_retries}")
+    # R-Q-001: السياسة حُفظت كما أُنشئت فعلاً
+    assert policy.timeout_seconds == 60 and policy.max_retries == 3
+    assert policy.rollback_on_failure is True
     
     # Test execution
     result = await engine.execute(
@@ -57,6 +60,9 @@ async def test_execution_engine():
         policy_name="test_policy",
     )
     print(f"✓ Execution: {result.status.value}, output={result.output}")
+    # R-Q-001: التنفيذ اكتمل فعلاً بمخرج معلن
+    assert result.status.value == "completed", result.status.value
+    assert isinstance(result.output, dict) and result.output
     
     # Test workflow graph
     graph = ExecutionGraph("test_workflow")
@@ -68,6 +74,10 @@ async def test_execution_engine():
     graph.add_edge("node1", "node2")
     
     print(f"✓ Workflow graph: {len(graph.nodes)} nodes, {len(graph.edges)} edges")
+    # R-Q-001: العقد والحُواف المضافة ظهرت في الرسم فعلاً
+    # (edges قاموس جوار: لكل عقدة مدخل — الحافة node1→node2 داخل قائمة node1)
+    assert len(graph.nodes) == 2, graph.nodes
+    assert "node2" in graph.edges["node1"], graph.edges
     
     return True
 
@@ -79,6 +89,7 @@ async def test_skills():
     print("=" * 60)
     
     print(f"Total skills: {len(SKILL_IMPLEMENTATIONS)}")
+    assert len(SKILL_IMPLEMENTATIONS) == 7, len(SKILL_IMPLEMENTATIONS)   # R-Q-001
     
     # Test CodeAnalysisSkill
     skill = CodeAnalysisSkill()
@@ -87,18 +98,25 @@ async def test_skills():
         "language": "python",
     })
     print(f"✓ CodeAnalysis: {result.success}, Score: {result.output.get('quality_score', 0):.1f}")
+    assert result.success is True, result          # R-Q-001
+    assert result.output.get("quality_score", 0) > 0
     
     # Test SecurityReviewSkill
     result = await execute_skill("security_review", {
         "code": "eval(user_data)\npassword = 'secret'",
     })
     print(f"✓ SecurityReview: {result.success}, Vulns: {len(result.output.get('vulnerabilities', []))}")
+    # R-Q-001: الكود المدخل فيه eval وكلمة سر — ثغرتا أمن معلنتان فعلاً
+    assert result.success is True, result
+    assert len(result.output.get("vulnerabilities", [])) == 2
     
     # Test PerformanceReviewSkill
     result = await execute_skill("perf_review", {
         "code": "for i in range(10):\n    for j in range(10):\n        pass",
     })
     print(f"✓ PerformanceReview: {result.success}, Issues: {len(result.output.get('issues', []))}")
+    assert result.success is True, result          # R-Q-001
+    assert len(result.output.get("issues", [])) >= 1
     
     return True
 
@@ -110,6 +128,7 @@ async def test_providers():
     print("=" * 60)
     
     print(f"Total providers: {len(PROVIDER_IMPLEMENTATIONS)}")
+    assert len(PROVIDER_IMPLEMENTATIONS) == 3, len(PROVIDER_IMPLEMENTATIONS)   # R-Q-001
     
     # Test OpenAI Provider
     openai = get_provider("openai", api_key="test-key")
@@ -120,29 +139,36 @@ async def test_providers():
         "messages": [{"role": "user", "content": "Hello"}],
     })
     print(f"✓ OpenAI Chat: {result.get('id', '')[:20]}...")
+    assert result.get("id", "").startswith("chatcmpl-"), result   # R-Q-001
     
     # Test embeddings
     result = await openai.execute("embeddings", {"input": "Hello world"})
     print(f"✓ OpenAI Embeddings: {len(result['data'][0]['embedding'])} dims")
+    assert len(result["data"][0]["embedding"]) > 0   # R-Q-001
     
     # Test streaming
     chunks = []
     async for chunk in openai.stream("chat", {"messages": [{"content": "Hi"}]}):
         chunks.append(chunk)
     print(f"✓ OpenAI Streaming: {len(chunks)} chunks")
+    assert len(chunks) > 0, chunks                  # R-Q-001
     
     # Test health
     health = await openai.health_check()
     print(f"✓ OpenAI Health: {health.healthy}, latency: {health.latency_ms:.2f}ms")
+    assert health.healthy is True, health            # R-Q-001
     
     # Test metrics
     metrics = openai.get_metrics()
     print(f"✓ OpenAI Metrics: {metrics.total_requests} requests, {metrics.successful_requests} success")
+    # R-Q-001: الطلبات المنفذة فوقه مسجلة فعلاً في المقاييس
+    assert metrics.total_requests >= 2 and metrics.successful_requests >= 2
     
     # Test Anthropic Provider
     anthropic = get_provider("anthropic", api_key="test-key")
     result = await anthropic.execute("chat", {"messages": [{"role": "user", "content": "Hello"}]})
     print(f"✓ Anthropic Chat: {result.get('id', '')}")
+    assert result.get("id"), result                  # R-Q-001
     
     return True
 
@@ -154,31 +180,45 @@ async def test_adapters():
     print("=" * 60)
     
     print(f"Total adapters: {len(ADAPTER_IMPLEMENTATIONS)}")
+    assert len(ADAPTER_IMPLEMENTATIONS) == 7, len(ADAPTER_IMPLEMENTATIONS)   # R-Q-001
     
     # Test Git Adapter
     git = get_adapter("git")
     result = await git.execute("status", {})
     print(f"✓ Git Adapter: {result.success}")
+    assert result.success is True, result            # R-Q-001
     
     # Test Docker Adapter
     docker = get_adapter("docker")
     result = await docker.execute("ps", {})
     print(f"✓ Docker Adapter: {result.success}")
+    # R-Q-001: عقد الموصِل يمر بـsubprocess — غياب CLI يرفع استثناء يُترجم خطأ معلناً
+    # (success=False مع error) لا كذباً. القرار بيئي فنؤكد الشكل والخطأ المعلن معاً
+    assert isinstance(result.success, bool), result
+    if result.success is False:
+        assert result.error, result
     
     # Test Kubernetes Adapter
     k8s = get_adapter("kubernetes")
     result = await k8s.execute("pods", {})
     print(f"✓ Kubernetes Adapter: {result.success}")
+    assert isinstance(result.success, bool), result   # R-Q-001: بيئي — CLI غائب
+    if result.success is False:
+        assert result.error, result
     
     # Test Terraform Adapter
     tf = get_adapter("terraform")
     result = await tf.execute("validate", {})
     print(f"✓ Terraform Adapter: {result.success}")
+    assert isinstance(result.success, bool), result   # R-Q-001: بيئي — CLI غائب
+    if result.success is False:
+        assert result.error, result
     
     # Test OpenAI Adapter
     openai = get_adapter("openai", api_key="test")
     result = await openai.execute("chat", {"messages": [{"role": "user", "content": "Hello"}]})
     print(f"✓ OpenAI Adapter: {result.success}")
+    assert result.success is True, result            # R-Q-001
     
     return True
 
@@ -210,6 +250,7 @@ async def test_integration():
     graph.exit_nodes = ["perf"]
     
     print(f"✓ Integration workflow: {len(graph.nodes)} nodes")
+    assert len(graph.nodes) == 3, graph.nodes       # R-Q-001
     
     # Execute workflow
     results = await engine.execute_workflow(
@@ -219,6 +260,9 @@ async def test_integration():
     )
     
     print(f"✓ Workflow results: {len(results)} nodes executed")
+    # R-Q-001: كل عقد سير العمل نُفذت واكتملت فعلاً
+    assert len(results) == 3, results
+    assert all(r.status.value == "completed" for r in results.values()), results
     
     for node_id, result in results.items():
         print(f"  - {node_id}: {result.status.value}")

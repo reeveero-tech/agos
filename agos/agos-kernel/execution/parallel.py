@@ -68,10 +68,15 @@ class ParallelScheduler:
         name: str,
         dependencies: Optional[List[str]] = None,
         resources: Optional[Dict[str, Any]] = None,
+        task_id: Optional[str] = None,
     ) -> ExecutionTask:
-        """Add a task to the scheduler."""
+        """Add a task to the scheduler.
+
+        ``task_id`` (R-Q-001): معرف اختياري للمهمة القائمة أصلاً — بدونه تُولّد مهمة
+        بمعرف جديد بينما تبعياتها تشير لمعرفات المهمة الأصلية فلا تكتمل السلسلة أبداً.
+        """
         task = ExecutionTask(
-            id=self._generate_id(name),
+            id=task_id or self._generate_id(name),
             name=name,
             dependencies=dependencies or [],
             resources=resources or {},
@@ -272,6 +277,7 @@ class ParallelExecutor:
                 name=task.name,
                 dependencies=task.dependencies,
                 resources=task.resources,
+                task_id=task.id,   # R-Q-001: هوية المهمة الأصلية — وإلا انكسرت التبعيات
             )
         
         batches = self.scheduler.get_parallel_batches()

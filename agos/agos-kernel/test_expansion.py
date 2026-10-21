@@ -32,26 +32,37 @@ def test_capabilities_21_60():
     cap = ComplexityAnalysisCapability()
     result = cap.execute({})
     print(f"✓ Capability-021: Complexity = {result['maintainability_index']}")
+    # R-Q-001: مؤشر رقمي معلن في نطاق 0-100 لا قيمة خاوية
+    assert isinstance(result['maintainability_index'], float)
+    assert 0.0 <= result['maintainability_index'] <= 100.0, result['maintainability_index']
     
     # Maintainability Analysis
     cap = MaintainabilityAnalysisCapability()
     result = cap.execute({})
     print(f"✓ Capability-022: Maintainability = {result['maintainability_score']}")
+    assert isinstance(result['maintainability_score'], float)
+    assert 0.0 <= result['maintainability_score'] <= 100.0, result['maintainability_score']
     
     # Code Quality
     cap = CodeQualityAnalysisCapability()
     result = cap.execute([])
     print(f"✓ Capability-024: Quality Grade = {result['grade']}")
+    assert result['grade'] in ("A", "B", "C", "D", "F"), result['grade']
     
     # Repository Health
     cap = RepositoryHealthScoreCapability()
     result = cap.execute({})
     print(f"✓ Capability-059: Health Score = {result['overall_score']}")
+    assert isinstance(result['overall_score'], float)
+    assert 0.0 <= result['overall_score'] <= 100.0, result['overall_score']
     
     # Intelligence Report
     cap = EngineeringIntelligenceReportCapability()
     result = cap.execute({})
     print(f"✓ Capability-060: Report generated")
+    # R-Q-001: التقرير له الحقول المعلنة فعلاً لا مجرد نجاح الإنشاء
+    for expected_key in ("summary", "risk_assessment", "recommendations", "generated_at"):
+        assert expected_key in result, expected_key
 
 
 def test_providers_16_40():
@@ -63,12 +74,16 @@ def test_providers_16_40():
     # AI Providers
     openai = OpenAIProvider()
     print(f"✓ Provider-016: OpenAI = {openai.metadata.name}")
+    # R-Q-001: البواني تعمل والبيانات الوصفية معلنة فعلاً
+    assert openai.metadata.name == "OpenAI", openai.metadata.name
     
     anthropic = AnthropicProvider()
     print(f"✓ Provider-017: Anthropic = {anthropic.metadata.name}")
+    assert anthropic.metadata.name == "Anthropic"
     
     ollama = OllamaProvider()
     print(f"✓ Provider-021: Ollama = {ollama.metadata.name}")
+    assert ollama.metadata.name == "Ollama"
     
     # Infrastructure Providers
     k8s = KubernetesProvider()
@@ -94,19 +109,23 @@ def test_skills_41_100():
     skill = AnalyzeRepositorySkill()
     result = skill.execute({})
     print(f"✓ Skill-041: AnalyzeRepository = {result['success']}")
+    assert result['success'] is True, result       # R-Q-001: نجاح معلن فعلاً
     
     skill = AnalyzeArchitectureSkill()
     result = skill.execute({})
     print(f"✓ Skill-042: AnalyzeArchitecture = {result['success']}")
+    assert result['success'] is True, result
     
     # Knowledge Skills
     skill = CreateSnapshotSkill()
     result = skill.execute({})
     print(f"✓ Skill-071: CreateSnapshot = {result['success']}")
+    assert result['success'] is True, result
     
     skill = ComputeTrustScoreSkill()
     result = skill.execute({})
     print(f"✓ Skill-081: ComputeTrustScore = {result['success']}")
+    assert result['success'] is True, result
 
 
 def main():

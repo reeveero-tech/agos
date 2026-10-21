@@ -35,6 +35,11 @@ def test_repository_analysis():
         print("✗ Repository analysis failed")
         if report.errors:
             print(f"  Errors: {report.errors}")
+    # R-Q-001: تحليل المستودع نجح فعلاً — لغات وملفات وأسطر معلنة
+    assert report.repository is not None, report.errors
+    assert report.repository.languages, "no languages detected"
+    assert report.repository.metrics.total_files > 0
+    assert report.repository.metrics.total_lines > 0
     
     return report
 
@@ -52,6 +57,9 @@ def test_code_analysis(report):
         print(f"  - Complexity: {report.code.health.complexity_score:.2f}")
     else:
         print("✗ Code analysis failed")
+    # R-Q-001: تحليل الكود نجح فعلاً — ملفات محللة معلنة
+    assert report.code is not None
+    assert len(report.code.files) > 0, "no code files analyzed"
 
 def test_architecture_analysis(report):
     """Test architecture analysis."""
@@ -68,6 +76,13 @@ def test_architecture_analysis(report):
         print(f"  - Score: {report.architecture.score.overall:.2f}")
     else:
         print("✗ Architecture analysis failed")
+    # R-Q-001: تحليل المعمارية نجح فعلاً — نمط وثقة وطبقات ومكونات معلنة
+    assert report.architecture is not None
+    assert report.architecture.style.value == "event_driven", report.architecture.style.value
+    assert 0.0 <= report.architecture.confidence <= 1.0
+    assert len(report.architecture.layers) > 0, "no layers"
+    assert len(report.architecture.components) > 0, "no components"
+    assert 0.0 <= report.architecture.score.overall <= 1.0
 
 def test_capability_discovery(report):
     """Test capability discovery."""
@@ -83,6 +98,10 @@ def test_capability_discovery(report):
             print(f"  ... and {len(report.capabilities) - 5} more")
     else:
         print("✗ Capability discovery failed")
+    # R-Q-001: كشف القدرات نجح فعلاً — عدد معلن وكل قدرة باسم ونوع
+    assert len(report.capabilities) > 0, "no capabilities discovered"
+    for cap in report.capabilities[:5]:
+        assert cap.name and cap.type, cap
 
 def test_provider_discovery(report):
     """Test provider discovery."""
@@ -98,6 +117,10 @@ def test_provider_discovery(report):
             print(f"  ... and {len(report.providers) - 5} more")
     else:
         print("✗ Provider discovery failed")
+    # R-Q-001: كشف المزودين نجح فعلاً — عدد معلن وكل مزود باسم ونوع
+    assert len(report.providers) > 0, "no providers discovered"
+    for provider in report.providers[:5]:
+        assert provider.name and provider.type, provider
 
 def test_project_dna(report):
     """Test project DNA generation."""
@@ -114,6 +137,13 @@ def test_project_dna(report):
         print(f"  - Maintainability: {report.project_dna.maintainability_index:.2f}")
     else:
         print("✗ Project DNA generation failed")
+    # R-Q-001: بصمة المشروع ولدت فعلاً — معرف واسم ولغات ومؤشرات معلنة
+    assert report.project_dna is not None
+    assert report.project_dna.id, "no DNA id"
+    assert report.project_dna.name, "no DNA name"
+    assert report.project_dna.languages, "no DNA languages"
+    assert 0.0 <= report.project_dna.complexity_score <= 1.0
+    assert 0.0 <= report.project_dna.maintainability_index <= 1.0
 
 def test_knowledge_extraction(report):
     """Test knowledge extraction."""
@@ -129,6 +159,9 @@ def test_knowledge_extraction(report):
         print(f"  - Technologies: {len(report.knowledge.technologies)}")
     else:
         print("✗ Knowledge extraction failed")
+    # R-Q-001: استخراج المعرفة نجح فعلاً — عناصر معلنة لا قائمة فارغة
+    assert report.knowledge is not None
+    assert report.knowledge.total_knowledge > 0, "no knowledge extracted"
 
 def test_query_engine():
     """Test query engine."""
@@ -142,9 +175,12 @@ def test_query_engine():
     # Test queries
     result = platform.query("analyzer")
     print(f"✓ Query 'analyzer': {result.count} results")
+    # R-Q-001: الاستعلام يعيد نتائج فعلية لا عدداً صامتاً
+    assert result.count > 0, "query 'analyzer' returned nothing"
     
     result = platform.query("test", query_type="file")
     print(f"✓ Query 'test' (files): {result.count} results")
+    assert result.count >= 0, result.count   # عدد صالح معلن
 
 def main():
     """Run all tests."""

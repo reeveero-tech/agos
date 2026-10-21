@@ -30,14 +30,19 @@ def test_workspace():
     print(f"✓ Workspace created: {workspace.id}")
     print(f"  Name: {workspace.name}")
     print(f"  Status: {workspace.status.value}")
+    # R-Q-001: مساحة عمل جاهزة فعلاً بالاسم المطلوب
+    assert workspace.name == "test-workspace", workspace.name
+    assert workspace.status.value == "ready", workspace.status.value
     
     # Clone workspace
     clone = platform.workspace.clone_workspace(workspace.id, "cloned-workspace")
     print(f"✓ Workspace cloned: {clone.id}")
+    assert clone.id != workspace.id and clone.name == "cloned-workspace"   # R-Q-001
     
     # Snapshot
     snapshot = platform.workspace.snapshot_workspace(workspace.id)
     print(f"✓ Snapshot created: {snapshot.id}")
+    assert snapshot.id   # R-Q-001: لقطة بمعرف فعلي
     
     return platform
 
@@ -57,10 +62,14 @@ def test_session(platform):
     print(f"✓ Session created: {session.id}")
     print(f"  Name: {session.name}")
     print(f"  Status: {session.status.value}")
+    # R-Q-001: جلسة فعالة بالاسم المطلوب
+    assert session.name == "test-session", session.name
+    assert session.status.value == "active", session.status.value
     
     # Add interaction
     platform.session.add_interaction(session.id, {"message": "Hello"})
     print(f"✓ Interaction added")
+    assert platform.session.get_session(session.id) is not None   # R-Q-001: الجلسة متاحة بعد التفاعل
     
     return session
 
@@ -79,10 +88,14 @@ def test_artifact(platform):
     print(f"✓ Artifact created: {artifact.id}")
     print(f"  Name: {artifact.name}")
     print(f"  Type: {artifact.artifact_type.value}")
+    # R-Q-001: مُنتج بالاسم والنوع المطلوبين
+    assert artifact.name == "test-artifact", artifact.name
+    assert artifact.artifact_type.value == "file", artifact.artifact_type.value
     
     # Validate
     platform.artifact.validate_artifact(artifact.id)
     print(f"✓ Artifact validated: {artifact.status.value}")
+    assert artifact.status.value == "valid", artifact.status.value   # R-Q-001
     
     return artifact
 
@@ -100,10 +113,14 @@ def test_environment(platform):
     print(f"✓ Environment created: {env.id}")
     print(f"  Name: {env.name}")
     print(f"  Type: {env.environment_type.value}")
+    # R-Q-001: بيئة محلية بالاسم المطلوب
+    assert env.name == "test-env", env.name
+    assert env.environment_type.value == "local", env.environment_type.value
     
     # Health check
     healthy = platform.environment.check_health(env.id)
     print(f"✓ Health check: {'healthy' if healthy else 'unhealthy'}")
+    assert healthy is True   # R-Q-001: فحص صحي فعلي
     
     return env
 
@@ -123,10 +140,13 @@ def test_resource(platform):
     print(f"✓ Resource created: {resource.id}")
     print(f"  Name: {resource.name}")
     print(f"  Capacity: {resource.capacity}")
+    # R-Q-001: مورد بسعة معلنة كما أُنشئ
+    assert resource.name == "cpu-cores" and resource.capacity == 8.0
     
     # Allocate
     alloc = platform.resource.allocate(resource.id, 4.0, "workspace-001")
     print(f"✓ Resource allocated: {alloc.id}")
+    assert alloc.id   # R-Q-001: حجز بمعرف فعلي
     
     return resource
 
@@ -146,6 +166,9 @@ def test_scheduler(platform):
     print(f"✓ Schedule created: {schedule.id}")
     print(f"  Name: {schedule.name}")
     print(f"  Type: {schedule.schedule_type.value}")
+    # R-Q-001: جدول متكرر كما طُلب
+    assert schedule.name == "test-schedule", schedule.name
+    assert schedule.schedule_type.value == "recurring", schedule.schedule_type.value
     
     return schedule
 
@@ -164,10 +187,14 @@ def test_queue(platform):
     print(f"✓ Queue created: {queue.id}")
     print(f"  Name: {queue.name}")
     print(f"  Type: {queue.queue_type.value}")
+    # R-Q-001: طابور تنفيذ بالاسم المطلوب
+    assert queue.name == "test-queue", queue.name
+    assert queue.queue_type.value == "execution", queue.queue_type.value
     
     # Enqueue
     item = platform.queue.enqueue(queue.id, {"task": "test"}, priority=5)
     print(f"✓ Item enqueued: {item.id}")
+    assert item.id   # R-Q-001: عنصر في الطابور بمعرف فعلي
     
     return queue
 
@@ -186,10 +213,15 @@ def test_state(platform):
     print(f"✓ State created: {state.id}")
     print(f"  Name: {state.name}")
     print(f"  Version: {state.version}")
+    assert state.name == "test-state" and state.version >= 1   # R-Q-001
     
     # Update
+    _v_before = state.version
     platform.state.update_state(state.id, {"progress": 50})
     print(f"✓ State updated to version {state.version}")
+    # R-Q-001: التحديث يرفع الإصدار ويعدّل البيانات فعلاً
+    assert state.version > _v_before, state.version
+    assert state.data.get("progress") == 50, state.data
     
     return state
 
@@ -206,6 +238,7 @@ def test_recovery(platform):
         data={"name": "test", "status": "running"}
     )
     print(f"✓ Checkpoint created: {checkpoint.id}")
+    assert checkpoint.id   # R-Q-001: نقطة حفظ بمعرف فعلي
     
     # Analyze failure
     analysis = platform.recovery.analyze_failure(
@@ -214,6 +247,7 @@ def test_recovery(platform):
         error_message="Connection timeout"
     )
     print(f"✓ Failure analyzed: {analysis.root_cause}")
+    assert analysis.root_cause, "empty root cause"   # R-Q-001: تحليل بحصيلة معلنة
     
     return checkpoint
 
@@ -228,15 +262,20 @@ def test_platform():
     # Create mission workspace
     workspace = platform.create_mission_workspace("mission-001", "mission-workspace")
     print(f"✓ Mission workspace created: {workspace.id}")
+    assert workspace.id and workspace.name == "mission-workspace"   # R-Q-001
     
     # Create checkpoint
     checkpoint = platform.create_checkpoint_for_workspace(workspace.id)
     print(f"✓ Checkpoint created: {checkpoint.id}")
+    assert checkpoint.id   # R-Q-001
     
     # Health check
     health = platform.health_check()
     print(f"✓ Platform health: {health['status']}")
     print(f"  Subsystems healthy: {health['healthy_subsystems']}/{health['total_subsystems']}")
+    # R-Q-001: كل النظم الفرعية التسعة سليمة فعلاً
+    assert health["status"] == "healthy", health
+    assert health["healthy_subsystems"] == health["total_subsystems"] == 9, health
     
     # Stats
     stats = platform.get_stats()
@@ -250,6 +289,8 @@ def test_platform():
     print(f"  Queues: {stats.queues_count}")
     print(f"  States: {stats.states_count}")
     print(f"  Checkpoints: {stats.checkpoints_count}")
+    # R-Q-001: إحصاءات فعلية — ما أُنشئ أعلاه ظهر فيها
+    assert stats.workspaces_count >= 1 and stats.checkpoints_count >= 1, stats
 
 def main():
     """Run all tests."""

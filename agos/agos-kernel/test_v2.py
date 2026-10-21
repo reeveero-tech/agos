@@ -39,6 +39,10 @@ def test_distributed():
     health = runtime.get_health()
     print(f"✓ Cluster health: {health['cluster_state']}")
     print(f"  Active nodes: {health['active_nodes']}")
+    # R-Q-001: العقدتان المنضمتان فعلاً في الصحة
+    assert health["cluster_state"] == "stable", health
+    assert health["total_nodes"] == 2 and health["active_nodes"] == 2, health
+    assert health["failed_nodes"] == 0, health
     
     return runtime
 
@@ -68,6 +72,9 @@ def test_marketplace():
     # Discover
     results = runtime.discover("image")
     print(f"✓ Discovered {len(results)} assets")
+    # R-Q-001: الأصل المنشور يُكتشف بالبحث فعلاً
+    assert len(results) == 1, results
+    assert results[0].name == "Image Recognition"
     
     return runtime
 
@@ -91,6 +98,7 @@ def test_extension():
     # Install
     success = runtime.install(ext)
     print(f"✓ Extension installed: {success}")
+    assert success is True   # R-Q-001: التثبيت نجح فعلاً
     
     return runtime
 
@@ -106,6 +114,7 @@ def test_sdk_generator():
     # Generate Python SDK
     sdk = generator.generate({}, SDKLanguage.PYTHON)
     print(f"✓ Python SDK generated: {sdk.id}")
+    assert sdk.id   # R-Q-001: معرف مولد فعلاً
     
     # Generate TypeScript SDK
     sdk_ts = generator.generate({}, SDKLanguage.TYPESCRIPT)
@@ -131,6 +140,9 @@ def test_certification():
     cert = runtime.certify("capability-1", CertificationType.CAPABILITY)
     print(f"✓ Certification created: {cert.id}")
     print(f"  Status: {cert.status.value}")
+    # R-Q-001: الشهادة صدرت ناجحة فعلاً
+    assert cert.id, "no certification id"
+    assert cert.status.value == "passed", cert.status.value
     
     return runtime
 
@@ -151,6 +163,10 @@ def test_laboratory():
     experiment = runtime.run_experiment("caching-test", hypothesis.id)
     print(f"✓ Experiment completed: {experiment.id}")
     print(f"  Outcome: {experiment.results.get('outcome')}")
+    # R-Q-001: فرضية وتجربة بحصيلة معلنة
+    assert hypothesis.id, "no hypothesis id"
+    assert experiment.id, "no experiment id"
+    assert experiment.results.get("outcome") == "positive", experiment.results
     
     return runtime
 
@@ -166,14 +182,17 @@ def test_observatory():
     # Create dashboard
     dashboard = runtime.create_dashboard("Main Dashboard", ["missions", "health"])
     print(f"✓ Dashboard created: {dashboard['name']}")
+    assert dashboard["name"] == "Main Dashboard"   # R-Q-001
     
     # Add alert
     alert = runtime.add_alert("info", "Test Alert", "This is a test alert")
     print(f"✓ Alert added: {alert['id']}")
+    assert alert["id"], "no alert id"             # R-Q-001
     
     # Global metrics
     metrics = runtime.get_global_metrics()
     print(f"✓ Global metrics: health={metrics['health_score']}")
+    assert 0.0 <= metrics["health_score"] <= 1.0, metrics   # R-Q-001
     
     return runtime
 
@@ -189,6 +208,7 @@ def test_expansion():
     # Discover opportunities
     opportunities = engine.discover_opportunities()
     print(f"✓ Discovered {len(opportunities)} opportunities")
+    assert len(opportunities) > 0, opportunities   # R-Q-001
     
     # Generate proposal
     proposal = engine.generate_proposal(
@@ -197,6 +217,7 @@ def test_expansion():
         "capability",
     )
     print(f"✓ Proposal generated: {proposal.title}")
+    assert proposal.title == "Add Multi-Cloud Support"   # R-Q-001
     
     return engine
 
@@ -217,6 +238,9 @@ def test_platform_v2():
     health = platform.health_check()
     print(f"\n✓ Platform health: {health['status']}")
     print(f"  Architecture integrity: {health['architecture']['integrity']}")
+    # R-Q-001: منصة سليمة فعلاً
+    assert health["status"] == "healthy", health
+    assert health["architecture"]["integrity"] == "verified", health
     
     # Stats
     stats = platform.get_stats()
@@ -230,6 +254,7 @@ def test_platform_v2():
     # Integrity verification
     integrity = platform.verify_integrity()
     print(f"\n✓ Integrity verification: {integrity['status']}")
+    assert integrity["status"] == "passed", integrity   # R-Q-001
     
     # Describe
     description = platform.describe()
@@ -237,12 +262,17 @@ def test_platform_v2():
     print(f"  Guarantees: {len(description['guarantees'])}")
     for g in description['guarantees'][:3]:
         print(f"    - {g}")
+    assert len(description["guarantees"]) == 9, len(description["guarantees"])   # R-Q-001
     
     # Generate SDKs
     sdks = platform.generate_sdks()
     print(f"\n✓ SDKs generated: {len(sdks)}")
     for lang in sdks:
         print(f"    - {lang}")
+    # R-Q-001: لغات SDK معلنة — الثلاث المولدة أعلاه كلها منها
+    assert len(sdks) == 5, sdks
+    for lang in ("python", "typescript", "go"):
+        assert lang in sdks, lang
     
     return platform
 

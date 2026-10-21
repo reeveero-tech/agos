@@ -34,18 +34,24 @@ def test_orchestrator():
     
     print(f"✓ Workspace created: {ws1.id}")
     print(f"✓ Nested workspace created: {ws2.id}")
+    # R-Q-001: مساحة العمل المتداخلة ابنة للأولى فعلاً
+    assert ws2.parent_id == ws1.id, ws2.parent_id
     
     # Clone
     cloned = orchestrator.clone_workspace(ws1.id, "cloned-workspace")
     print(f"✓ Cloned workspace: {cloned.id}")
+    assert cloned.id != ws1.id and cloned.name == "cloned-workspace"   # R-Q-001
     
     # Checkpoint
     checkpoint = orchestrator.create_checkpoint(ws1.id)
     print(f"✓ Checkpoint created: {checkpoint}")
+    assert checkpoint   # R-Q-001
     
     # Stats
     stats = orchestrator.get_stats()
     print(f"✓ Total workspaces: {stats['total_workspaces']}")
+    # R-Q-001: الثلاث التي أُنشئت (الأصل والابن والنسخة) محسوبة فعلاً
+    assert stats["total_workspaces"] == 3, stats
     
     return orchestrator
 
@@ -75,14 +81,19 @@ def test_repository():
     
     print(f"✓ Repository registered: {repo1.name}")
     print(f"✓ Repository registered: {repo2.name}")
+    # R-Q-001: المستودعان مسجلان فعلاً بالاسماء المطلوبة
+    assert repo1.name == "frontend" and repo2.name == "backend"
     
     # Snapshot
     snapshot = runtime.create_snapshot(repo1.id)
     print(f"✓ Snapshot created: {snapshot}")
+    assert snapshot   # R-Q-001
     
     # Federation analysis
     analysis = runtime.analyze_federation("org1")
     print(f"✓ Federation analysis: {analysis['repository_count']} repos")
+    # R-Q-001: المستودعان المسجلان في org1 ظهرا في التحليل فعلاً
+    assert analysis["repository_count"] == 2, analysis
     
     return runtime
 
@@ -107,6 +118,10 @@ def test_cross_domain():
     
     print(f"✓ Cross-domain decision: {decision.id}")
     print(f"  Reasoning: {decision.reasoning[:50]}...")
+    # R-Q-001: قرار عبر المجالين بعقلانية مرتبطة بالمشكلة فعلاً
+    assert decision.id, "no decision id"
+    assert "Secure software deployment" in decision.reasoning, decision.reasoning
+    assert len(decision.domains) == 2, decision.domains
     
     return runtime
 
@@ -122,6 +137,7 @@ def test_long_running():
     # Create mission
     mission = runtime.create_mission("long-running-1")
     print(f"✓ Mission created: {mission['id']}")
+    assert mission["id"]   # R-Q-001
     
     # Start and pause
     runtime.start(mission['id'])
@@ -131,10 +147,13 @@ def test_long_running():
     # Checkpoint
     checkpoint = runtime.checkpoint(mission['id'])
     print(f"✓ Checkpoint created: {checkpoint}")
+    assert checkpoint   # R-Q-001
     
     # Timeline
     timeline = runtime.get_timeline(mission['id'])
     print(f"✓ Timeline events: {len(timeline)}")
+    # R-Q-001: الأحداث الأربعة (بدء/إيقاف/استئناف/نقطة حفظ) ظهرت فعلاً
+    assert len(timeline) == 4, len(timeline)
     
     return runtime
 
@@ -155,10 +174,13 @@ def test_diagnostics():
     # Diagnose
     reports = runtime.diagnose()
     print(f"✓ Diagnostic reports: {len(reports)}")
+    # R-Q-001: تقرير لكل نظام فرعي مسجل فعلاً
+    assert len(reports) == 3, len(reports)
     
     # Health report
     health = runtime.generate_health_report()
     print(f"✓ Platform health: {health['status']}")
+    assert health["status"] == "healthy", health   # R-Q-001
     
     return runtime
 
@@ -177,15 +199,19 @@ def test_healing():
         description="Provider timeout",
     )
     print(f"✓ Failure detected: {failure.id}")
+    assert failure.id   # R-Q-001
     
     # Plan recovery
     plan = runtime.plan_recovery(failure.id)
     print(f"✓ Recovery planned: {plan.id}")
     print(f"  Actions: {len(plan.actions)}")
+    # R-Q-001: خطة إنعاش بفعلين معلنين على الأقل
+    assert plan.id and len(plan.actions) >= 1, plan.actions
     
     # Execute
     success = runtime.execute_recovery(plan.id)
     print(f"✓ Recovery executed: {success}")
+    assert success is True   # R-Q-001: الإنعاش نجح فعلاً
     
     return runtime
 
@@ -206,10 +232,16 @@ def test_prediction():
     print(f"✓ Duration predicted: {duration.predicted_value:.0f}s (confidence: {duration.confidence:.0%})")
     print(f"✓ Cost predicted: ${cost.predicted_value:.2f}")
     print(f"✓ Risk predicted: {risk.predicted_value:.0%}")
+    # R-Q-001: تنبؤات معلنة حول التقديرات المدخلة لا قيم خاوية
+    assert 0.0 < duration.confidence <= 1.0, duration.confidence
+    assert duration.predicted_value > 0, duration.predicted_value
+    assert 0.0 < cost.predicted_value < 1000.0, cost.predicted_value
+    assert 0.0 < risk.predicted_value < 1.0, risk.predicted_value
     
     # Forecast
     forecast = runtime.forecast_resource_usage("cpu", periods=5)
     print(f"✓ Forecast generated: {len(forecast.values)} periods")
+    assert len(forecast.values) == 5, forecast.values   # R-Q-001
     
     return runtime
 
@@ -228,15 +260,21 @@ def test_simulation():
         simulation_type=SimulationType.MISSION_PLAN,
     )
     print(f"✓ Scenario created: {scenario.name}")
+    assert scenario.name == "test-deployment"   # R-Q-001
     
     # Run simulation
     simulation = runtime.run_simulation(scenario.id)
     print(f"✓ Simulation run: {simulation.id}")
     print(f"  Status: {simulation.status.value}")
+    # R-Q-001: محاكاة اكتملت فعلاً
+    assert simulation.id, "no simulation id"
+    assert simulation.status.value == "completed", simulation.status.value
     
     # Analyze
     analysis = runtime.analyze(simulation.id)
     print(f"✓ Analysis: {analysis.get('results', {})}")
+    # R-Q-001: تحليل بمخرجات معلنة
+    assert analysis.get("results"), analysis
     
     return runtime
 
@@ -254,10 +292,14 @@ def test_api():
     
     print(f"✓ API initialized: v{runtime.version}")
     print(f"✓ Endpoints registered: {len(runtime.endpoints)}")
+    # R-Q-001: واجهة بإصدار ونقاط نهاية معلنة
+    assert runtime.version == "v1.0.0", runtime.version
+    assert len(runtime.endpoints) == 2, runtime.endpoints
     
     # Create request
     request = runtime.create_request("/mission", params={}, body={})
     print(f"✓ Request created: {request.id}")
+    assert request.id   # R-Q-001: طلب بمعرف فعلي
     
     return runtime
 
@@ -273,11 +315,20 @@ def test_platform():
     print(f"✓ Platform initialized")
     print(f"  Version: {platform.version}")
     print(f"  Name: {platform.name}")
+    # R-Q-001: منصة بالاسم والإصدار المعلنين
+    assert platform.version == "1.0.0" and platform.name == "AGOS Civilization Platform"
     
     # Health check
     health = platform.health_check()
     print(f"\n✓ Platform health: {health['status']}")
     print(f"  Subsystems healthy: {sum(1 for v in health['subsystems'].values() if v == 'healthy')}/{len(health['subsystems'])}")
+    # R-Q-001: صحة معلنة وكل الأنظمة الفرعية بلا حالة فشل فعلاً
+    # (kernel يعلن «ready» — معجم حالة صالح لا يعني «healthy»)
+    assert health["status"] == "healthy", health
+    bad = {k: v for k, v in health["subsystems"].items()
+          if v in ("unhealthy", "failed", "error", "degraded")}
+    assert not bad, bad
+    assert len(health["subsystems"]) == 12, health
     
     # Stats
     stats = platform.get_stats()
@@ -291,6 +342,9 @@ def test_platform():
     print(f"\n✓ Platform Description:")
     print(f"  Capabilities: {len(description['capabilities'])}")
     print(f"  Subsystems: {len(description['subsystems'])}")
+    # R-Q-001: وصف بمحتوى معلن فعلاً
+    assert len(description["capabilities"]) == 10, description
+    assert len(description["subsystems"]) == 12, description
     
     return platform
 

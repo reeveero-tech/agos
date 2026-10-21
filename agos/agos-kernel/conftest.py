@@ -6,7 +6,9 @@ warns), so a function returning ``False`` would be reported as **passed** — a 
 
 For the modules in ``STRICT_RETURN_MODULES`` this hook runs the function itself and fails
 the test when it returns ``False``. The scripts are not modified (GOVERNANCE G2).
-R-Q-001 extends the list to every script-style module (and converts them to asserts).
+
+R-Q-001: كل ملفات السكربتات صارت تحمل تأكيدات فعلية داخلها (أداة الإنفاذ:
+``tools/quality/assert_audit.py``) — هذه الخطوط آليات احتياطية تبقى لا بديلاً عن التأكيد.
 
 Script fixtures (R-F-010): some scripts chain their checks — ``main()`` calls a
 *producer* (e.g. ``platform = test_workspace()``) and passes its result to the other
