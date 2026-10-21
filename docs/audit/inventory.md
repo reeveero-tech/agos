@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 515
-- **functions**: 5606
+- **files**: 516
+- **functions**: 5608
 - **hardcoded_paths**: 0
 - **import_fail**: 3
-- **import_ok**: 510
-- **lines**: 86652
-- **not_imported_by_others**: 253
+- **import_ok**: 511
+- **lines**: 86695
+- **not_imported_by_others**: 254
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -119,8 +119,9 @@
 | `agos-kernel/verification` | 2 | 224 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/vertical_slices` | 1 | 385 | 15 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
-| `agos_kernel` | 1 | 143 | 8 | 0 | 0 | 1 | 0 | 1 |
+| `agos_kernel` | 1 | 158 | 9 | 0 | 0 | 1 | 0 | 1 |
 | `civilization` | 5 | 529 | 50 | 16 | 0 | 5 | 0 | 4 |
+| `cli.py` | 1 | 28 | 1 | 0 | 0 | 1 | 0 | 1 |
 | `cloud` | 5 | 612 | 47 | 1 | 0 | 5 | 0 | 4 |
 | `cloud_collaboration` | 1 | 97 | 6 | 0 | 0 | 1 | 0 | 1 |
 | `cloud_execution` | 1 | 88 | 11 | 0 | 0 | 1 | 0 | 1 |

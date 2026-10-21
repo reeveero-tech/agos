@@ -38,6 +38,7 @@ MODULES = {
     K + "discovery": ("L1", "registry", ["R-W3-002"]),
     K + "resolvers": ("L1", "registry", ["R-W3-002"]),
     "__init__.py": ("L1", "namespace", ["R-F-005"]),  # agos/__init__.py — the `agos` namespace
+    "cli.py": ("L2", "boot", ["R-F-001", "R-W3-001"]),  # agos/cli.py — console script agos-analyze
     "agos_kernel": ("L1", "namespace", ["R-F-003", "R-F-005"]),
     K + "agos_kernel": ("L1", "namespace", ["R-F-003", "R-F-005"]),
     K + "bootstrapper": ("L1", "boot", ["R-F-004", "R-W3-001"]),

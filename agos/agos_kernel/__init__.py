@@ -27,7 +27,22 @@ import os
 import sys
 from pathlib import Path
 
-KERNEL_DIR = Path(os.environ.get("AGOS_ROOT") or Path(__file__).resolve().parents[1]) / "agos-kernel"
+def _find_kernel_dir() -> Path:
+    """Locate agos/agos-kernel: $AGOS_ROOT, the source tree, or the installed `agos` package."""
+    if os.environ.get("AGOS_ROOT"):
+        return Path(os.environ["AGOS_ROOT"]) / "agos-kernel"
+    here = Path(__file__).resolve().parents[1] / "agos-kernel"
+    if here.is_dir():
+        return here
+    # Installed wheel (R-F-001): site-packages/agos_kernel next to site-packages/agos
+    spec = importlib.util.find_spec("agos")
+    for loc in (spec.submodule_search_locations or []) if spec else []:
+        if (Path(loc) / "agos-kernel").is_dir():
+            return Path(loc) / "agos-kernel"
+    return here
+
+
+KERNEL_DIR = _find_kernel_dir()
 _PREFIX = __name__ + "."
 
 # The kernel package itself is a regular package: keep its metadata available here.

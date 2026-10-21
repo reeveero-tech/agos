@@ -50,7 +50,7 @@
 
 | ID | البند | معيار القبول | يعتمد على | الحالة |
 |---|---|---|---|---|
-| R-F-001 | تغليف حقيقي: `pyproject.toml` (اسم `agos`، تبعيات فعلية، `build-system`، إعداد pytest)، `.gitignore` جذري | `uv sync` و`uv build` ينجحان | — | TODO |
+| R-F-001 | تغليف حقيقي: `pyproject.toml` (اسم `agos`، تبعيات فعلية، `build-system`، إعداد pytest)، `.gitignore` جذري | `uv sync` و`uv build` ينجحان | — | DONE |
 | R-F-002 | إزالة المسار الثابت `/home/runner/...` (126 موضعاً في 60+ ملفاً) بمحلّل مسارات محمول | `hardcoded_paths = 0` في الجرد؛ الاختبارات تعمل من أي مسار | — | DONE |
 | R-F-003 | حزمة الاسم المستعار `agos_kernel` بهوية وحدات واحدة (ADR-0001) | ملفات `civilization` و`core/invariants` تُستورد | — | DONE |
 | R-F-004 | أسماء بديلة قابلة للاستيراد للمجلدات ذات الشرطة (8 حزم) | `bootstrapper` و`hardening` يُستوردان | — | DONE |

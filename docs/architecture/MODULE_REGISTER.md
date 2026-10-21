@@ -7,7 +7,7 @@
 ## ملخص المستويات
 
 - **L0**: 3 حزمة
-- **L1**: 110 حزمة
+- **L1**: 111 حزمة
 - **L2**: 14 حزمة
 - **L3**: 2 حزمة
 - **L4**: 2 حزمة
@@ -53,7 +53,7 @@
 | L1 | `agos-kernel/registry` | registry | 3 | 80 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/resolvers` | registry | 1 | 205 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 52 | 0 | yes | yes | no | L2 | R-W1-019 |
-| L1 | `agos_kernel` | namespace | 1 | 143 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
+| L1 | `agos_kernel` | namespace | 1 | 158 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
 | L2 | `agos-kernel` | quality | 19 | 3504 | 0 | NO | yes | yes | L0 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
@@ -88,6 +88,7 @@
 | L2 | `agos-kernel/v2` | civilization | 2 | 228 | 0 | yes | no | yes | L1 | R-W1-009, R-W3-014 |
 | L2 | `agos-kernel/verification` | human-loop | 2 | 224 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/vertical_slices` | mission | 1 | 385 | 0 | yes | no | no | L1 | R-W3-003 |
+| L2 | `cli.py` | boot | 1 | 28 | 0 | yes | no | no | L1 | R-F-001, R-W3-001 |
 | L3 | `agos-kernel/adapters` | providers | 11 | 1343 | 9 | yes | no | yes | L1 | R-W3-011 |
 | L3 | `agos-kernel/agent_packs` | packs | 1 | 141 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L3 | `agos-kernel/capabilities` | repository-intelligence | 10 | 1766 | 26 | yes | yes | yes | L3 | R-W2-001, R-W2-002, R-W2-003, R-W2-004, R-W2-007 |

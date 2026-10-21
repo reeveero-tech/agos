@@ -17,9 +17,16 @@ python tools/quality/run_tests.py         # الاختبارات (بلا ترا�
 python tools/audit/inventory.py && python tools/audit/module_register.py   # الجرد وسجل الوحدات
 ```
 
-## التشغيل الحالي
+## التثبيت والتشغيل الحالي
 ```bash
-cd agos/agos-kernel && python main.py <git-url> [--branch main]   # يُنتج RepositoryDNA.json
+uv sync --frozen                      # يثبّت حزمة agos (قابلة للتحرير) وتبعياتها
+uv run agos-analyze <git-url> [--branch main]   # يُنتج RepositoryDNA.json في المجلد الحالي
+# أو: uv build  ثم  pip install dist/agos-*.whl
+```
+```python
+import agos
+from agos.kernel.bootstrapper import Bootstrapper     # النواة
+from agos.rie.application import create_rie_pipeline  # وحدات المنصة: agos.<name>
 ```
 
 ## البنية

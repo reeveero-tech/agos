@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 515,
-  "lines": 86652,
-  "functions": 5606,
+  "files": 516,
+  "lines": 86695,
+  "functions": 5608,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 253,
-  "import_ok": 510,
+  "not_imported_by_others": 254,
+  "import_ok": 511,
   "import_fail": 3
  },
  "packages": {
@@ -1124,8 +1124,8 @@
   },
   "agos_kernel": {
    "files": 1,
-   "lines": 143,
-   "functions": 8,
+   "lines": 158,
+   "functions": 9,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1142,6 +1142,17 @@
    "syntax_errors": 0,
    "not_imported_by_others": 4,
    "import_ok": 5,
+   "import_fail": 0
+  },
+  "cli.py": {
+   "files": 1,
+   "lines": 28,
+   "functions": 1,
+   "stub_functions": 0,
+   "hardcoded_paths": 0,
+   "syntax_errors": 0,
+   "not_imported_by_others": 1,
+   "import_ok": 1,
    "import_fail": 0
   },
   "cloud": {
@@ -11737,10 +11748,10 @@
    "path": "agos/agos_kernel/__init__.py",
    "module": "agos_kernel",
    "root": "src",
-   "lines": 143,
+   "lines": 158,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 8,
+   "functions": 9,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -11881,6 +11892,29 @@
    "resolved_imports": [
     "S:civilization"
    ],
+   "imported_by": [],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/cli.py",
+   "module": "cli",
+   "root": "src",
+   "lines": 28,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 1,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "importlib",
+    "sys",
+    "agos"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "S:cli",
+   "resolved_imports": [],
    "imported_by": [],
    "import_status": "OK"
   },

@@ -5,6 +5,20 @@
 
 ## [غير مُصدَر]
 
+### 0007 — تغليف حقيقي — 2026-10-21 — R-F-001
+**تغيّر**
+- `pyproject.toml`: من قالب Replit (`repl-nix-workspace`، بلا نظام بناء) إلى الحزمة `agos 0.1.0.dev0` — `hatchling`، التبعيات الفعلية الأربع موثقة بمواضع استخدامها، `pytest` في مجموعة `dev`، `testpaths`، أمر `agos-analyze`.
+- `uv.lock`: أُعيد توليده للحزمة `agos`.
+- `agos/agos_kernel/__init__.py`: `_find_kernel_dir()` — يجد النواة في الشجرة المصدرية أو في الحزمة المثبتة.
+- `README.md`: التثبيت والتشغيل.
+
+**أُضيف**
+- `agos/cli.py`: أمر `agos-analyze` (يغلّف `agos.kernel.main`).
+- `tools/packaging/agos_kernel_installed.py`: `agos_kernel` العلوي في العجلة (ينفّذ التنفيذ الوحيد).
+- `tests/test_packaging.py`: البيانات الوصفية، **كل استيراد خارجي معلن**، وهدف أمر الطرفية.
+
+**النتيجة:** `uv sync` و`uv build` ينجحان؛ العجلة المثبتة في بيئة نظيفة خارج المستودع تعمل (`agos`, `agos.kernel`, `agos_kernel` بهوية واحدة بأي ترتيب، `rie`، `agos-analyze`).
+
 ### 0006 — إحياء rie — 2026-10-21 — R-F-006
 **أُضيف**
 - `agos/rie/__init__.py`: `rie` حزمة عادية موثقة (كانت حزمة namespace ضمنية).
