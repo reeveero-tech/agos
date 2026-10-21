@@ -60,7 +60,7 @@
 | R-F-008 | `test_validation.py`: إضافة واجهة توافق `AGOSKernel` في `core` (إضافة لا تعديل اختبار) | الاختبار يُجمع وينجح | R-W3-001 جزئياً | DONE |
 | R-F-009 | دعم الاختبارات غير المتزامنة (`pytest-asyncio`) + إعداد `asyncio_mode` | اختبارات `test_execution_implementation` تعمل | R-F-001 | DONE |
 | R-F-010 | كل الاختبارات الحالية خضراء؛ خط الأساس فارغ | `known_failures = []` | R-F-001..009 | DONE |
-| R-F-011 | تدقيق التبعيات الخارجية الفعلية وتسجيلها (yaml, requests, psutil, ...) | لا `ModuleNotFoundError` لحزمة خارجية في بيئة نظيفة | R-F-001 | TODO |
+| R-F-011 | تدقيق التبعيات الخارجية الفعلية وتسجيلها (yaml, requests, psutil, ...) | لا `ModuleNotFoundError` لحزمة خارجية في بيئة نظيفة | R-F-001 | DONE |
 | R-F-012 | تحويل `datetime.utcnow()` إلى توقيت واعٍ بالمنطقة (تحذيرات الإيقاف) | صفر `DeprecationWarning` من utcnow | — | TODO |
 
 ## الموجة W1 — الأساس (معمارية واحدة بلا تعارضات)

@@ -15529,6 +15529,26 @@
    ]
   },
   {
+   "path": "tests/test_dependency_audit.py",
+   "imports": [
+    "dependencies",
+    "fancy_opt",
+    "json",
+    "leftpad_unknown",
+    "m",
+    "pathlib",
+    "pytest",
+    "security_scan",
+    "sibling",
+    "subprocess",
+    "sys",
+    "textwrap",
+    "yaml"
+   ],
+   "scripts": [],
+   "resolved": []
+  },
+  {
    "path": "tests/test_import_health.py",
    "imports": [
     "crossdomain.runtime",

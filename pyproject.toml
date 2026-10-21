@@ -11,9 +11,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Development Status :: 2 - Pre-Alpha",
 ]
-# Runtime dependencies actually imported by the code (tools/audit inventory, R-F-001):
+# Runtime dependencies (R-F-001; audited by tools/audit/dependencies.py and proven sufficient
+# in a clean environment by tools/audit/clean_env.py — R-F-011, docs/audit/dependencies.md):
 dependencies = [
-    "requests>=2.34.2",        # kernel: laboratory, certification, sdk runtimes
+    "requests>=2.34.2",        # code AGOS generates: SDK/client templates in kernel sdk, laboratory, certification runtimes
     "pyyaml>=6.0.3",           # rie: application/dna_generator
     "psutil>=7.2.2",           # kernel: hardening/runtime
     "memory-profiler>=0.61.0", # kernel: hardening/runtime

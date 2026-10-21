@@ -1,0 +1,201 @@
+{
+  "generated_by": "tools/audit/dependencies.py",
+  "scanned_roots": [
+    "agos",
+    "tests",
+    "tools"
+  ],
+  "files_scanned": 545,
+  "external_imports": [
+    {
+      "import": "a",
+      "distribution": "a",
+      "scopes": {
+        "generated": [
+          "agos/agos-kernel/quality_gates/pipeline.py"
+        ]
+      },
+      "declared_in": [],
+      "locked_version": null
+    },
+    {
+      "import": "c",
+      "distribution": "c",
+      "scopes": {
+        "generated": [
+          "agos/agos-kernel/quality_gates/pipeline.py"
+        ]
+      },
+      "declared_in": [],
+      "locked_version": null
+    },
+    {
+      "import": "memory_profiler",
+      "distribution": "memory-profiler",
+      "scopes": {
+        "runtime": [
+          "agos/agos-kernel/hardening/runtime.py"
+        ]
+      },
+      "declared_in": [
+        "runtime"
+      ],
+      "locked_version": "0.61.0"
+    },
+    {
+      "import": "psutil",
+      "distribution": "psutil",
+      "scopes": {
+        "runtime": [
+          "agos/agos-kernel/hardening/runtime.py"
+        ]
+      },
+      "declared_in": [
+        "runtime"
+      ],
+      "locked_version": "7.2.2"
+    },
+    {
+      "import": "pytest",
+      "distribution": "pytest",
+      "scopes": {
+        "dev": [
+          "agos/agos-kernel/conftest.py",
+          "agos/agos-kernel/core/tests/conftest.py",
+          "agos/agos-kernel/core/tests/test_golden_compatibility.py",
+          "agos/agos-kernel/core/tests/test_golden_contracts.py",
+          "agos/agos-kernel/core/tests/test_golden_events.py",
+          "agos/agos-kernel/core/tests/test_golden_performance.py",
+          "agos/agos-kernel/core/tests/test_golden_recovery.py",
+          "agos/agos-kernel/core/tests/test_golden_registry.py",
+          "agos/agos-kernel/core/tests/test_golden_runtime.py",
+          "agos/agos-kernel/core/tests/test_golden_security.py",
+          "agos/agos-kernel/core/tests/test_golden_serialization.py",
+          "tests/test_bootstrap.py",
+          "tests/test_kernel_facade.py",
+          "tests/test_namespace_identity.py",
+          "tests/test_rie_pipeline.py",
+          "tests/test_security_scanners.py"
+        ]
+      },
+      "declared_in": [
+        "dev"
+      ],
+      "locked_version": "9.1.1"
+    },
+    {
+      "import": "requests",
+      "distribution": "requests",
+      "scopes": {
+        "generated": [
+          "agos/agos-kernel/certification/runtime.py",
+          "agos/agos-kernel/laboratory/runtime.py",
+          "agos/agos-kernel/sdk/runtime.py"
+        ]
+      },
+      "declared_in": [
+        "runtime"
+      ],
+      "locked_version": "2.34.2"
+    },
+    {
+      "import": "yaml",
+      "distribution": "pyyaml",
+      "scopes": {
+        "runtime": [
+          "agos/rie/application/dna_generator.py"
+        ]
+      },
+      "declared_in": [
+        "runtime"
+      ],
+      "locked_version": "6.0.3"
+    }
+  ],
+  "declared": [
+    {
+      "distribution": "memory-profiler",
+      "group": "runtime",
+      "imported": true,
+      "locked_version": "0.61.0",
+      "reason_if_not_imported": ""
+    },
+    {
+      "distribution": "psutil",
+      "group": "runtime",
+      "imported": true,
+      "locked_version": "7.2.2",
+      "reason_if_not_imported": ""
+    },
+    {
+      "distribution": "pyyaml",
+      "group": "runtime",
+      "imported": true,
+      "locked_version": "6.0.3",
+      "reason_if_not_imported": ""
+    },
+    {
+      "distribution": "requests",
+      "group": "runtime",
+      "imported": false,
+      "locked_version": "2.34.2",
+      "reason_if_not_imported": "used by the code the platform generates: the Python SDK/client templates in agos-kernel sdk/, laboratory/ and certification/ runtime.py emit `import requests`; kept so generated clients run in the same environment"
+    },
+    {
+      "distribution": "pytest",
+      "group": "dev",
+      "imported": true,
+      "locked_version": "9.1.1",
+      "reason_if_not_imported": ""
+    },
+    {
+      "distribution": "pytest-asyncio",
+      "group": "dev",
+      "imported": false,
+      "locked_version": "1.4.0",
+      "reason_if_not_imported": "pytest plugin, loaded by pytest through `asyncio_mode = \"auto\"` (R-F-009), never imported"
+    }
+  ],
+  "system_tools": {
+    "docker": [
+      "agos/agos-kernel/adapters/implementation.py",
+      "agos/agos-kernel/providers/filesystem.py",
+      "agos/agos-kernel/providers/network.py"
+    ],
+    "find": [
+      "agos/agos-kernel/adapters/implementation.py",
+      "agos/agos-kernel/skills/implementation.py"
+    ],
+    "git": [
+      "agos/agos-kernel/adapters/implementation.py",
+      "agos/agos-kernel/capabilities/__init__.py",
+      "agos/agos-kernel/civilization/core/civilization_engine.py",
+      "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+      "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+      "agos/agos-kernel/conftest.py",
+      "agos/agos-kernel/providers/__init__.py",
+      "agos/agos-kernel/providers/filesystem.py",
+      "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
+      "agos/rie/infrastructure/__init__.py",
+      "agos/seos/workspace/__init__.py",
+      "tests/test_rie_pipeline.py",
+      "tools/governance/check_commit.py"
+    ],
+    "kubectl": [
+      "agos/agos-kernel/adapters/implementation.py"
+    ],
+    "npm": [
+      "agos/agos-kernel/adapters/implementation.py"
+    ],
+    "podman": [
+      "agos/agos-kernel/providers/network.py"
+    ],
+    "python": [
+      "agos/agos-kernel/self_hosting/runtime.py"
+    ],
+    "terraform": [
+      "agos/agos-kernel/adapters/implementation.py"
+    ]
+  },
+  "problems": []
+}

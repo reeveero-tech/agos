@@ -1,0 +1,32 @@
+{
+  "generated_by": "tools/audit/clean_env.py",
+  "python": "3.12",
+  "environment": "uv venv + `uv export --frozen --no-dev` + agos wheel (--no-deps)",
+  "installed_packages": [
+    "certifi==2026.6.17",
+    "charset-normalizer==3.4.7",
+    "idna==3.18",
+    "memory-profiler==0.61.0",
+    "psutil==7.2.2",
+    "pyyaml==6.0.3",
+    "requests==2.34.2",
+    "urllib3==2.7.0"
+  ],
+  "installed_probe": {
+    "sys_path_has_repo": false,
+    "agos_version": "0.1.0.dev0",
+    "agos_kernel_version": "2.0.0",
+    "boot_success": true,
+    "capabilities": [
+      "RepositoryAnalysis"
+    ],
+    "providers": [
+      "LocalRepositoryProvider"
+    ],
+    "dev_group_absent": true
+  },
+  "runtime_modules_probed": 490,
+  "runtime_modules_ok": 490,
+  "not_ok_in_both_envs": [],
+  "failures": []
+}
