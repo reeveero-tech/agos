@@ -64,6 +64,30 @@ def test_manifest_declared_entry_points():
                    "pyproject.toml:scripts:cli", "pyproject.toml:scripts:web"]
 
 
+def test_manifest_entry_points_keep_their_manifest_path():
+    # Two manifests with the same script name must not merge — the declaration
+    # carries the path of the file that declares it.
+    pyproject = '[project.scripts]\ncli = "x.cli:main"\n'
+    out = sd.detect_entry_points([], {"pyproject.toml": pyproject,
+                                      "backend/pyproject.toml": pyproject})
+    assert out == ["backend/pyproject.toml:scripts:cli", "pyproject.toml:scripts:cli"]
+
+
+def test_malformed_manifests_never_break_the_analysis():
+    # A broken JSON/TOML or an unexpected shape is skipped, not fatal.
+    out = sd.detect_entry_points([], {
+        "package.json": "[1, 2, 3]",             # valid JSON, not an object
+        "broken.json": "{not json at all",          # not even valid JSON — not a manifest name anyway
+        "package.json": None,                     # replaced below by the dict variant
+    } | {"package.json": json.dumps({"main": 42, "bin": [1, 2]})})  # wrong types
+    assert out == []
+
+
+def test_vendored_code_is_not_an_entry_point():
+    paths = ["main.py", "node_modules/pkg/main.py", "node_modules/pkg/index.js"]
+    assert sd.detect_entry_points(paths) == ["main.py"]
+
+
 def test_no_entry_points_in_empty_repo():
     assert sd.detect_entry_points(["README.md", "docs/guide.rst"]) == []
 
@@ -89,10 +113,10 @@ def test_directory_tree_excludes_vendored_and_keeps_dotfile_dirs():
 
 
 def test_directory_tree_infers_dirs_without_explicit_list():
-    # Inference is ambiguous by name alone: "Makefile" has no suffix and no dot, so
-    # without an explicit dir list it is indistinguishable from a directory. That is
-    # exactly why the live paths always pass ``dir_paths`` explicitly.
-    assert sd.directory_tree(["src/app.py", "Makefile"], max_depth=3) == ["Makefile", "src"]
+    # No guessing from the name: "Makefile" has no suffix and no dot, but it is a
+    # file — without ``dir_paths`` it is treated as one, so only its parent dirs
+    # enter the tree. The live paths always pass ``dir_paths`` explicitly.
+    assert sd.directory_tree(["src/app.py", "Makefile"], max_depth=3) == ["src"]
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +125,8 @@ def test_directory_tree_infers_dirs_without_explicit_list():
 @pytest.mark.parametrize("path,expected", [
     (".github/workflows/ci.yml", True), (".github", True), (".gitlab-ci.yml", False),
     (".gitignore", True), (".env.example", True), (".env", False), (".git", False),
-    (".idea/config.xml", False), ("src/.gitignore", True), (".DS_Store", False),
+    (".github/.env", False), (".idea/config.xml", False), ("src/.gitignore", True),
+    (".DS_Store", False),
 ])
 def test_is_relevant_hidden(path, expected):
     assert sd.is_relevant_hidden(path) is expected
@@ -179,3 +204,31 @@ def test_rie_pipeline_fills_structure_fields(tmp_path):
     assert ".github" in dna.directory_tree
     assert all(".idea" not in str(x) for x in dna.config_files + dna.directory_tree)
     assert "entry_points" in dna.to_dict()
+
+
+@needs_git
+def test_tree_depth_reachable_via_execute_and_cache_distinguishes_it(tmp_path):
+    from agos.kernel.capabilities import RepositoryAnalysisCapability
+
+    repo = _git_repo(tmp_path, {"deep/er/still/file.py": "x\n", "main.py": "y\n"})
+    url = f"file://{repo}"
+    cap = RepositoryAnalysisCapability()
+    dna_default = cap.execute({"url": url, "branch": "main", "cache": True})
+    assert dna_default.directory_tree == ["deep", "deep/er", "deep/er/still"]
+    # Same commit, different depth: the cache must not serve the first DNA.
+    dna1 = cap.execute({"url": url, "branch": "main", "cache": True, "tree_depth": 1})
+    assert dna1.directory_tree == ["deep"]
+    assert dna1 != dna_default or dna1.directory_tree != dna_default.directory_tree
+
+
+@needs_git
+def test_secret_hidden_files_never_reach_the_dna(tmp_path):
+    from agos.kernel.capabilities import RepositoryAnalysisCapability
+
+    repo = _git_repo(tmp_path, {"main.py": "x\n", ".env": "SECRET=1\n",
+                                 ".github/.env": "TOKEN=2\n", ".env.example": "A=\n"})
+    dna = RepositoryAnalysisCapability().execute({"url": f"file://{repo}", "branch": "main", "cache": False})
+    assert ".env.example" in dna.config_files
+    assert all(".env" != c for c in dna.config_files)
+    assert all(not c.startswith(".env/") and c != ".env" for c in dna.config_files)
+    assert all(".github/.env" not in c for c in dna.config_files)

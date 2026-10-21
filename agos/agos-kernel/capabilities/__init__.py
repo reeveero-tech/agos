@@ -43,13 +43,20 @@ class RepositoryAnalysisCapability(ICapability):
         return ["CloneRepository", "ReadRepository", "GenerateDNA"]
     
     def execute(self, input_data: Any) -> RepositoryDNA:
-        """Execute the capability."""
+        """Execute the capability.
+        
+        ``input_data`` may carry ``tree_depth`` (default 3, R-W2-004): the depth of the
+        DNA's ``directory_tree``. It is part of the cache key — the same commit analyzed
+        at two depths produces two different DNAs, never a stale reuse.
+        """
         if isinstance(input_data, dict):
             url = input_data.get("url", "")
             branch = input_data.get("branch", "main")
+            tree_depth = input_data.get("tree_depth", 3)
         elif hasattr(input_data, "url"):
             url = input_data.url
             branch = input_data.branch
+            tree_depth = getattr(input_data, "tree_depth", 3)
         else:
             raise ValueError("Invalid input type")
         
@@ -59,7 +66,7 @@ class RepositoryAnalysisCapability(ICapability):
         # cache can never serve stale results. Opt out with {"cache": False}.
         use_cache = input_data.get("cache", True) if isinstance(input_data, dict) else True
         revision = self._remote_revision(url, branch) if use_cache else None
-        cache_key = (url, branch, revision)
+        cache_key = (url, branch, revision, tree_depth)
         cache = self.__dict__.setdefault("_dna_cache", {})
         if revision and cache_key in cache:
             print(f"[CAPABILITY] Reusing DNA of {url}@{revision[:12]} (same commit)")
@@ -90,7 +97,8 @@ class RepositoryAnalysisCapability(ICapability):
             
             # Step 5: Generate DNA
             print(f"[CAPABILITY] Generating DNA")
-            dna = self._generate_dna(snapshot, languages, frameworks, stack=stack)
+            dna = self._generate_dna(snapshot, languages, frameworks, stack=stack,
+                                      tree_depth=tree_depth)
             dna.framework_evidence = [e.to_dict() for e in stack.evidence]
             dna.runtimes = list(stack.runtimes)
             if revision:

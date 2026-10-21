@@ -74,6 +74,10 @@ def test_tie_on_lines_breaks_on_files_then_name():
     assert sd.primary_language(weights) == "Go"  # same lines & files → alphabetically first
     weights = sd.language_weights({"a.py": "x\nx\n", "b.js": "x\nx\n", "c.go": "x\n"})
     assert sd.primary_language(weights) == "JavaScript"  # more files breaks the tie
+    # A genuine file-count tie-break: 2 JS files of 1 line each vs 1 Python file of
+    # 2 lines — same line weight, JavaScript wins by file count.
+    weights = sd.language_weights({"one.js": "x\n", "two.js": "x\n", "app.py": "x\nx\n"})
+    assert sd.primary_language(weights) == "JavaScript"
 
 
 def test_manifests_are_not_languages():

@@ -980,6 +980,11 @@ RELEVANT_HIDDEN_FILES: Tuple[str, ...] = (
     ".nvmrc", ".tool-versions", ".python-version", ".npmrc", ".prettierrc",
     ".eslintrc", ".eslintrc.json", ".eslintrc.yml", ".flake8", ".babelrc",
 )
+# ملفات أسرار: لا تُقرأ أبداً، في أي عمق — حتى داخل .github.
+SECRET_HIDDEN_FILES: Tuple[str, ...] = (
+    ".env", ".env.local", ".env.production", ".env.development", ".env.live",
+    ".netrc", ".npmrc_auth", ".pypirc", ".git-credentials",
+)
 
 
 def _norm_path(path: "os.PathLike[str] | str") -> PurePosixPath:
@@ -996,6 +1001,9 @@ def is_relevant_hidden(path: "os.PathLike[str] | str") -> bool:
     p = _norm_path(path)
     if not p.parts or p.name == ".git":
         return False
+    # Secrets are never read, wherever they sit (``.github/.env`` is still a secret).
+    if p.name in SECRET_HIDDEN_FILES:
+        return False
     if p.parts[0] in RELEVANT_HIDDEN_DIRS:
         return True
     return p.name in RELEVANT_HIDDEN_FILES
@@ -1011,7 +1019,12 @@ _ENTRY_ROOT_DIRS: Tuple[str, ...] = ("", "src", "bin", "scripts")
 
 
 def _manifest_entry_points(manifests: Optional[Mapping[str, Optional[str]]]) -> List[str]:
-    """نقاط الدخول المعلنة في الملفات: pyproject [project.scripts] وpackage.json main/bin."""
+    """نقاط الدخول المعلنة في الملفات: pyproject [project.scripts] وpackage.json main/bin.
+
+    التصريح يُعاد بمسار ملفه الكامل (``backend/pyproject.toml:scripts:x``) حتى لا
+    تندمج تصريحات ملفات متعددة. ملف تالف أو بنية غير متوقعة لا يُسقط التحليل —
+    يُتجاهل ذلك الملف فقط.
+    """
     out: List[str] = []
     if not manifests:
         return out
@@ -1022,19 +1035,23 @@ def _manifest_entry_points(manifests: Optional[Mapping[str, Optional[str]]]) -> 
         try:
             if name == "pyproject.toml":
                 data = _toml.loads(content) if _toml is not None else {}
-                scripts = ((data.get("project") or {}).get("scripts") or {})
-                out.extend(f"pyproject.toml:scripts:{k}" for k in sorted(scripts))
+                project = data.get("project") if isinstance(data, dict) else None
+                scripts = project.get("scripts") if isinstance(project, dict) else None
+                if isinstance(scripts, dict):
+                    out.extend(f"{path}:scripts:{k}" for k in sorted(scripts))
             elif name == "package.json":
                 data = json.loads(content)
+                if not isinstance(data, dict):
+                    continue
                 main = data.get("main")
                 if isinstance(main, str):
-                    out.append(f"package.json:main:{main}")
+                    out.append(f"{path}:main:{main}")
                 bins = data.get("bin")
                 if isinstance(bins, dict):
-                    out.extend(f"package.json:bin:{k}" for k in sorted(bins))
+                    out.extend(f"{path}:bin:{k}" for k in sorted(bins))
                 elif isinstance(bins, str):
-                    out.append(f"package.json:bin:{bins}")
-        except (ValueError, TypeError):
+                    out.append(f"{path}:bin:{bins}")
+        except (ValueError, TypeError, AttributeError):
             continue
     return sorted(set(out))
 
@@ -1053,6 +1070,8 @@ def detect_entry_points(paths: Iterable[str],
         p = _norm_path(raw)
         if not p.parts:
             continue
+        if any(part in SKIP_DIRS for part in p.parts[:-1]):
+            continue  # vendored code is not the project's (node_modules/...)
         name = p.name
         parent = p.parts[-2] if len(p.parts) >= 2 else ""
         if name in _ENTRY_BASENAMES and parent in _ENTRY_ROOT_DIRS:
@@ -1071,9 +1090,9 @@ def directory_tree(paths: Iterable[str], max_depth: int = 3, limit: int = 200,
                     dir_paths: Optional[Iterable[str]] = None) -> List[str]:
     """شجرة المجلدات بعمق قابل للضبط (R-W2-004).
 
-    ``paths``: كل المسارات (ملفات ومجلدات). ``dir_paths``: المجلدات صراحةً (إن عُرفت)
-    — لأن الاسم وحده لا يكفي للتمييز (``Makefile`` ملف و``src`` مجلد، و``.github``
-    مجلد رغم نقطته). إن غابت تُستنتج المجلدات بما لا له لاحقة ولا نقطة.
+    ``paths``: كل المسارات — تُعامل ملفات افتراضاً (مجلداتها الأباء هي التي تدخل
+    الشجرة)، ولا تخمين من الاسم: ``Makefile`` ملف و``.github`` مجلد، فلا يستقيم
+    الاستنتاج من الاسم وحده. المجلدات تُعطى صراحة في ``dir_paths``.
 
     المجلدات فريدة حتى ``max_depth``، بلا المُورَّد (``SKIP_DIRS``)، مرتبة وبحد ``limit``.
     ``max_depth=1`` يعادل الطبقة العليا فقط.
@@ -1086,9 +1105,7 @@ def directory_tree(paths: Iterable[str], max_depth: int = 3, limit: int = 200,
         known_dirs = {_norm_path(d).as_posix() for d in dir_paths}
     for raw in paths:
         p = _norm_path(raw)
-        posix = p.as_posix()
-        is_dir = posix in known_dirs or (
-            dir_paths is None and not p.suffix and "." not in p.name)
+        is_dir = p.as_posix() in known_dirs
         parts = p.parts if is_dir else p.parts[:-1]
         for i in range(1, min(len(parts), max_depth) + 1):
             if any(part in SKIP_DIRS for part in parts[:i]):

@@ -24,9 +24,10 @@ class RepositoryInfo:
     directory_count: int = 0
     language: str = ""
     languages: Dict[str, int] = field(default_factory=dict)
-    # R-W2-003: per-language line counts — the weight behind ``language``.
-    language_lines: Dict[str, int] = field(default_factory=dict)
     files: List[Dict] = field(default_factory=list)
+    # R-W2-003: per-language line counts — the weight behind ``language``.
+    # Appended last so positional construction is unchanged.
+    language_lines: Dict[str, int] = field(default_factory=dict)
     structure: Dict[str, Any] = field(default_factory=dict)
     
     
