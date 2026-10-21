@@ -1,21 +1,5 @@
 {
- "known_failures": [
-  "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_file_permissions_are_restricted",
-  "agos.agos-kernel.test_intelligence::test_architecture_analysis",
-  "agos.agos-kernel.test_intelligence::test_capability_discovery",
-  "agos.agos-kernel.test_intelligence::test_code_analysis",
-  "agos.agos-kernel.test_intelligence::test_knowledge_extraction",
-  "agos.agos-kernel.test_intelligence::test_project_dna",
-  "agos.agos-kernel.test_intelligence::test_provider_discovery",
-  "agos.agos-kernel.test_runtime::test_artifact",
-  "agos.agos-kernel.test_runtime::test_environment",
-  "agos.agos-kernel.test_runtime::test_queue",
-  "agos.agos-kernel.test_runtime::test_recovery",
-  "agos.agos-kernel.test_runtime::test_resource",
-  "agos.agos-kernel.test_runtime::test_scheduler",
-  "agos.agos-kernel.test_runtime::test_session",
-  "agos.agos-kernel.test_runtime::test_state"
- ],
+ "known_failures": [],
  "revealed": {
   "agos.agos-kernel.core.tests.test_golden_compatibility.TestDependencyCompatibility::test_kernel_uses_only_standard_library_or_declared": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): تبعيات خارجية غير معلنة — الإصلاح في R-Q-009",
   "agos.agos-kernel.core.tests.test_golden_registry.TestRegistryIntegrity::test_registry_has_version": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): مدخلات السجل registry/ بلا حقل version — الإصلاح في R-Q-009",

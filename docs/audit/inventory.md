@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 521
-- **functions**: 5655
+- **files**: 522
+- **functions**: 5663
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 519
-- **lines**: 87410
-- **not_imported_by_others**: 254
+- **import_ok**: 520
+- **lines**: 87497
+- **not_imported_by_others**: 255
 - **stub_functions**: 789
 - **syntax_errors**: 0
 
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 20 | 3579 | 118 | 0 | 0 | 19 | 0 | 20 |
+| `agos-kernel` | 20 | 3645 | 125 | 0 | 0 | 19 | 0 | 20 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 11 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -43,7 +43,7 @@
 | `agos-kernel/context` | 1 | 61 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contracts` | 1 | 106 | 4 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/core` | 22 | 3438 | 162 | 0 | 0 | 22 | 0 | 14 |
+| `agos-kernel/core` | 23 | 3459 | 163 | 0 | 0 | 23 | 0 | 15 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |

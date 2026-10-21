@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 521,
-  "lines": 87410,
-  "functions": 5655,
+  "files": 522,
+  "lines": 87497,
+  "functions": 5663,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 254,
-  "import_ok": 519,
+  "not_imported_by_others": 255,
+  "import_ok": 520,
   "import_fail": 0
  },
  "packages": {
@@ -24,8 +24,8 @@
   },
   "agos-kernel": {
    "files": 20,
-   "lines": 3579,
-   "functions": 118,
+   "lines": 3645,
+   "functions": 125,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -287,14 +287,14 @@
    "import_fail": 0
   },
   "agos-kernel/core": {
-   "files": 22,
-   "lines": 3438,
-   "functions": 162,
+   "files": 23,
+   "lines": 3459,
+   "functions": 163,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 14,
-   "import_ok": 22,
+   "not_imported_by_others": 15,
+   "import_ok": 23,
    "import_fail": 0
   },
   "agos-kernel/crossdomain": {
@@ -5457,16 +5457,19 @@
    "path": "agos/agos-kernel/conftest.py",
    "module": "conftest",
    "root": "kernel",
-   "lines": 59,
+   "lines": 125,
    "syntax_ok": true,
-   "classes": 0,
-   "functions": 2,
+   "classes": 1,
+   "functions": 9,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "__future__",
+    "contextlib",
     "inspect",
+    "io",
     "subprocess",
+    "sys",
     "functools",
     "pytest"
    ],
@@ -5476,6 +5479,7 @@
    "resolved_imports": [],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_kernel_conftest.py",
     "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
@@ -5979,6 +5983,28 @@
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.tests",
+   "resolved_imports": [],
+   "imported_by": [],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/core/tests/conftest.py",
+   "module": "core.tests.conftest",
+   "root": "kernel",
+   "lines": 21,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 1,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "os",
+    "pathlib",
+    "pytest"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:core.tests.conftest",
    "resolved_imports": [],
    "imported_by": [],
    "import_status": "OK"
@@ -11525,6 +11551,9 @@
     "K:intelligence"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_conftest.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -11663,6 +11692,9 @@
     "K:runtime"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_conftest.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15454,6 +15486,25 @@
     "K:diagnostics",
     "K:diagnostics.runtime",
     "K:shared"
+   ]
+  },
+  {
+   "path": "tests/test_kernel_conftest.py",
+   "imports": [
+    "pathlib",
+    "shutil",
+    "subprocess",
+    "sys"
+   ],
+   "scripts": [
+    "conftest",
+    "test_intelligence",
+    "test_runtime"
+   ],
+   "resolved": [
+    "K:conftest",
+    "K:test_intelligence",
+    "K:test_runtime"
    ]
   },
   {
