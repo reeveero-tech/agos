@@ -93,6 +93,10 @@ class RepositoryDNA:
     # dev/optional/build/indirect/example), version specifier and manifest path.
     # ``dependencies`` above holds the direct runtime/peer names only.
     dependency_details: List[Dict[str, Any]] = field(default_factory=list)
+    # R-W2-003: per-language weights — {language: {"files": n, "lines": m}} — and
+    # ``primary_language`` is the language with the most lines (ties: files, then name).
+    # Appended last so positional construction is unchanged.
+    language_stats: Dict[str, Dict[str, int]] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -115,4 +119,5 @@ class RepositoryDNA:
             "framework_evidence": self.framework_evidence,
             "runtimes": self.runtimes,
             "dependency_details": self.dependency_details,
+            "language_stats": self.language_stats,
         }

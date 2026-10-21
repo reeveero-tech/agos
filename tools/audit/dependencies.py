@@ -70,7 +70,7 @@ def dist_of(import_root: str) -> str:
 
 
 def _req_name(req: str) -> str:
-    return normalise(re.split(r"[\s<>=!~;\[(]", req.strip(), 1)[0])
+    return normalise(re.split(r"[\s<>=!~;\[(]", req.strip(), maxsplit=1)[0])
 
 
 def declared(repo: Path = REPO) -> Dict[str, Set[str]]:

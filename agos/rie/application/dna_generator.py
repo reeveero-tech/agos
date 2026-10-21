@@ -191,6 +191,11 @@ class DNAGeneratorV2:
                 dna.primary_language = max(features.languages, key=features.languages.get)
             dna.languages = list(features.languages.keys()) if features.languages else []
         
+        # R-W2-003: per-language weights (files + lines); the primary language is the
+        # one with the most lines, which is what the line-based percentages above give.
+        if getattr(features, "language_stats", None):
+            dna.language_stats = dict(features.language_stats)
+        
         dna.frameworks = features.frameworks if hasattr(features, "frameworks") else []
         dna.package_managers = features.package_managers if hasattr(features, "package_managers") else []
         dna.dependencies = features.dependencies if hasattr(features, "dependencies") else []

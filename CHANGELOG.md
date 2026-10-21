@@ -5,6 +5,20 @@
 
 ## [غير مُصدَر]
 
+### 0019 — وزن اللغات بالأسطر واللغة الرئيسية الصحيحة — 2026-10-21 — R-W2-003
+#### أُصلح
+- **اللغة الرئيسية كانت الأبجدية الأولى** (المسار الحي: `languages[0]` على قائمة مرتبة أبجدياً؛ intelligence: `Set` يفقد الترتيب) أو الأكثر ملفات (rie والحضاري) أو الأكثر بايتات (المرحلة الحضارية). صارت **الأكثر أسطراً** في كل المسارات، بفك التعادل بالملفات ثم الاسم.
+- **rie `total_files`:** كان سيُستبدل بعدّ ملفات الكود فقط (تصادم مفاتيح) — أُبقي عدّ الملفات الكلي وأُضيف `total_code_files` و`total_code_lines`.
+- **`tools/audit/dependencies.py`:** `maxsplit` موضعياً ← وسيط مسمى (زال DeprecationWarning من كل تشغيل تدقيق).
+#### أُضيف
+- **في `stack_detection`:** `LANGUAGE_EXTENSIONS` (اتحاد جداول الكواشف القائمة، 16 لغة) و`LanguageStat` و`language_weights` و`primary_language` و`language_breakdown` و`read_code_files`.
+- **حقل `language_stats`** (`{language: {files, lines}}`): في `RepositoryDNA` في النواة، وفي `RepositoryDNA` و`RepositoryFeatureSet` في rie — دائماً أخيراً وفي `to_dict()`.
+- **`RepositoryMetrics.language_lines`** و`RepositoryInfo.language_lines`: عدّ الأسطر في محلل الذكاء والمحلل الحضاري.
+- **`tests/test_language_weights.py`** (26 اختباراً): وحدات الوزن والتعادل، و5 مستودعات مرجعية محلية بأوزان حرفية، و5 مستودعات حقيقية بالوسوم (gin ← Go، express ← JavaScript، requests ← Python، sinatra ← Ruby، ripgrep ← Rust)، و6 مسارات من طرف إلى طرف.
+#### تغيّر
+- **كل مسارات كشف اللغات صارت واجهات لمصدر واحد** (`agos.kernel.stack_detection`): القدرة الحية، وrie (LanguageDetector + البنية التحتية تبقي محتوى ملفات الكود)، والمحلل الحضاري، و`LanguageDetectionStage` (`.md` و`.json` لم تعد لغات، والنسب خطية)، ومحلل الذكاء (يرتب `ProjectDNA.languages` بالوزن)، وشريحة repo_discovery (لا نزول إلى `node_modules`).
+- **`languages`** في المسار الحي وrie والشريحة: مرتبة بالوزن لا أبجدياً؛ النسب في rie من الأسطر.
+
 ### 0018 — استخراج الاعتماديات من ملفات الاعتماديات، مطابقاً لمستودعات مرجعية — 2026-10-21 — R-W2-002
 #### أُصلح
 - **`dependencies` كانت فارغة دائماً** في DNA المسار الحي (`dependencies=[]`) وفي rie. صارت تحمل الاعتماديات المباشرة (runtime وpeer).

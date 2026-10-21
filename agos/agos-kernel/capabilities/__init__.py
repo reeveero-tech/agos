@@ -120,39 +120,17 @@ class RepositoryAnalysisCapability(ICapability):
         return sha if len(sha) >= 40 else None
     
     def _detect_languages(self, snapshot: RepositorySnapshot) -> List[str]:
-        """Detect programming languages."""
-        languages = set()
-        
-        # Language patterns
-        patterns = {
-            "Python": [".py", "requirements.txt", "setup.py", "pyproject.toml"],
-            "JavaScript": [".js", ".jsx", "package.json"],
-            "TypeScript": [".ts", ".tsx", "tsconfig.json"],
-            "Java": [".java", "pom.xml", "build.gradle"],
-            "Go": [".go", "go.mod", "go.sum"],
-            "Rust": [".rs", "Cargo.toml", "Cargo.lock"],
-            "C": [".c", ".h"],
-            "C++": [".cpp", ".hpp", ".cc"],
-            "C#": [".cs", ".csproj", ".sln"],
-            "Ruby": [".rb", "Gemfile", "Gemfile.lock"],
-            "PHP": [".php", "composer.json"],
-            "Swift": [".swift", "Package.swift"],
-            "Kotlin": [".kt", "build.gradle.kts"],
-            "Scala": [".scala", "build.sbt"],
-            "Dart": [".dart", "pubspec.yaml"],
-        }
-        
-        for file_node in snapshot.files:
-            if file_node.is_dir:
-                continue
-            path = file_node.path.lower()
-            for lang, exts in patterns.items():
-                for ext in exts:
-                    if path.endswith(ext.lower()):
-                        languages.add(lang)
-                        break
-        
-        return sorted(list(languages))
+        """Detect programming languages, weighted by lines and files (R-W2-003).
+
+        Delegates to the kernel's ``stack_detection`` (the single source): the returned
+        list is ordered by weight — lines first, then files, then name — so
+        ``languages[0]`` is the primary language. Manifest names (package.json, go.mod, …)
+        are not languages; only code files count.
+        """
+        from stack_detection import language_weights
+        weights = language_weights(
+            {f.path: f.content for f in snapshot.files if not f.is_dir})
+        return [stat.language for stat in weights.values()]
     
     @staticmethod
     def _manifest_files(snapshot: RepositorySnapshot) -> Dict[str, Optional[str]]:
@@ -231,15 +209,23 @@ class RepositoryAnalysisCapability(ICapability):
         languages: List[str],
         frameworks: List[str],
         stack=None,
+        language_stats: Optional[Dict[str, Dict[str, int]]] = None,
     ) -> RepositoryDNA:
         """Generate Repository DNA.
         
         ``stack`` is the ``stack_detection.StackReport`` of the snapshot (computed here when
         omitted); dependencies and package managers come from it (R-W2-002).
+        ``language_stats`` is the ``stack_detection.language_breakdown`` of the snapshot
+        (computed here when omitted); the primary language is the one with the most lines,
+        not the alphabetically first entry (R-W2-003).
         """
         metadata = snapshot.metadata
         if stack is None:
             stack = self._detect_stack(snapshot)
+        if language_stats is None:
+            from stack_detection import language_breakdown
+            language_stats = language_breakdown(
+                {f.path: f.content for f in snapshot.files if not f.is_dir})
         
         # Find README
         readme_summary = ""
@@ -305,5 +291,6 @@ class RepositoryAnalysisCapability(ICapability):
             readme_summary=readme_summary,
             license=license_name,
             generated_at=datetime.now(timezone.utc),
-            snapshot_path=""
+            snapshot_path="",
+            language_stats=language_stats,
         )

@@ -242,69 +242,39 @@ class LanguageDetectionStage(PipelineStage):
     description = "Detect programming languages and calculate statistics"
     
     def process(self, repo_path: str, context: Dict) -> StageResult:
-        """Detect languages."""
+        """Detect languages, weighted by lines and files (R-W2-003).
+
+        Delegates to the kernel's ``stack_detection`` (the single source). Percentages
+        are line-based: lines are the weight (a thousand-line module outweighs ten
+        one-line scripts), and the primary language is the one with the most lines.
+        ``language_extensions`` above is the historical table; kept for reference only.
+        """
         result = StageResult()
-        repo = Path(repo_path)
         
-        language_extensions = {
-            '.py': 'Python',
-            '.js': 'JavaScript',
-            '.ts': 'TypeScript',
-            '.jsx': 'React',
-            '.tsx': 'React',
-            '.java': 'Java',
-            '.cpp': 'C++',
-            '.c': 'C',
-            '.cs': 'C#',
-            '.go': 'Go',
-            '.rs': 'Rust',
-            '.rb': 'Ruby',
-            '.php': 'PHP',
-            '.swift': 'Swift',
-            '.kt': 'Kotlin',
-            '.scala': 'Scala',
-            '.html': 'HTML',
-            '.css': 'CSS',
-            '.scss': 'SCSS',
-            '.json': 'JSON',
-            '.xml': 'XML',
-            '.yaml': 'YAML',
-            '.yml': 'YAML',
-            '.md': 'Markdown',
-            '.sh': 'Shell',
-        }
+        # Frameworks/stack detection uses the canonical kernel detector; same here.
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
         
-        languages = {}
-        total_bytes = 0
+        code_files = stack_detection.read_code_files(repo_path)
+        weights = stack_detection.language_weights(code_files)
         
-        for py_file in repo.rglob('*'):
-            if not py_file.is_file():
-                continue
-            if self._should_exclude(py_file):
-                continue
-            
-            ext = py_file.suffix.lower()
-            if ext in language_extensions:
-                lang = language_extensions[ext]
-                try:
-                    size = py_file.stat().st_size
-                    languages[lang] = languages.get(lang, 0) + size
-                    total_bytes += size
-                except Exception:
-                    pass
+        total_bytes = sum(len(code_files[p].encode('utf-8', errors='replace')) for p in code_files)
+        total_lines = sum(stat.lines for stat in weights.values())
         
-        # Convert to percentages
-        if total_bytes > 0:
-            languages = {
-                lang: round((bytes / total_bytes) * 100, 2)
-                for lang, bytes in languages.items()
-            }
+        languages = {
+            stat.language: round((stat.lines / total_lines) * 100, 2)
+            for stat in weights.values()
+        } if total_lines > 0 else {}
         
         result.success = True
         result.data = {
             'languages': languages,
+            'language_stats': {stat.language: stat.to_dict() for stat in weights.values()},
             'total_bytes': total_bytes,
-            'primary_language': max(languages.items(), key=lambda x: x[1])[0] if languages else 'Unknown',
+            'total_lines': total_lines,
+            'primary_language': stack_detection.primary_language(weights) or 'Unknown',
         }
         return result
     

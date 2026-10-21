@@ -49,6 +49,11 @@ class FeatureAggregator:
         if "primary_language" in detector_features:
             features.languages = detector_features.get("language_percentages", {})
         
+        # R-W2-003: per-language weights (files + lines) from the LanguageDetector
+        if "language_stats" in detector_features:
+            for lang, stat in detector_features["language_stats"].items():
+                features.language_stats[lang] = {"files": stat.get("files", 0), "lines": stat.get("lines", 0)}
+        
         # Frameworks
         if "frameworks" in detector_features:
             for fw in detector_features["frameworks"]:
@@ -228,6 +233,8 @@ class RepositoryIntelligencePipeline:
             package_managers=features.package_managers,
             dependencies=features.dependencies,
             dependency_details=list(features.dependency_details),
+            # R-W2-003: per-language weights (files + lines) — lines are the weight.
+            language_stats=dict(features.language_stats),
             config_files=features.config_files,
             entry_points=features.entry_points,
             directory_tree=features.directory_tree,

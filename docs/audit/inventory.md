@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 524
-- **functions**: 5735
+- **functions**: 5741
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 522
-- **lines**: 88854
+- **lines**: 89020
 - **not_imported_by_others**: 254
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -32,9 +32,9 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 10 | 1835 | 141 | 26 | 0 | 10 | 0 | 1 |
+| `agos-kernel/capabilities` | 10 | 1822 | 141 | 26 | 0 | 10 | 0 | 1 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 99 | 23514 | 1280 | 120 | 0 | 99 | 0 | 35 |
+| `agos-kernel/civilization` | 99 | 23506 | 1280 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -42,7 +42,7 @@
 | `agos-kernel/container` | 1 | 165 | 16 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/context` | 1 | 61 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/contracts` | 1 | 119 | 4 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/contracts` | 1 | 124 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/core` | 24 | 3675 | 180 | 0 | 0 | 24 | 0 | 15 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 1 | 0 | 1 |
@@ -70,7 +70,7 @@
 | `agos-kernel/governance` | 2 | 535 | 32 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
-| `agos-kernel/intelligence` | 16 | 4278 | 139 | 0 | 0 | 16 | 0 | 4 |
+| `agos-kernel/intelligence` | 16 | 4304 | 139 | 0 | 0 | 16 | 0 | 4 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/knowledge` | 4 | 692 | 30 | 0 | 0 | 4 | 0 | 0 |
 | `agos-kernel/laboratory` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
@@ -111,7 +111,7 @@
 | `agos-kernel/skill-engine` | 1 | 209 | 17 | 1 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skill_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skills` | 10 | 1651 | 243 | 48 | 0 | 10 | 0 | 3 |
-| `agos-kernel/stack_detection` | 1 | 841 | 42 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/stack_detection` | 1 | 961 | 48 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/state-store` | 1 | 286 | 25 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/state_store` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/templates` | 1 | 101 | 6 | 0 | 0 | 1 | 0 | 0 |
@@ -119,7 +119,7 @@
 | `agos-kernel/trust` | 2 | 254 | 12 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/v2` | 2 | 228 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/verification` | 2 | 224 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/vertical_slices` | 1 | 399 | 15 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/vertical_slices` | 1 | 405 | 15 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos_kernel` | 1 | 172 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `civilization` | 5 | 529 | 50 | 16 | 0 | 5 | 0 | 4 |
@@ -149,7 +149,7 @@
 | `products` | 5 | 556 | 78 | 15 | 0 | 5 | 0 | 4 |
 | `research` | 6 | 337 | 41 | 5 | 0 | 6 | 0 | 5 |
 | `resource` | 1 | 153 | 19 | 2 | 0 | 1 | 0 | 1 |
-| `rie` | 12 | 2488 | 96 | 20 | 0 | 12 | 0 | 11 |
+| `rie` | 12 | 2518 | 96 | 20 | 0 | 12 | 0 | 11 |
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1206 | 68 | 2 | 0 | 5 | 0 | 4 |
 

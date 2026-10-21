@@ -222,8 +222,14 @@ class RepositoryAnalyzer:
         self.genome.metrics.depth = max_depth
     
     def _detect_languages(self) -> None:
-        """Detect programming languages."""
+        """Detect programming languages, weighted by lines (R-W2-003).
+
+        ``metrics.languages`` keeps the file count per language (existing consumers);
+        ``metrics.language_lines`` carries the line count — the weight that decides the
+        primary language in the DNA (most lines, then most files, then name).
+        """
         languages: Dict[str, int] = {}
+        language_lines: Dict[str, int] = {}
         
         for dirpath, _, files in os.walk(self.root_path):
             if any(ignored in dirpath for ignored in self.IGNORE_DIRS):
@@ -239,9 +245,20 @@ class RepositoryAnalyzer:
                     full_path = os.path.join(dirpath, f)
                     rel_path = os.path.relpath(full_path, self.root_path)
                     self.genome.source_files.append(rel_path)
+                    # R-W2-003: count lines of small text files; never break the walk.
+                    try:
+                        if os.path.getsize(full_path) <= 1_000_000:
+                            with open(full_path, 'r', encoding='utf-8', errors='replace') as fh:
+                                text = fh.read()
+                            if "\x00" not in text:
+                                lines = text.count("\n") + (0 if text.endswith("\n") else 1) if text else 0
+                                language_lines[lang_key] = language_lines.get(lang_key, 0) + lines
+                    except (OSError, ValueError):
+                        pass
         
         self.genome.languages = {Language(l) for l in languages.keys()}
         self.genome.metrics.languages = languages
+        self.genome.metrics.language_lines = language_lines
     
     def _detect_frameworks(self) -> None:
         """Detect frameworks from dependency manifests only (R-W2-001).
@@ -488,6 +505,7 @@ class RepositoryAnalyzer:
             comment_lines=comment_lines,
             blank_lines=blank_lines,
             languages=self.genome.metrics.languages,
+            language_lines=self.genome.metrics.language_lines,  # R-W2-003
             largest_files=largest_files[:10],
             depth=self.genome.metrics.depth
         )

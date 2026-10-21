@@ -145,7 +145,9 @@ class RepositoryMetrics:
     code_lines: int = 0
     comment_lines: int = 0
     blank_lines: int = 0
-    languages: Dict[str, int] = field(default_factory=dict)  # language -> lines
+    languages: Dict[str, int] = field(default_factory=dict)  # language -> file count
+    # R-W2-003: language -> line count — the weight behind the primary language.
+    language_lines: Dict[str, int] = field(default_factory=dict)
     largest_files: List[tuple] = field(default_factory=list)  # (path, size)
     depth: int = 0
 

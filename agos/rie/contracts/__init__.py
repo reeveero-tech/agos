@@ -50,6 +50,9 @@ class RepositoryDNA:
     # R-W2-002: every manifest dependency with ecosystem/scope/specifier/manifest.
     # ``dependencies`` holds the direct runtime/peer names only.
     dependency_details: List[Dict[str, Any]] = field(default_factory=list)
+    # R-W2-003: per-language weights — {language: {"files": n, "lines": m}}.
+    # ``primary_language`` is the language with the most lines (ties: files, then name).
+    language_stats: Dict[str, Dict[str, int]] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -76,6 +79,7 @@ class RepositoryDNA:
             "generated_at": self.generated_at.isoformat(),
             "version": self.version,
             "dependency_details": self.dependency_details,
+            "language_stats": self.language_stats,
         }
 
 
@@ -173,6 +177,8 @@ class RepositoryFeatureSet:
     
     # R-W2-002 (appended last: positional construction unchanged)
     dependency_details: List[Dict[str, Any]] = field(default_factory=list)
+    # R-W2-003: per-language weights — {language: {"files": n, "lines": m}}.
+    language_stats: Dict[str, Dict[str, int]] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -197,4 +203,5 @@ class RepositoryFeatureSet:
             "is_valid": self.is_valid,
             "validation_errors": self.validation_errors,
             "dependency_details": self.dependency_details,
+            "language_stats": self.language_stats,
         }

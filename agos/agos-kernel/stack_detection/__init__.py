@@ -15,7 +15,12 @@ R-W2-002: الوحدة نفسها هي مصدر ``dependencies`` (``project_depe
 المباشرة) و``dependency_details`` (``dependency_records``) ومديري الحزم
 (``detect_package_managers``).
 
-الوحدة نقية (مكتبة Python القياسية فقط) ولا تقرأ القرص إلا عبر ``read_manifests``.
+R-W2-003: الوحدة أيضاً مصدر وزن اللغات (``language_weights``: أسطر وملفات لكل لغة)
+واللغة الرئيسية (``primary_language``: الأكثر أسطراً) وقراءة ملفات الكود من القرص
+(``read_code_files``).
+
+الوحدة نقية (مكتبة Python القياسية فقط) ولا تقرأ القرص إلا عبر ``read_manifests``
+و``read_code_files``.
 """
 from __future__ import annotations
 
@@ -52,6 +57,12 @@ __all__ = [
     "manifest_kind",
     "parse_manifest",
     "read_manifests",
+    "language_weights",
+    "primary_language",
+    "language_breakdown",
+    "read_code_files",
+    "LanguageStat",
+    "LANGUAGE_EXTENSIONS",
     "normalize_name",
 ]
 
@@ -838,3 +849,112 @@ def detect_package_managers_at(root: "os.PathLike[str] | str") -> List[str]:
             if fname in _LOCKFILE_MANAGERS or manifest_kind(fname) is not None:
                 paths.append((Path(dirpath) / fname).relative_to(base).as_posix())
     return detect_package_managers(paths, read_manifests(base))
+
+
+# ---------------------------------------------------------------------------
+# R-W2-003 — وزن اللغات بعدد الأسطر والملفات واللغة الرئيسية الصحيحة
+# ---------------------------------------------------------------------------
+# امتدادات ملفات الكود → اللغة. مصدر واحد لكل المسارات (المسار الحي وrie
+# والتحليل الحضاري ومحلل الذكاء وشريحة الاكتشاف)؛ الجداول القديمة فيها صارت
+# واجهات تُحيل إلى هذا الجدول. اللغات هي التي تنمذجها الكواشف القائمة، بلا إضافات.
+LANGUAGE_EXTENSIONS: Dict[str, Tuple[str, ...]] = {
+    "Python": (".py",),
+    "JavaScript": (".js", ".jsx", ".mjs", ".cjs"),
+    "TypeScript": (".ts", ".tsx"),
+    "Java": (".java",),
+    "Go": (".go",),
+    "Rust": (".rs",),
+    "C": (".c", ".h"),
+    "C++": (".cpp", ".hpp", ".cc", ".cxx", ".hh", ".hxx"),
+    "C#": (".cs",),
+    "Ruby": (".rb",),
+    "PHP": (".php",),
+    "Swift": (".swift",),
+    "Kotlin": (".kt", ".kts"),
+    "Scala": (".scala", ".sbt"),
+    "Dart": (".dart",),
+    "R": (".r",),  # يشمل .R بالتطبيع الصغير لاحقاً
+}
+
+_LANGUAGE_OF_EXT: Dict[str, str] = {
+    ext: lang for lang, exts in LANGUAGE_EXTENSIONS.items() for ext in exts}
+
+
+@dataclass
+class LanguageStat:
+    """وزن لغة واحدة: عدد الملفات وعدد الأسطر (R-W2-003)."""
+    language: str
+    files: int = 0
+    lines: int = 0
+
+    def to_dict(self) -> Dict[str, int]:
+        return {"files": self.files, "lines": self.lines}
+
+
+def _count_lines(text: str) -> int:
+    """عدد الأسطر: أسطر \n زائد سطر أخير غير مُنهى إن وُجد."""
+    if not text:
+        return 0
+    return text.count("\n") + (0 if text.endswith("\n") else 1)
+
+
+def language_weights(files: Mapping[str, Optional[str]]) -> Dict[str, LanguageStat]:
+    """وزن اللغات بعدد الأسطر والملفات (R-W2-003).
+
+    ``files``: مسار → محتوى نصي (أو ``None`` إن تعذر قراءته، فيُحسب الملف بلا أسطر).
+    المجلدات المُورَّدة (``SKIP_DIRS``) تُتجاهل كلياً: كود node_modules وvendor ليس
+    كود المشروع. مجلدات الأمثلة والتوثيق تُحتسب: كودها كتبه صاحب المستودع.
+
+    الترتيب حتمي: الأسطر تنازلياً، ثم الملفات تنازلياً، ثم الاسم أبجدياً؛ وهو نفسه
+    ترتيب احتساب اللغة الرئيسية في ``primary_language``.
+    """
+    stats: Dict[str, LanguageStat] = {}
+    for path in sorted(files):
+        p = _posix(path)
+        if any(part in SKIP_DIRS for part in p.parts[:-1]):
+            continue
+        lang = _LANGUAGE_OF_EXT.get(p.suffix.lower())
+        if lang is None:
+            continue
+        stat = stats.setdefault(lang, LanguageStat(language=lang))
+        stat.files += 1
+        content = files[path]
+        if content is not None and "\x00" not in content:
+            stat.lines += _count_lines(content)
+    return {stat.language: stat for stat in sorted(stats.values(),
+                                                     key=lambda s: (-s.lines, -s.files, s.language))}
+
+
+def primary_language(weights: Mapping[str, LanguageStat]) -> str:
+    """اللغة الرئيسية: الأكثر أسطراً، ثم الأكثر ملفات، ثم الأبجدياً (حتمي)."""
+    if not weights:
+        return ""
+    return min(weights.values(), key=lambda s: (-s.lines, -s.files, s.language)).language
+
+
+def language_breakdown(files: Mapping[str, Optional[str]]) -> Dict[str, Dict[str, int]]:
+    """``{language: {files, lines}}`` — حقل ``language_stats`` في كل DNA (R-W2-003)."""
+    return {lang: stat.to_dict() for lang, stat in language_weights(files).items()}
+
+
+def read_code_files(root: "os.PathLike[str] | str", max_bytes: int = 1_000_000) -> Dict[str, str]:
+    """يقرأ ملفات الكود فقط من مجلد على القرص (يتخطى المجلدات المُورَّدة والروابط الرمزية)."""
+    base = Path(root)
+    out: Dict[str, str] = {}
+    if not base.is_dir():
+        return out
+    for dirpath, dirnames, filenames in os.walk(base):
+        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not os.path.islink(os.path.join(dirpath, d)))
+        for fname in sorted(filenames):
+            if _LANGUAGE_OF_EXT.get(Path(fname).suffix.lower()) is None:
+                continue
+            full = Path(dirpath) / fname
+            if full.is_symlink():
+                continue
+            try:
+                if full.stat().st_size > max_bytes:
+                    continue
+                out[full.relative_to(base).as_posix()] = full.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+    return out

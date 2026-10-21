@@ -198,8 +198,14 @@ class ProjectDNAGenerator:
     
     def _extract_from_repo(self, repo_genome: Any) -> None:
         """Extract data from repository genome."""
-        # Languages
-        self.dna.languages = [l.value for l in repo_genome.languages]
+        # Languages (R-W2-003): ordered by line weight — most lines first, then file
+        # count, then name — so ``languages[0]`` is the primary language, not the
+        # alphabetically first entry of a set.
+        lines = getattr(getattr(repo_genome, "metrics", None), "language_lines", None) or {}
+        files = getattr(getattr(repo_genome, "metrics", None), "languages", None) or {}
+        self.dna.languages = sorted(
+            (l.value for l in repo_genome.languages),
+            key=lambda lang: (-lines.get(lang, 0), -files.get(lang, 0), lang))
         
         # Frameworks
         self.dna.frameworks = [f.value for f in repo_genome.frameworks]

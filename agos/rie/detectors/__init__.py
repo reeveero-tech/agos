@@ -64,7 +64,14 @@ class IDetector(ABC):
 
 
 class LanguageDetector(IDetector):
-    """Detects programming languages."""
+    """Detects programming languages, weighted by lines and files (R-W2-003).
+
+    ``LANGUAGE_EXTENSIONS`` below is the historical extension table; it is kept for
+    reference only. The decision — languages, weights, percentages and the primary
+    language — is made by the kernel's ``stack_detection.language_weights`` on file
+    contents (``context.get_file_content``): lines first, then files, so ten one-line
+    scripts never outweigh one thousand-line module.
+    """
     
     LANGUAGE_EXTENSIONS = {
         "Python": [".py"],
@@ -96,24 +103,18 @@ class LanguageDetector(IDetector):
     def detect(self, context: DetectorContext) -> DetectorResult:
         start = datetime.now(timezone.utc)
         
-        language_counts = {}
+        sd = _stack_detection()
+        weights = sd.language_weights(
+            {path: context.get_file_content(path) for path in context.files})
         
-        for path, data in context.files.items():
-            ext = data.get("extension", "")
-            for lang, extensions in self.LANGUAGE_EXTENSIONS.items():
-                if ext in extensions:
-                    language_counts[lang] = language_counts.get(lang, 0) + 1
-                    break
-        
-        # Calculate percentages
-        total = sum(language_counts.values())
+        total_files = sum(stat.files for stat in weights.values())
+        total_lines = sum(stat.lines for stat in weights.values())
+        # Percentages by lines (R-W2-003); a language with no readable content
+        # (all contents None) falls back to zero weight.
         language_percentages = {
-            lang: (count / total * 100) if total > 0 else 0
-            for lang, count in language_counts.items()
+            stat.language: (stat.lines / total_lines * 100) if total_lines > 0 else 0.0
+            for stat in weights.values()
         }
-        
-        # Primary language
-        primary = max(language_percentages, key=language_percentages.get) if language_percentages else ""
         
         duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
@@ -121,10 +122,13 @@ class LanguageDetector(IDetector):
             name=self.name,
             success=True,
             features={
-                "languages": list(language_counts.keys()),
+                "languages": [stat.language for stat in weights.values()],
                 "language_percentages": language_percentages,
-                "primary_language": primary,
-                "total_files_by_language": language_counts
+                "primary_language": sd.primary_language(weights),
+                "total_files_by_language": {stat.language: stat.files for stat in weights.values()},
+                "language_stats": {stat.language: stat.to_dict() for stat in weights.values()},
+                "total_code_files": total_files,
+                "total_code_lines": total_lines,
             },
             duration_ms=duration_ms
         )

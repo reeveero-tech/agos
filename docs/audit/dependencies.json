@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 550,
+  "files_scanned": 551,
   "external_imports": [
     {
       "import": "a",
@@ -75,6 +75,7 @@
           "tests/test_dependency_extraction.py",
           "tests/test_framework_detection.py",
           "tests/test_kernel_facade.py",
+          "tests/test_language_weights.py",
           "tests/test_namespace_identity.py",
           "tests/test_rie_pipeline.py",
           "tests/test_security_scanners.py"
@@ -182,6 +183,7 @@
       "agos/seos/workspace/__init__.py",
       "tests/test_dependency_extraction.py",
       "tests/test_framework_detection.py",
+      "tests/test_language_weights.py",
       "tests/test_rie_pipeline.py",
       "tools/governance/check_commit.py"
     ],

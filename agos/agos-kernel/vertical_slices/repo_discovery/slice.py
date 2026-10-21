@@ -215,9 +215,15 @@ class RepositoryDiscoveryMission:
         ext_map = {".py": "Python", ".js": "JavaScript", ".ts": "TypeScript",
                    ".java": "Java", ".go": "Go", ".rs": "Rust", ".rb": "Ruby"}
         
-        for ext, lang in ext_map.items():
-            if list(Path(repo_path).rglob(f"*{ext}")):
-                techs["languages"].append(lang)
+        # Languages (R-W2-003): the canonical kernel detector, weighted by lines and
+        # files — ordered by weight, and vendored directories (node_modules, ...) are
+        # never counted. ``ext_map`` above is the historical table, kept for reference.
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        weights = stack_detection.language_weights(stack_detection.read_code_files(repo_path))
+        techs["languages"] = [stat.language for stat in weights.values()]
         
         # R-W2-001: Node.js/.NET are runtimes, not frameworks — reported under "runtimes".
         techs["runtimes"] = []

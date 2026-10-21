@@ -154,11 +154,18 @@ class RepositoryNormalizer:
             # R-W2-001: keep the contents of dependency manifests (only those — small and
             # few) so detectors can read them via DetectorContext.get_file_content, which
             # reads metadata["_content"]. Before this, contents were read and discarded.
+            # R-W2-003: code files are kept too — the reader has already read them (see
+            # ``read_repository``), so the LanguageDetector can weigh languages by lines
+            # instead of falling back to file counts. No extra disk reads.
             from ..detectors import _stack_detection
-            is_manifest = _stack_detection().is_manifest
+            sd = _stack_detection()
+            is_manifest = sd.is_manifest
+            is_code_ext = {ext for exts in sd.LANGUAGE_EXTENSIONS.values() for ext in exts}
             manifest_content = {
                 f.path: f.content
-                for f in files if not f.is_dir and f.content is not None and is_manifest(f.path)
+                for f in files
+                if not f.is_dir and f.content is not None
+                and (is_manifest(f.path) or f.extension in is_code_ext)
             }
             
             return {

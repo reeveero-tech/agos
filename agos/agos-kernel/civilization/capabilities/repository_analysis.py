@@ -24,6 +24,8 @@ class RepositoryInfo:
     directory_count: int = 0
     language: str = ""
     languages: Dict[str, int] = field(default_factory=dict)
+    # R-W2-003: per-language line counts — the weight behind ``language``.
+    language_lines: Dict[str, int] = field(default_factory=dict)
     files: List[Dict] = field(default_factory=list)
     structure: Dict[str, Any] = field(default_factory=dict)
     
@@ -103,8 +105,8 @@ class RepositoryAnalyzer:
         # Scan repository
         self._scan_directory(repo_path, info)
         
-        # Detect primary language
-        info.language = self._detect_primary_language(info.languages)
+        # Detect primary language — by lines first, then file count (R-W2-003)
+        info.language = self._detect_primary_language(info.languages, info.language_lines)
         
         # Generate structure
         info.structure = self._generate_structure(repo_path)
@@ -133,6 +135,17 @@ class RepositoryAnalyzer:
                     if ext in self.language_extensions:
                         lang = self.language_extensions[ext]
                         info.languages[lang] = info.languages.get(lang, 0) + 1
+                        # R-W2-003: weight by lines — read only small text files, and
+                        # never let a failed read break the scan.
+                        try:
+                            if item.stat().st_size <= 1_000_000:
+                                with open(item, 'r', encoding='utf-8', errors='replace') as fh:
+                                    text = fh.read()
+                                if "\x00" not in text:
+                                    lines = text.count("\n") + (0 if text.endswith("\n") else 1) if text else 0
+                                    info.language_lines[lang] = info.language_lines.get(lang, 0) + lines
+                        except (OSError, ValueError):
+                            pass
                     
                     # Record file info
                     try:
@@ -160,10 +173,19 @@ class RepositoryAnalyzer:
                 return True
         return False
     
-    def _detect_primary_language(self, languages: Dict[str, int]) -> str:
-        """Detect primary language based on file count."""
+    def _detect_primary_language(self, languages: Dict[str, int], language_lines: Optional[Dict[str, int]] = None) -> str:
+        """Detect primary language: most lines first, then most files (R-W2-003).
+        
+        Lines are the weight (a thousand-line module outweighs ten one-line scripts);
+        file count is the tie-break, then the name alphabetically — deterministic.
+        """
         if not languages:
             return "Unknown"
+        lines = language_lines or {}
+        if lines:
+            best = max(set(languages) | set(lines),
+                       key=lambda lang: (lines.get(lang, 0), languages.get(lang, 0), tuple(-ord(c) for c in lang)))
+            return best
         return max(languages.items(), key=lambda x: x[1])[0]
     
     def _generate_structure(self, path: Path, max_depth: int = 3, current_depth: int = 0) -> Dict:
