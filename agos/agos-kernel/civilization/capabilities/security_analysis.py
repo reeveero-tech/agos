@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -100,7 +100,7 @@ class SecurityAnalyzer:
             'findings': findings[:20],  # Top 20
             'risk_score': risk_score,
             'risk_level': self._get_risk_level(risk_score),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
     
     def _should_exclude(self, path: Path) -> bool:

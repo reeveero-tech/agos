@@ -1,6 +1,6 @@
 """Universal Project Platform - Unified internal model for every software project."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -16,8 +16,8 @@ class ProjectMetadata:
     name: str
     type: str
     description: str = ""
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 @dataclass
 class ProjectHealth:

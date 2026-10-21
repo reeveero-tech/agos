@@ -9,7 +9,7 @@ import json
 import os
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -219,7 +219,7 @@ class GitHubProvider:
             'contributors': [],
             'languages': {},
             'commits': [],
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
         
         # Get repository info

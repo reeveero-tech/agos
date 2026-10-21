@@ -1,6 +1,6 @@
 """AGOS Engineering Brain - The permanent engineering intelligence."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 @dataclass
@@ -11,7 +11,7 @@ class EngineeringDecision:
     rationale: str
     alternatives: List[str] = field(default_factory=list)
     confidence: float = 0.0
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 @dataclass
 class EngineeringRule:
@@ -136,7 +136,7 @@ class EngineeringBrain:
     
     def optimize(self, target: str, metrics: Dict[str, float]) -> Dict[str, Any]:
         return {
-            "optimization_id": f"opt_{int(datetime.utcnow().timestamp())}",
+            "optimization_id": f"opt_{int(datetime.now(timezone.utc).timestamp())}",
             "target": target,
             "improvements": {}
         }

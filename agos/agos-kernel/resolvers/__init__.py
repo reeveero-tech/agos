@@ -1,6 +1,6 @@
 """Resolvers for Capabilities and Providers."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -38,7 +38,7 @@ class CapabilitySelection:
     status: ResolutionStatus
     score: SelectionScore
     reason: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass
@@ -50,7 +50,7 @@ class ProviderSelection:
     score: SelectionScore
     reason: str
     supported_skills: List[str] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class CapabilityResolver:

@@ -1,6 +1,6 @@
 """Event Processing Engine - Async event handling with guaranteed delivery."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 from uuid import uuid4
@@ -47,7 +47,7 @@ class Event:
         return cls(
             id=str(uuid4()),
             type=event_type,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             mission_id=mission_id,
             data=data
         )

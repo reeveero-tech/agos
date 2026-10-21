@@ -10,7 +10,7 @@ import ast
 from pathlib import Path
 from typing import Dict, List, Any, Set
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -94,7 +94,7 @@ class DependencyAnalyzer:
                 'transitive_deps': metrics.transitive_deps,
             },
             'dependencies': dependencies[:50],  # Limit for report size
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
         
         return result

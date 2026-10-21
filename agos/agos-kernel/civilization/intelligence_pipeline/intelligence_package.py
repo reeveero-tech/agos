@@ -7,7 +7,7 @@ Every capability consumes this package.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
@@ -158,7 +158,7 @@ class DocumentationProfile:
 class EvidencePackage:
     """Immutable evidence package."""
     version: str = "1.0"
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     evidence_id: str = ""
     artifacts: List[Dict] = field(default_factory=list)
     verifications: List[Dict] = field(default_factory=list)
@@ -187,7 +187,7 @@ class EngineeringIntelligencePackage:
     
     # Metadata
     version: str = "1.0"
-    generated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    generated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     pipeline_version: str = "1.0"
     
     # Core Identity
@@ -260,7 +260,7 @@ class EngineeringIntelligencePackage:
         self.evidence.artifacts.append({
             'type': artifact_type,
             'data': artifact,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
     
     def add_recommendation(self, rec: Recommendation) -> None:

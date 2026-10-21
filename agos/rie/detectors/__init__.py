@@ -1,7 +1,7 @@
 """RIE Detectors - Isolated plugin-based detectors."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -94,7 +94,7 @@ class LanguageDetector(IDetector):
         return "Detects programming languages in repository"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         language_counts = {}
         
@@ -115,7 +115,7 @@ class LanguageDetector(IDetector):
         # Primary language
         primary = max(language_percentages, key=language_percentages.get) if language_percentages else ""
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,
@@ -159,7 +159,7 @@ class FrameworkDetector(IDetector):
         return "Detects frameworks in repository"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         detected_frameworks = set()
         
@@ -177,7 +177,7 @@ class FrameworkDetector(IDetector):
             elif "Gemfile" in path:
                 detected_frameworks.add("Ruby")
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,
@@ -216,7 +216,7 @@ class ConfigurationDetector(IDetector):
         return "Detects configuration files"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         config_files = []
         
@@ -227,7 +227,7 @@ class ConfigurationDetector(IDetector):
                     config_files.append(path)
                     break
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,
@@ -261,7 +261,7 @@ class LicenseDetector(IDetector):
         return "Detects license type"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         license_type = ""
         has_license = False
@@ -278,7 +278,7 @@ class LicenseDetector(IDetector):
                     license_type = "Other"
                 break
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,
@@ -305,7 +305,7 @@ class ReadmeDetector(IDetector):
         return "Detects README and documentation"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         has_readme = False
         has_changelog = False
@@ -317,7 +317,7 @@ class ReadmeDetector(IDetector):
             if "changelog" in path_lower:
                 has_changelog = True
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,
@@ -342,7 +342,7 @@ class DirectoryDetector(IDetector):
         return "Detects directory structure"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         top_level_dirs = set()
         for directory in context.directories:
@@ -350,7 +350,7 @@ class DirectoryDetector(IDetector):
             if parts:
                 top_level_dirs.add(parts[0])
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,
@@ -384,7 +384,7 @@ class DependencyDetector(IDetector):
         return "Detects package managers and dependencies"
     
     def detect(self, context: DetectorContext) -> DetectorResult:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         
         package_managers = []
         
@@ -395,7 +395,7 @@ class DependencyDetector(IDetector):
                     if pm not in package_managers:
                         package_managers.append(pm)
         
-        duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+        duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
         return DetectorResult(
             name=self.name,

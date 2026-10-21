@@ -7,7 +7,7 @@ Validates kernel invariants and blocks violations.
 
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import ast
 
@@ -18,7 +18,7 @@ from agos_kernel.core.invariants.registry import InvariantRegistry, get_registry
 @dataclass
 class ValidationReport:
     """Report from invariant validation."""
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     total_checks: int = 0
     passed: int = 0
     failed: int = 0

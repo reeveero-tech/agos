@@ -7,7 +7,7 @@ through governed multi-agent collaboration.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -67,7 +67,7 @@ class AgentSessionManager:
     
     def start_session(self, agent_id: str) -> str:
         session_id = str(uuid.uuid4())
-        self.sessions[session_id] = {'agent_id': agent_id, 'started': datetime.utcnow().isoformat()}
+        self.sessions[session_id] = {'agent_id': agent_id, 'started': datetime.now(timezone.utc).isoformat()}
         return session_id
 
 

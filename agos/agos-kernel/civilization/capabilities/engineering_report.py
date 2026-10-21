@@ -8,7 +8,7 @@ Generates comprehensive engineering reports.
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 
@@ -40,7 +40,7 @@ class EngineeringReporter:
             'report_version': self.report_version,
             'repository': repo_path.name,
             'path': str(repo_path),
-            'generated_at': datetime.utcnow().isoformat(),
+            'generated_at': datetime.now(timezone.utc).isoformat(),
             'summary': self._generate_summary(analysis_results),
             'sections': self._generate_sections(analysis_results),
             'recommendations': self._generate_recommendations(analysis_results),
@@ -174,7 +174,7 @@ class EngineeringReporter:
     def _generate_evidence(self, analysis: Dict) -> Dict:
         """Generate evidence package."""
         return {
-            'analysis_timestamp': datetime.utcnow().isoformat(),
+            'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
             'analysis_version': self.report_version,
             'files_analyzed': analysis.get('repository', {}).get('file_count', 0),
             'verification': {

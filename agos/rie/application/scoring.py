@@ -1,6 +1,6 @@
 """Repository Scoring Engine - Calculates repository scores."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
@@ -26,7 +26,7 @@ class RepositoryScore:
     capability_coverage: float = 0.0
     
     # Metadata
-    calculated_at: datetime = field(default_factory=datetime.utcnow)
+    calculated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     version: str = "1.0.0"
     
     # Formula details

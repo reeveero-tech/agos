@@ -6,7 +6,7 @@ Trust must be computed. Trust is never manually assigned.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import hashlib
@@ -174,7 +174,7 @@ class TrustRegistry:
         
         delta = score.score - (prev_score.score if prev_score else 0.0)
         self.history[key].append(TrustHistoryEntry(
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             score=score.score,
             delta=delta,
             reason="Trust calculation update"

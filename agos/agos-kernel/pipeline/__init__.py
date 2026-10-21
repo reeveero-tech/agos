@@ -1,6 +1,6 @@
 """Execution Pipeline for running missions."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -39,7 +39,7 @@ class ExecutionResult:
     steps: List[ExecutionStep] = field(default_factory=list)
     result: Optional[Any] = None
     error: Optional[str] = None
-    started_at: datetime = field(default_factory=datetime.utcnow)
+    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     duration_ms: int = 0
     
@@ -80,7 +80,7 @@ class ExecutionPipeline:
                 raise Exception(f"Capability resolution failed: {capability_selection.reason}")
             
             step.status = ExecutionStatus.COMPLETED
-            step.completed_at = datetime.utcnow()
+            step.completed_at = datetime.now(timezone.utc)
             step.result = capability_selection.capability_name
             
             self.event_bus.publish(Event(
@@ -99,7 +99,7 @@ class ExecutionPipeline:
                 raise Exception(f"Provider resolution failed: {provider_selection.reason}")
             
             step.status = ExecutionStatus.COMPLETED
-            step.completed_at = datetime.utcnow()
+            step.completed_at = datetime.now(timezone.utc)
             step.result = provider_selection.provider_name
             
             self.event_bus.publish(Event(
@@ -111,7 +111,7 @@ class ExecutionPipeline:
             # Step 3: Execute Capability
             step = self._create_step("execute_capability", "Execute Capability")
             result.steps.append(step)
-            step.started_at = datetime.utcnow()
+            step.started_at = datetime.now(timezone.utc)
             
             self.event_bus.publish(Event(
                 type=EventType.EXECUTION_STARTED,
@@ -123,7 +123,7 @@ class ExecutionPipeline:
             execution_result = capability.execute(mission.parameters)
             
             step.status = ExecutionStatus.COMPLETED
-            step.completed_at = datetime.utcnow()
+            step.completed_at = datetime.now(timezone.utc)
             step.result = execution_result
             
             # Step 4: Complete
@@ -136,7 +136,7 @@ class ExecutionPipeline:
                 data={"success": True}
             ))
             
-            result.completed_at = datetime.utcnow()
+            result.completed_at = datetime.now(timezone.utc)
             result.duration_ms = int((result.completed_at - result.started_at).total_seconds() * 1000)
             
             return result
@@ -144,13 +144,13 @@ class ExecutionPipeline:
         except Exception as e:
             result.status = ExecutionStatus.FAILED
             result.error = str(e)
-            result.completed_at = datetime.utcnow()
+            result.completed_at = datetime.now(timezone.utc)
             result.duration_ms = int((result.completed_at - result.started_at).total_seconds() * 1000)
             
             step = self._create_step("error", "Error")
             step.status = ExecutionStatus.FAILED
             step.error = str(e)
-            step.completed_at = datetime.utcnow()
+            step.completed_at = datetime.now(timezone.utc)
             result.steps.append(step)
             
             self.event_bus.publish(Event(
@@ -162,4 +162,4 @@ class ExecutionPipeline:
             return result
     
     def _create_step(self, step_id: str, name: str) -> ExecutionStep:
-        return ExecutionStep(step_id=step_id, name=name, status=ExecutionStatus.PENDING, started_at=datetime.utcnow())
+        return ExecutionStep(step_id=step_id, name=name, status=ExecutionStatus.PENDING, started_at=datetime.now(timezone.utc))

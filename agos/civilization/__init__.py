@@ -1,6 +1,6 @@
 """AGOS Autonomous Engineering Civilization v1.0.0."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -43,7 +43,7 @@ class Organization:
     org_id: str
     name: str
     departments: List[Department] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 # =============================================================================
 # GOVERNANCE

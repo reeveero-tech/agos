@@ -3,7 +3,7 @@ import importlib
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 
@@ -216,7 +216,7 @@ class CapabilityLoader:
         except Exception as e:
             manifest.errors.append(f"Failed to load: {e}")
         
-        manifest.loaded_at = datetime.utcnow()
+        manifest.loaded_at = datetime.now(timezone.utc)
         return manifest
     
     def _discover_root_capabilities(self) -> List[Manifest]:
@@ -233,7 +233,7 @@ class CapabilityLoader:
             return [Manifest(id="capabilities", name="capabilities", version="1.0.0",
                              description="Capability package root", path=self.capabilities_path,
                              class_name="", errors=[f"Failed to load: {e}"],
-                             loaded_at=datetime.utcnow())]
+                             loaded_at=datetime.now(timezone.utc))]
         for attr_name in sorted(dir(module)):
             attr = getattr(module, attr_name)
             if not _is_concrete_subclass(attr, ICapability, module.__name__):
@@ -251,7 +251,7 @@ class CapabilityLoader:
                 manifest.skills = list(instance.skills)
             except Exception as e:
                 manifest.errors.append(f"Failed to instantiate: {e}")
-            manifest.loaded_at = datetime.utcnow()
+            manifest.loaded_at = datetime.now(timezone.utc)
             manifests.append(manifest)
         return manifests
     
@@ -353,7 +353,7 @@ class ProviderLoader:
         except Exception as e:
             manifest.errors.append(f"Failed to load: {e}")
         
-        manifest.loaded_at = datetime.utcnow()
+        manifest.loaded_at = datetime.now(timezone.utc)
         return manifest
     
     def _discover_providers_from_init(self, path: str) -> List[Manifest]:
@@ -366,7 +366,7 @@ class ProviderLoader:
             return [Manifest(id="providers", name="providers", version="1.0.0",
                              description="Provider package root", path=parent_dir,
                              class_name="", errors=[f"Failed to load: {e}"],
-                             loaded_at=datetime.utcnow())]
+                             loaded_at=datetime.now(timezone.utc))]
         manifests: List[Manifest] = []
         for attr_name in sorted(dir(module)):
             attr = getattr(module, attr_name)
@@ -381,12 +381,12 @@ class ProviderLoader:
                 manifest.version = getattr(instance, "version", "1.0.0")
             except Exception as e:
                 manifest.errors.append(f"Failed to instantiate: {e}")
-            manifest.loaded_at = datetime.utcnow()
+            manifest.loaded_at = datetime.now(timezone.utc)
             manifests.append(manifest)
         if not manifests:
             manifests.append(Manifest(id="providers", name="providers", version="1.0.0",
                                       description="Provider package root", path=parent_dir,
-                                      class_name="", loaded_at=datetime.utcnow(),
+                                      class_name="", loaded_at=datetime.now(timezone.utc),
                                       errors=["No IProvider implementation found in providers"]))
         return manifests
     

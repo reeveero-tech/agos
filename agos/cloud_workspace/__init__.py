@@ -1,6 +1,6 @@
 """Universal Cloud Workspace - Persistent cloud workspaces."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -16,7 +16,7 @@ class Workspace:
     name: str
     type: str
     status: str = "active"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     owner: str = ""
 
 @dataclass
@@ -41,7 +41,7 @@ class WorkspaceRuntime:
         snap = WorkspaceSnapshot(
             snapshot_id=f"snap_{workspace_id}_{len(self._snapshots.get(workspace_id, []))}",
             workspace_id=workspace_id,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         if workspace_id not in self._snapshots:
             self._snapshots[workspace_id] = []

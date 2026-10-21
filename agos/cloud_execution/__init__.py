@@ -1,6 +1,6 @@
 """Universal Execution Cloud - Unlimited distributed execution."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -13,7 +13,7 @@ class ExecutionJob:
     mission_id: str
     worker_type: str
     status: str = "queued"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ExecutionCluster:
     def __init__(self):

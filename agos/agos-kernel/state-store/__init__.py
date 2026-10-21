@@ -1,6 +1,6 @@
 """Runtime State Store - Persistent state management with crash recovery."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
@@ -27,7 +27,7 @@ class Snapshot:
         """Create a new snapshot."""
         return cls(
             snapshot_id=str(uuid4()),
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             data=data
         )
 
@@ -39,14 +39,14 @@ class StoredState:
     state_type: str
     data: Dict[str, Any]
     version: int = 1
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def update(self, data: Dict[str, Any]) -> None:
         """Update the state."""
         self.data = data
         self.version += 1
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
 
 @dataclass
@@ -191,7 +191,7 @@ class StateStore:
         """Create a snapshot of all states."""
         data = {
             "states": {k: v.__dict__ for k, v in self._states.items()},
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
         
         snapshot = Snapshot.create(data)

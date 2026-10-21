@@ -6,7 +6,7 @@ Reports on invariant verification results.
 """
 
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 import json
 
@@ -20,7 +20,7 @@ class InvariantViolation:
     invariant_id: str
     invariant_name: str
     severity: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     details: Dict = field(default_factory=dict)
 
 

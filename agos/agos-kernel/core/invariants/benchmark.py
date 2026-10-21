@@ -6,7 +6,7 @@ Benchmarks kernel invariant verification performance.
 """
 
 from typing import Dict, List
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 import time
 import json
@@ -17,7 +17,7 @@ from agos_kernel.core.invariants.runtime import InvariantRuntime, InvariantResul
 @dataclass
 class BenchmarkResult:
     """Result of a benchmark run."""
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     total_time_ms: float = 0.0
     invariants_per_second: float = 0.0
     results: Dict[str, float] = field(default_factory=dict)  # invariant_id -> time_ms
@@ -35,7 +35,7 @@ class BenchmarkResult:
 class BenchmarkBaseline:
     """Baseline benchmark for comparison."""
     version: str = "1.0.0"
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     baseline: Dict[str, float] = field(default_factory=dict)
     average_total_ms: float = 0.0
     

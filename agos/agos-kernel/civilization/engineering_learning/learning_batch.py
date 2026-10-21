@@ -7,7 +7,7 @@ Learning produces Knowledge. Learning never mutates historical Evidence.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -46,7 +46,7 @@ class LearningSessionManager:
             'session_id': str(uuid.uuid4()),
             'state': LearningState.IDLE,
             'context': context,
-            'started_at': datetime.utcnow().isoformat()
+            'started_at': datetime.now(timezone.utc).isoformat()
         }
         return session
 

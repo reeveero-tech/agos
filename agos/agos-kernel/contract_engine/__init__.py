@@ -1,6 +1,6 @@
 """Universal Contract Engine - Validates all contracts before execution."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type
 
@@ -36,7 +36,7 @@ class ValidationResult:
     contract_id: str
     status: ValidationStatus
     errors: List[ValidationError] = field(default_factory=list)
-    validated_at: datetime = field(default_factory=datetime.utcnow)
+    validated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     @property
     def is_valid(self) -> bool:

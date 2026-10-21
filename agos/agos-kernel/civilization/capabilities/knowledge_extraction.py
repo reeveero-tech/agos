@@ -9,7 +9,7 @@ import ast
 from pathlib import Path
 from typing import Dict, List, Any, Set
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -76,7 +76,7 @@ class KnowledgeExtractor:
                 len(knowledge['classes']) + 
                 len(knowledge['functions'])
             ),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
     
     def _should_exclude(self, path: Path) -> bool:

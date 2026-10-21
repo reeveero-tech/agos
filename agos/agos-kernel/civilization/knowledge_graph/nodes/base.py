@@ -4,7 +4,7 @@ PHASE-02: EXECUTION-000002 - Engineering Knowledge Graph
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Any
 import uuid
@@ -78,8 +78,8 @@ class NodeType(Enum):
 @dataclass
 class NodeMetadata:
     """Node metadata."""
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
-    updated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     version: int = 1
     tags: List[str] = field(default_factory=list)
     properties: Dict[str, Any] = field(default_factory=dict)
@@ -192,14 +192,14 @@ class GraphNode:
     def add_evidence(self, evidence: str) -> None:
         """Add evidence to node."""
         self.metadata.evidence.append(evidence)
-        self.metadata.updated_at = datetime.utcnow().isoformat()
+        self.metadata.updated_at = datetime.now(timezone.utc).isoformat()
         self.metadata.version += 1
     
     def add_tag(self, tag: str) -> None:
         """Add tag to node."""
         if tag not in self.metadata.tags:
             self.metadata.tags.append(tag)
-            self.metadata.updated_at = datetime.utcnow().isoformat()
+            self.metadata.updated_at = datetime.now(timezone.utc).isoformat()
             self.metadata.version += 1
 
 

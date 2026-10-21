@@ -1,6 +1,6 @@
 """Runtime Scheduler - No mission executes outside scheduler."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from heapq import heappush, heappop
 from typing import Any, Callable, Dict, List, Optional
@@ -34,7 +34,7 @@ class QueuedMission:
     parameters: Dict[str, Any]
     priority: int = 0
     scheduled_at: Optional[datetime] = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     status: QueueStatus = QueueStatus.PENDING
     retry_count: int = 0
     error: Optional[str] = None

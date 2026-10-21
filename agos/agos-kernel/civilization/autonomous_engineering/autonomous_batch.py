@@ -7,7 +7,7 @@ Execution becomes autonomous under governance.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -84,13 +84,13 @@ class AutonomousSessionManager:
         self.sessions: Dict[str, Dict] = {}
     
     def create_session(self, mission: Dict) -> Dict:
-        session = {'session_id': str(uuid.uuid4()), 'mission': mission, 'started_at': datetime.utcnow().isoformat()}
+        session = {'session_id': str(uuid.uuid4()), 'mission': mission, 'started_at': datetime.now(timezone.utc).isoformat()}
         self.sessions[session['session_id']] = session
         return session
     
     def end_session(self, session_id: str) -> None:
         if session_id in self.sessions:
-            self.sessions[session_id]['ended_at'] = datetime.utcnow().isoformat()
+            self.sessions[session_id]['ended_at'] = datetime.now(timezone.utc).isoformat()
 
 
 class AutonomousStateManager:
@@ -819,7 +819,7 @@ class ExecutionAuditor:
         self.audit_log: List[Dict] = []
     
     def audit(self, action: Dict) -> None:
-        self.audit_log.append({'action': action, 'timestamp': datetime.utcnow().isoformat()})
+        self.audit_log.append({'action': action, 'timestamp': datetime.now(timezone.utc).isoformat()})
 
 
 class GovernanceRuntime:

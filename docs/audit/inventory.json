@@ -5154,6 +5154,9 @@
    "imported_by": [
     "K:civilization.telemetry_runtime"
    ],
+   "tested_by_external": [
+    "tests/test_aware_utc.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15484,6 +15487,27 @@
    ],
    "scripts": [],
    "resolved": []
+  },
+  {
+   "path": "tests/test_aware_utc.py",
+   "imports": [
+    "aware_utc",
+    "civilization.telemetry_runtime.telemetry",
+    "dataclasses",
+    "datetime",
+    "importlib.util",
+    "os",
+    "pathlib",
+    "subprocess",
+    "sys",
+    "textwrap",
+    "time",
+    "tomllib"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:civilization.telemetry_runtime.telemetry"
+   ]
   },
   {
    "path": "tests/test_bootstrap.py",

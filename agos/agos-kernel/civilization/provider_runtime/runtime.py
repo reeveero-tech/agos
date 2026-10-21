@@ -6,7 +6,7 @@ Every interaction with the outside world shall pass through a single Provider Ru
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
 import uuid
@@ -44,7 +44,7 @@ class ProviderSession:
     """Provider session."""
     session_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     provider_id: str = ""
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     status: ProviderStatus = ProviderStatus.IDLE
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -265,7 +265,7 @@ class ProviderCertificationEngine:
         return {
             'certified': True,
             'provider': provider.provider_id,
-            'certification_date': datetime.utcnow().isoformat(),
+            'certification_date': datetime.now(timezone.utc).isoformat(),
         }
 
 
@@ -415,7 +415,7 @@ class ProviderRuntime:
             print("[10/13] Collecting evidence...")
             response.evidence.append({
                 'type': 'execution_evidence',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'provider': provider_id,
                 'operation': operation,
             })
@@ -450,7 +450,7 @@ class ProviderRuntime:
             'provider_id': provider_id,
             'operation': operation,
             'success': response.success,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
         
         print()

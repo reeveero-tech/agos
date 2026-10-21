@@ -8,7 +8,7 @@ Analyzes documentation quality and coverage.
 from pathlib import Path
 from typing import Dict, List, Any
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class DocAnalyzer:
@@ -65,7 +65,7 @@ class DocAnalyzer:
             'readme_quality': readme_quality,
             'score': score,
             'grade': self._get_grade(score),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
     
     def _analyze_readme(self, repo_path: Path) -> Dict[str, Any]:

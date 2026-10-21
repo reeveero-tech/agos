@@ -1,7 +1,7 @@
 """Runtime Bootstrapper - Initializes the entire AGOS Kernel."""
 import os
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from container import Container, Lifetime, LifetimeManager
@@ -21,7 +21,7 @@ class BootstrapResult:
     """Result of bootstrap operation."""
     success: bool
     kernel_version: str = "0.2.0"
-    started_at: datetime = field(default_factory=datetime.utcnow)
+    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     duration_ms: int = 0
     loaded_capabilities: List[str] = field(default_factory=list)
@@ -65,7 +65,7 @@ class Bootstrapper:
     
     def bootstrap(self) -> BootstrapResult:
         """Bootstrap the kernel."""
-        self.result = BootstrapResult(success=False, kernel_version=self.KERNEL_VERSION, started_at=datetime.utcnow())
+        self.result = BootstrapResult(success=False, kernel_version=self.KERNEL_VERSION, started_at=datetime.now(timezone.utc))
         
         try:
             print("=" * 60)
@@ -105,7 +105,7 @@ class Bootstrapper:
             
             # Step 9: Complete
             self.result.success = True
-            self.result.completed_at = datetime.utcnow()
+            self.result.completed_at = datetime.now(timezone.utc)
             self.result.duration_ms = int((self.result.completed_at - self.result.started_at).total_seconds() * 1000)
             
             print("\n" + "=" * 60)
@@ -121,7 +121,7 @@ class Bootstrapper:
         except Exception as e:
             self.result.success = False
             self.result.errors.append(str(e))
-            self.result.completed_at = datetime.utcnow()
+            self.result.completed_at = datetime.now(timezone.utc)
             self.result.duration_ms = int((self.result.completed_at - self.result.started_at).total_seconds() * 1000)
             print(f"\n❌ BOOTSTRAP FAILED: {e}")
             return self.result

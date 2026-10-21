@@ -15,7 +15,7 @@ _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
 import subprocess
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 # Test root directory
@@ -33,7 +33,7 @@ def run_golden_tests():
     print("=" * 60)
     print("AGOS KERNEL GOLDEN TEST SUITE")
     print("=" * 60)
-    print(f"Timestamp: {datetime.utcnow().isoformat()}")
+    print(f"Timestamp: {datetime.now(timezone.utc).isoformat()}")
     print(f"Version: 1.0.0")
     print()
     

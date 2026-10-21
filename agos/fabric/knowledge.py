@@ -1,6 +1,6 @@
 """Universal Knowledge Fabric - 1 Billion Knowledge Objects."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # Knowledge Sources
@@ -18,7 +18,7 @@ class KnowledgeObject:
     content: str
     embeddings: List[float] = field(default_factory=list)
     provenance: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     rank: float = 0.0
 
 @dataclass
@@ -66,7 +66,7 @@ class KnowledgeFabric:
         return 0
     
     def snapshot(self) -> str:
-        return f"snapshot_{int(datetime.utcnow().timestamp())}"
+        return f"snapshot_{int(datetime.now(timezone.utc).timestamp())}"
     
     def get_statistics(self) -> Dict[str, Any]:
         return {

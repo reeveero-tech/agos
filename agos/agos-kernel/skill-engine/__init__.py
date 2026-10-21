@@ -1,7 +1,7 @@
 """Universal Skill Engine - Every capability executes only through Skills."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
 
@@ -23,7 +23,7 @@ class SkillContext:
     skill_name: str
     parameters: Dict[str, Any] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class SkillStatus(Enum):
@@ -44,7 +44,7 @@ class SkillResult:
     # R-F-004: a non-default field after defaults made this module unimportable
     # (TypeError at class creation). All call sites pass started_at by keyword; the
     # default only applies when it is omitted.
-    started_at: datetime = field(default_factory=datetime.utcnow)
+    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     duration_ms: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -159,17 +159,17 @@ class SkillRunner:
                 skill_name=skill_name,
                 status=SkillStatus.FAILED,
                 error=f"Skill not found: {skill_name}",
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(timezone.utc),
                 duration_ms=0
             )
         
-        started_at = datetime.utcnow()
+        started_at = datetime.now(timezone.utc)
         
         try:
             result = skill.execute(context)
             result.status = SkillStatus.COMPLETED
-            result.completed_at = datetime.utcnow()
+            result.completed_at = datetime.now(timezone.utc)
             result.duration_ms = int((result.completed_at - started_at).total_seconds() * 1000)
             return result
             
@@ -179,8 +179,8 @@ class SkillRunner:
                 status=SkillStatus.FAILED,
                 error=str(e),
                 started_at=started_at,
-                completed_at=datetime.utcnow(),
-                duration_ms=int((datetime.utcnow() - started_at).total_seconds() * 1000)
+                completed_at=datetime.now(timezone.utc),
+                duration_ms=int((datetime.now(timezone.utc) - started_at).total_seconds() * 1000)
             )
 
 

@@ -6,7 +6,7 @@ Separates engineering reasoning from engineering execution.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -60,7 +60,7 @@ class DecisionEvidence:
     type: str = ""
     source: str = ""
     content: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     weight: float = 1.0  # 0.0 to 1.0
 
 
@@ -85,7 +85,7 @@ class Decision:
     # Identification
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     type: DecisionType = DecisionType.EXECUTION_PLAN
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     
     # Description
     title: str = ""
@@ -169,7 +169,7 @@ class Decision:
 class ExecutionPlan:
     """Execution plan generated from decisions."""
     plan_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     
     # Plan content
     steps: List[Dict] = field(default_factory=list)

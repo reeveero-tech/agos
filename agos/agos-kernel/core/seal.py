@@ -40,7 +40,7 @@ _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import json
 import hashlib
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 
@@ -90,7 +90,7 @@ class KernelSealCertificate:
     
     def __init__(self, kernel_root: Optional[Path] = None):
         self.kernel_root = kernel_root or Path(str(_AGOS_KERNEL))
-        self.generated_at = datetime.utcnow()
+        self.generated_at = datetime.now(timezone.utc)
         self._certificate_hash = ""
         self._kernel_integrity_hash = ""
         self._architecture_fingerprint = ""
@@ -284,7 +284,7 @@ def create_kernel_seal_certificate():
         json.dump({
             "manifest_type": "KERNEL_MANIFEST",
             "version": "1.0.0",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": cert_data['kernel_metrics'],
             "components": cert_data['locked_components'],
             "final_state": cert_data['final_state'],
@@ -295,7 +295,7 @@ def create_kernel_seal_certificate():
         json.dump({
             "type": "KERNEL_INTEGRITY_HASH",
             "version": "1.0.0",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "hash": cert_data['kernel_integrity_hash'],
             "algorithm": "SHA-256",
         }, f, indent=2)
@@ -305,7 +305,7 @@ def create_kernel_seal_certificate():
         json.dump({
             "type": "ARCHITECTURE_FINGERPRINT",
             "version": "1.0.0",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "fingerprint": cert_data['architecture_fingerprint'],
             "metrics": cert_data['kernel_metrics'],
         }, f, indent=2)

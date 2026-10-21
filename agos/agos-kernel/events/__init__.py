@@ -1,6 +1,6 @@
 """Event Bus for AGOS Kernel."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
@@ -34,7 +34,7 @@ class Event:
     """Base event type."""
     id: str = field(default_factory=lambda: str(uuid4()))
     type: EventType = EventType.MISSION_CREATED
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     mission_id: Optional[str] = None
     data: Dict[str, Any] = field(default_factory=dict)
     

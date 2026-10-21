@@ -1,6 +1,6 @@
 """Universal Mission Platform - Every user request becomes a Mission."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -17,7 +17,7 @@ class Mission:
     name: str
     type: str
     status: str = "pending"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 class MissionRegistry:
     def __init__(self):

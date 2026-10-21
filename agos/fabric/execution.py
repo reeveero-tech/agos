@@ -1,6 +1,6 @@
 """Universal Execution Fabric - Distributed Execution Graph."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -88,7 +88,7 @@ class ExecutionFabric:
         return True
     
     def checkpoint(self, graph_id: str) -> str:
-        return f"checkpoint_{graph_id}_{int(datetime.utcnow().timestamp())}"
+        return f"checkpoint_{graph_id}_{int(datetime.now(timezone.utc).timestamp())}"
     
     def get_statistics(self) -> Dict[str, Any]:
         return {

@@ -1,6 +1,6 @@
 """Decision Pipeline - All decisions execute through this pipeline."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
@@ -45,7 +45,7 @@ class DecisionResult:
     score: Optional[DecisionScore] = None
     reasons: List[DecisionReason] = field(default_factory=list)
     error: Optional[str] = None
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def to_dict(self) -> Dict[str, Any]:
         return {

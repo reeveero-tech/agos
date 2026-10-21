@@ -1,6 +1,6 @@
 """Execution Context."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from mission import Mission
@@ -13,7 +13,7 @@ class ExecutionContext:
     Contains everything needed to execute a mission.
     """
     mission: Mission
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Selected components
     selected_capability: Optional[str] = None

@@ -1,6 +1,6 @@
 """Distributed Execution Platform - Thousands of missions simultaneously across distributed workers."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import threading
@@ -23,7 +23,7 @@ class Worker:
     state: WorkerState = WorkerState.IDLE
     current_missions: int = 0
     max_missions: int = 10
-    last_heartbeat: datetime = field(default_factory=datetime.utcnow)
+    last_heartbeat: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -33,7 +33,7 @@ class DistributedMission:
     mission_id: str
     worker_id: str
     status: str = "queued"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     checkpoint: str = ""
@@ -170,7 +170,7 @@ class DistributedRuntime:
                 mission_id=mission_id,
                 worker_id=worker.worker_id,
                 status="running",
-                started_at=datetime.utcnow()
+                started_at=datetime.now(timezone.utc)
             )
             return mission_id
         return None

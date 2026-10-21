@@ -6,7 +6,7 @@ Every engineering activity performed by AGOS must produce immutable engineering 
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import hashlib
@@ -65,7 +65,7 @@ class ArtifactMetadata:
     owner: str = ""
     producer: str = ""
     version: str = "1.0.0"
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     mission_reference: str = ""
     execution_reference: str = ""
     knowledge_references: List[str] = field(default_factory=list)
@@ -312,7 +312,7 @@ class ArtifactSignatureService:
     
     def sign(self, artifact: Artifact, private_key: str = "") -> str:
         """Sign artifact."""
-        content = f"{artifact.artifact_id}:{artifact.compute_hash()}:{datetime.utcnow().isoformat()}"
+        content = f"{artifact.artifact_id}:{artifact.compute_hash()}:{datetime.now(timezone.utc).isoformat()}"
         signature = hashlib.sha256(content.encode()).hexdigest()
         artifact.sign(signature)
         return signature

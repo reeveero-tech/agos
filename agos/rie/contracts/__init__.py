@@ -1,6 +1,6 @@
 """RIE Contracts - Domain contracts for Repository Intelligence Engine."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -44,7 +44,7 @@ class RepositoryDNA:
     total_size_bytes: int = 0
     
     # Metadata
-    generated_at: datetime = field(default_factory=datetime.utcnow)
+    generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     version: str = "1.0.0"
     
     def to_dict(self) -> Dict[str, Any]:
@@ -91,8 +91,8 @@ class UniversalRepositoryObject:
     metadata: Dict[str, Any] = field(default_factory=dict)
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    cloned_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    cloned_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -116,7 +116,7 @@ class DetectorResult:
     features: Dict[str, Any]
     errors: List[str] = field(default_factory=list)
     duration_ms: int = 0
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     @property
     def is_valid(self) -> bool:

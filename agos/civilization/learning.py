@@ -1,6 +1,6 @@
 """Autonomous Learning System - Every completed mission improves AGOS."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 @dataclass
@@ -12,7 +12,7 @@ class MissionExperience:
     success: bool
     duration_ms: int
     lessons: List[str] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 @dataclass
 class LearnedPattern:

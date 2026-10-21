@@ -7,7 +7,7 @@ Central registry for all kernel invariants.
 
 from typing import Dict, List, Optional, Callable
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 
@@ -22,7 +22,7 @@ class InvariantDefinition:
     severity: str  # critical, high, medium, low
     check_function: Optional[Callable] = None
     enabled: bool = True
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def to_dict(self) -> Dict:
         return {

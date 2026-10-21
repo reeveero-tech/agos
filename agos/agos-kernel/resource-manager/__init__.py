@@ -1,6 +1,6 @@
 """Runtime Resource Manager - Tracks and manages system resources."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -22,7 +22,7 @@ class ExecutionQuota:
     cpu_percent: float = 0.0
     memory_mb: float = 0.0
     execution_time_ms: int = 0
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass
@@ -32,7 +32,7 @@ class ResourceAllocation:
     mission_id: str
     cpu_percent: float
     memory_mb: float
-    allocated_at: datetime = field(default_factory=datetime.utcnow)
+    allocated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     released_at: Optional[datetime] = None
 
 
@@ -45,7 +45,7 @@ class ResourceUsage:
     concurrent_missions: int = 0
     queue_size: int = 0
     running_tasks: int = 0
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ResourceMonitor:
@@ -70,7 +70,7 @@ class ResourceMonitor:
     def release(self, resource_id: str) -> None:
         """Release resources."""
         if resource_id in self._allocations:
-            self._allocations[resource_id].released_at = datetime.utcnow()
+            self._allocations[resource_id].released_at = datetime.now(timezone.utc)
             del self._allocations[resource_id]
     
     def get_usage(self) -> ResourceUsage:
@@ -217,5 +217,5 @@ class ResourceManager:
         return {
             "rejected": True,
             "reason": reason,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }

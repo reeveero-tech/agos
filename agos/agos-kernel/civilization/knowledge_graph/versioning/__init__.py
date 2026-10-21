@@ -7,7 +7,7 @@ Version control for the Knowledge Graph.
 
 import json
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -66,7 +66,7 @@ class GraphVersioning:
         # Store snapshot
         snapshot = {
             'label': label,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'graph_state': self.graph.to_dict(),
             'hash': self._compute_state_hash(),
         }

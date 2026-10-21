@@ -24,7 +24,7 @@ Every Task must contain:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -137,7 +137,7 @@ class Task:
     error: str = ""
     
     # Metadata
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     started_at: str = ""
     completed_at: str = ""
     

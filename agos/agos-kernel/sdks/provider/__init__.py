@@ -1,7 +1,7 @@
 """Provider SDK - Every provider must use this SDK."""
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -24,7 +24,7 @@ class ProviderDescriptor:
     skills: List[str] = field(default_factory=list)
     health_status: str = "unknown"
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ProviderHealth:
@@ -34,7 +34,7 @@ class ProviderHealth:
         self.healthy = healthy
         self.message = message
         self.details = details or {}
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
 
 
 class ProviderCapabilities:

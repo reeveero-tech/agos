@@ -14,7 +14,7 @@ _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add to path
 sys.path.insert(0, str(_AGOS_ROOT))
@@ -41,7 +41,7 @@ def test_decisions():
     decision = {
         'id': 'test-123',
         'type': DecisionType.CAPABILITY_SELECTION,
-        'timestamp': datetime.utcnow().isoformat(),
+        'timestamp': datetime.now(timezone.utc).isoformat(),
         'title': 'Test Decision',
         'confidence_score': 85,
         'confidence_level': DecisionConfidence.HIGH,

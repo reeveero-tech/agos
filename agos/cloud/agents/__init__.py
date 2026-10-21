@@ -1,6 +1,6 @@
 """Universal Agent Integration Platform."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -58,7 +58,7 @@ class AgentInvocationRuntime:
         self.registry = AgentRegistry()
     
     def invoke(self, agent_name: str, task: str, parameters: Dict[str, Any] = None) -> AgentResponse:
-        invocation_id = f"inv_{int(datetime.utcnow().timestamp())}"
+        invocation_id = f"inv_{int(datetime.now(timezone.utc).timestamp())}"
         adapter = self.registry.get(agent_name)
         if not adapter:
             return AgentResponse(invocation_id=invocation_id, success=False, error=f"Agent not found: {agent_name}")

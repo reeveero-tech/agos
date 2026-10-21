@@ -1,6 +1,6 @@
 """RIE Domain - Core domain models."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -51,7 +51,7 @@ class AnalysisContext:
     repository: Repository
     files: List[FileNode] = field(default_factory=list)
     features: List[Feature] = field(default_factory=list)
-    started_at: datetime = field(default_factory=datetime.utcnow)
+    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     
     def add_feature(self, feature: Feature) -> None:

@@ -1,6 +1,6 @@
 """AGOS Enterprise Operating Platform - 100000 Organizations."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 ORG_TYPES = ["Single Organization", "Enterprise", "Government", "University", "Startup", "Open Source", "Research Lab"]
@@ -10,7 +10,7 @@ class Tenant:
     tenant_id: str
     name: str
     org_type: str
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 @dataclass
 class Organization:

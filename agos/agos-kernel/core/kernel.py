@@ -15,7 +15,7 @@ outcome; it does not re-implement booting, resolution or execution.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, List, Optional
 
@@ -61,7 +61,7 @@ class MissionManager:
         is_obj = hasattr(mission, "status") and hasattr(mission, "parameters")
         if is_obj:
             mission.status = MissionStatus.RUNNING
-            mission.started_at = datetime.utcnow()
+            mission.started_at = datetime.now(timezone.utc)
         mission_id = getattr(mission, "id", None) or (mission.get("id", "") if isinstance(mission, dict) else "")
 
         if self._kernel.state != KernelState.RUNNING:
@@ -79,7 +79,7 @@ class MissionManager:
                                         mission_id=record.mission_id, execution=record)
 
         if is_obj:
-            mission.completed_at = datetime.utcnow()
+            mission.completed_at = datetime.now(timezone.utc)
             mission.status = MissionStatus.COMPLETED if outcome.is_success else MissionStatus.FAILED
             mission.result = outcome.data
             mission.error = outcome.error
@@ -111,7 +111,7 @@ class AGOSKernel:
             self.state = KernelState.FAILED
             self.runtime.require_ready()  # raises BootError with the boot errors
         self.state = KernelState.RUNNING
-        self.started_at = datetime.utcnow()
+        self.started_at = datetime.now(timezone.utc)
         self.stopped_at = None
         return self
 
@@ -119,7 +119,7 @@ class AGOSKernel:
         """Stop accepting missions. Idempotent; registries stay readable for inspection."""
         if self.state == KernelState.RUNNING:
             self.state = KernelState.STOPPED
-            self.stopped_at = datetime.utcnow()
+            self.stopped_at = datetime.now(timezone.utc)
 
     def __enter__(self) -> "AGOSKernel":
         return self.start()

@@ -6,7 +6,7 @@ Every engineering action must be observable.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -29,7 +29,7 @@ class Metric:
     metric_type: MetricType = MetricType.GAUGE
     value: float = 0.0
     unit: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     labels: Dict[str, str] = field(default_factory=dict)
     
     def to_dict(self) -> Dict:
@@ -51,7 +51,7 @@ class Trace:
     span_id: str = ""
     parent_span_id: str = ""
     operation_name: str = ""
-    start_time: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    start_time: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     end_time: str = ""
     duration_ms: float = 0.0
     status: str = "ok"
@@ -77,7 +77,7 @@ class LogEntry:
     log_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     level: str = "INFO"  # DEBUG, INFO, WARN, ERROR
     message: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     source: str = ""
     context: Dict[str, Any] = field(default_factory=dict)
     
@@ -98,7 +98,7 @@ class HealthReport:
     component: str = ""
     status: str = "healthy"  # healthy, degraded, unhealthy
     checks: List[Dict] = field(default_factory=list)
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class MetricsRuntime:
@@ -145,7 +145,7 @@ class TracingRuntime:
     
     def end_span(self, trace: Trace, status: str = "ok") -> None:
         """End a trace span."""
-        trace.end_time = datetime.utcnow().isoformat()
+        trace.end_time = datetime.now(timezone.utc).isoformat()
         trace.status = status
         trace.duration_ms = (time.time() - datetime.fromisoformat(trace.start_time).timestamp()) * 1000
     
@@ -213,7 +213,7 @@ class ExecutionTimelineRuntime:
             'event_id': str(uuid.uuid4()),
             'event_type': event_type,
             'mission_id': mission_id,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'details': details
         })
     

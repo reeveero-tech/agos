@@ -5,7 +5,7 @@ Every engineering object can be certified.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -25,7 +25,7 @@ class Certification:
     subject_type: str = ""
     level: CertificationLevel = CertificationLevel.STANDARD
     criteria: List[Dict] = field(default_factory=list)
-    certified_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    certified_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     expires_at: str = ""
     status: str = "active"
     

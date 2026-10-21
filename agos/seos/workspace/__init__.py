@@ -1,6 +1,6 @@
 """Universal Workspace Runtime - Handles thousands of concurrent software projects."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import os
@@ -63,8 +63,8 @@ class Workspace:
     source_url: str
     local_path: str
     branch: str = "main"
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    last_accessed: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_accessed: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     snapshots: List[WorkspaceSnapshot] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -235,7 +235,7 @@ class WorkspaceManager:
         if not workspace:
             return None
         
-        snapshot_id = f"snap_{workspace_id}_{int(datetime.utcnow().timestamp())}"
+        snapshot_id = f"snap_{workspace_id}_{int(datetime.now(timezone.utc).timestamp())}"
         snapshot_path = os.path.join(self._base_path, snapshot_id)
         
         # Copy workspace
@@ -244,7 +244,7 @@ class WorkspaceManager:
         snapshot = WorkspaceSnapshot(
             snapshot_id=snapshot_id,
             workspace_id=workspace_id,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             path=snapshot_path
         )
         

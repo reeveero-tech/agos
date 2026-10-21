@@ -1,6 +1,6 @@
 """Runtime Observability - Structured logging, metrics, tracing, and health checks."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
@@ -36,7 +36,7 @@ class LogEntry:
             id=str(uuid4()),
             level=level,
             message=message,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             context=context
         )
 
@@ -105,7 +105,7 @@ class MetricsCollector:
     
     def record(self, name: str, value: float, **labels) -> Metric:
         """Record a metric."""
-        metric = Metric(name=name, value=value, timestamp=datetime.utcnow(), labels=labels)
+        metric = Metric(name=name, value=value, timestamp=datetime.now(timezone.utc), labels=labels)
         
         if name not in self._metrics:
             self._metrics[name] = []
@@ -165,7 +165,7 @@ class Span:
     
     def end(self, status: SpanStatus = SpanStatus.COMPLETED) -> None:
         """End the span."""
-        self.completed_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
         self.status = status
     
     def duration_ms(self) -> float:
@@ -192,7 +192,7 @@ class Tracer:
             name=name,
             trace_id=trace_id,
             parent_id=parent_id,
-            started_at=datetime.utcnow()
+            started_at=datetime.now(timezone.utc)
         )
         
         self._spans[span_id] = span
@@ -213,7 +213,7 @@ class Tracer:
         if span_id in self._spans:
             self._spans[span_id].events.append({
                 "name": name,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "attributes": attributes
             })
     
@@ -252,7 +252,7 @@ class ExecutionTimeline:
         event = TimelineEvent(
             event_id=str(uuid4()),
             name=name,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             duration_ms=duration_ms,
             metadata=metadata
         )
@@ -399,7 +399,7 @@ class RuntimeObservability:
         
         return {
             "status": overall.value,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "checks": [
                 {
                     "name": c.name,
@@ -425,7 +425,7 @@ class RuntimeObservability:
         failures = self.metrics.get_counter("mission_failure_total")
         
         return PerformanceSnapshot(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             mission_duration_ms_avg=mission_avg,
             decision_duration_ms_avg=decision_avg,
             execution_duration_ms_avg=execution_avg,

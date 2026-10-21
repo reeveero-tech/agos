@@ -7,7 +7,7 @@ The Engineering Brain never executes code - it produces engineering decisions on
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -150,7 +150,7 @@ class EngineeringDecision:
 class EngineeringBrainOutput:
     """Complete brain output."""
     output_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     
     understanding: EngineeringUnderstanding = field(default_factory=EngineeringUnderstanding)
     strategy: EngineeringStrategy = field(default_factory=EngineeringStrategy)
@@ -356,7 +356,7 @@ class EngineeringLearningInterface:
             'situation': experience.get('situation', ''),
             'decision': experience.get('decision', ''),
             'outcome': experience.get('outcome', ''),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
         self.learned_patterns.append(pattern)
     

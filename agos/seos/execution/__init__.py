@@ -1,6 +1,6 @@
 """Autonomous Software Engineering Runtime - Unified orchestrator."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -36,7 +36,7 @@ class MissionContext:
     project_path: str = ""
     pipeline: List[PipelineStage] = field(default_factory=list)
     current_stage: PipelineStage = PipelineStage.RECEIVE
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass
@@ -101,7 +101,7 @@ class AutonomousRuntime:
         parameters: Dict[str, Any]
     ) -> MissionResult:
         """Execute a mission through the pipeline."""
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Create context
         context = MissionContext(
@@ -139,13 +139,13 @@ class AutonomousRuntime:
                         mission_id=mission_id,
                         success=False,
                         error=f"Stage {stage.value} failed",
-                        duration_ms=int((datetime.utcnow() - start_time).total_seconds() * 1000),
+                        duration_ms=int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000),
                         stages_completed=completed_stages
                     )
                 
                 completed_stages.append(stage)
             
-            duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+            duration_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
             
             return MissionResult(
                 mission_id=mission_id,
@@ -160,7 +160,7 @@ class AutonomousRuntime:
                 mission_id=mission_id,
                 success=False,
                 error=str(e),
-                duration_ms=int((datetime.utcnow() - start_time).total_seconds() * 1000)
+                duration_ms=int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
             )
     
     def _execute_stage(self, stage: PipelineStage, context: MissionContext) -> bool:

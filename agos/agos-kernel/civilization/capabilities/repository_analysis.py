@@ -11,7 +11,7 @@ import hashlib
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -219,5 +219,5 @@ class RepositoryAnalyzer:
             'primary_language': info.language,
             'languages': info.languages,
             'structure': info.structure,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }

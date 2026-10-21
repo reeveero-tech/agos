@@ -517,7 +517,7 @@ class EvidenceGenerationStage(PipelineStage):
         
         evidence = {
             'evidence_id': str(uuid.uuid4()),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'artifacts': [],
             'verifications': [],
             'signatures': [],
@@ -548,4 +548,4 @@ class EvidenceGenerationStage(PipelineStage):
         return result
 
 
-from datetime import datetime
+from datetime import datetime, timezone

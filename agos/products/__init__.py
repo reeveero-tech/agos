@@ -1,6 +1,6 @@
 """AGOS Universal Product Layer - The only layer exposed to end users."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # =============================================================================
@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 
 class OrganizationService:
     def create(self, name: str) -> Dict[str, Any]:
-        return {"id": f"org_{name}", "name": name, "created_at": datetime.utcnow().isoformat()}
+        return {"id": f"org_{name}", "name": name, "created_at": datetime.now(timezone.utc).isoformat()}
     
     def get(self, org_id: str) -> Dict[str, Any]:
         return {"id": org_id, "name": "Organization"}

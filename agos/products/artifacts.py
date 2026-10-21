@@ -1,6 +1,6 @@
 """Universal Artifact Platform - Everything produced by AGOS becomes an Artifact."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # Artifact Types
@@ -17,7 +17,7 @@ class Artifact:
     type: str
     content: Any = None
     version: str = "1.0.0"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ArtifactRegistry:
     def __init__(self):

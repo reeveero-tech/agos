@@ -1,6 +1,6 @@
 """Universal Mission Engine - All missions execute through this engine."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -150,7 +150,7 @@ class MissionExecutor:
         result = MissionExecutionResult(
             mission_id=mission.id,
             state=MissionState.EXECUTING,
-            started_at=datetime.utcnow()
+            started_at=datetime.now(timezone.utc)
         )
         
         try:
@@ -165,13 +165,13 @@ class MissionExecutor:
                 result.state = MissionState.FAILED
                 result.error = pipeline_result.error
             
-            result.completed_at = datetime.utcnow()
+            result.completed_at = datetime.now(timezone.utc)
             result.duration_ms = int((result.completed_at - result.started_at).total_seconds() * 1000)
             
         except Exception as e:
             result.state = MissionState.FAILED
             result.error = str(e)
-            result.completed_at = datetime.utcnow()
+            result.completed_at = datetime.now(timezone.utc)
             result.duration_ms = int((result.completed_at - result.started_at).total_seconds() * 1000)
         
         return result
@@ -232,8 +232,8 @@ class MissionEngine:
             return MissionExecutionResult(
                 mission_id=mission.id,
                 state=MissionState.FAILED,
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(timezone.utc),
                 error="; ".join(validation.errors)
             )
         

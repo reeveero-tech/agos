@@ -1,6 +1,6 @@
 """Universal Project Intelligence - Understanding any software project."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -60,7 +60,7 @@ class ProjectIntelligenceReport:
     """Complete project intelligence report."""
     project_url: str
     project_name: str
-    generated_at: datetime = field(default_factory=datetime.utcnow)
+    generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Analysis results
     architecture: Dict[str, Any] = field(default_factory=dict)

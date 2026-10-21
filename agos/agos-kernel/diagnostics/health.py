@@ -16,7 +16,7 @@ otherwise HEALTHY. ``HealthStatus``/``HealthCheck`` are the existing types from
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional
 
 from observability import HealthCheck, HealthStatus
@@ -34,7 +34,7 @@ class KernelHealthReport:
     checks: List[HealthCheck] = field(default_factory=list)
     capabilities: List[str] = field(default_factory=list)
     providers: List[str] = field(default_factory=list)
-    generated_at: datetime = field(default_factory=datetime.utcnow)
+    generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def healthy(self) -> bool:

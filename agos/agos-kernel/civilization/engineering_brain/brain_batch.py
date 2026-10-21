@@ -4,7 +4,7 @@ PHASE-03: Engineering Brain Components
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -24,7 +24,7 @@ class ContextCollector:
         return context
     
     def _collect_source(self, source: str) -> Dict:
-        return {'source': source, 'data': {}, 'collected_at': datetime.utcnow().isoformat()}
+        return {'source': source, 'data': {}, 'collected_at': datetime.now(timezone.utc).isoformat()}
 
 
 class ContextBuilder:

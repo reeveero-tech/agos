@@ -11,7 +11,7 @@ _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 import hashlib
 import json
@@ -24,7 +24,7 @@ from agos_kernel.core.invariants.runtime import InvariantResult
 class Evidence:
     """Evidence of invariant compliance."""
     invariant_id: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     content_hash: str = ""
     proof: Dict = field(default_factory=dict)
     signature: str = ""
@@ -42,7 +42,7 @@ class Evidence:
 @dataclass
 class EvidencePackage:
     """Collection of evidence for all invariants."""
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     kernel_version: str = "1.0.0"
     kernel_hash: str = ""
     evidence_items: List[Evidence] = field(default_factory=list)
@@ -106,7 +106,7 @@ class EvidenceGenerator:
         kernel_hash = self._compute_kernel_hash()
         
         manifest_content = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'kernel_version': '1.0.0',
             'kernel_hash': kernel_hash,
             'evidence_count': len(evidence_items),
@@ -158,7 +158,7 @@ class EvidenceGenerator:
         This generates a signature-like hash for the evidence.
         """
         return hashlib.sha256(
-            f"{content_hash}:{datetime.utcnow().isoformat()}:kernel-v1.0.0".encode()
+            f"{content_hash}:{datetime.now(timezone.utc).isoformat()}:kernel-v1.0.0".encode()
         ).hexdigest()
     
     def export_evidence_package(

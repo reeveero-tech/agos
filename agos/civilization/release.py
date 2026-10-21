@@ -1,6 +1,6 @@
 """AGOS v1.0 Release Readiness Program."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # =============================================================================
@@ -78,7 +78,7 @@ class ReleaseCandidate:
     artifacts: List[str] = field(default_factory=list)
     audit_results: Dict[str, Any] = field(default_factory=dict)
     test_results: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ReleaseManager:
     """

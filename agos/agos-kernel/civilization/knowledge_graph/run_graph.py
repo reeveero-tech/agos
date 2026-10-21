@@ -16,7 +16,7 @@ import json
 import ast
 from pathlib import Path
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Set
 import uuid
 import hashlib
@@ -56,7 +56,7 @@ def test_knowledge_graph_runtime():
             self.name = name
             self._nodes: Dict[str, GraphNode] = {}
             self._relationships: List = []
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(timezone.utc)
         
         def add_node(self, node: GraphNode) -> str:
             self._nodes[node.id] = node
@@ -167,8 +167,8 @@ def test_versioning():
     class GraphVersion:
         def __init__(self, version_num: int):
             self.version = version_num
-            self.timestamp = datetime.utcnow().isoformat()
-            self.snapshot_hash = hashlib.sha256(str(datetime.utcnow()).encode()).hexdigest()[:16]
+            self.timestamp = datetime.now(timezone.utc).isoformat()
+            self.snapshot_hash = hashlib.sha256(str(datetime.now(timezone.utc)).encode()).hexdigest()[:16]
             self.changes = []
     
     versions = []

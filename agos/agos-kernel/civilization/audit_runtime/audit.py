@@ -5,7 +5,7 @@ Complete engineering accountability.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 import uuid
 
@@ -17,7 +17,7 @@ class AuditEntry:
     actor: str = ""
     target: str = ""
     target_type: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     metadata: Dict = field(default_factory=dict)
     evidence: List[str] = field(default_factory=list)
     

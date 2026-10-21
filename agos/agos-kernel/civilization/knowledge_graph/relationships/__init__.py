@@ -6,7 +6,7 @@ First-class relationships between nodes.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
@@ -53,7 +53,7 @@ class RelationshipType(Enum):
 @dataclass
 class RelationshipMetadata:
     """Relationship metadata."""
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     version: int = 1
     evidence: List[str] = field(default_factory=list)
     properties: Dict[str, Any] = field(default_factory=dict)

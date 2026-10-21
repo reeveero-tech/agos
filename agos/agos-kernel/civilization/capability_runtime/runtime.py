@@ -6,7 +6,7 @@ Standardizes the lifecycle of every Capability.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
 import uuid
@@ -91,7 +91,7 @@ class CapabilityInstance:
     contract: CapabilityContract
     instance_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     handler: Optional[Callable] = None
-    loaded_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    loaded_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     status: CapabilityStatus = CapabilityStatus.PENDING
     
     def to_dict(self) -> Dict:
@@ -269,7 +269,7 @@ class CapabilityCertificationEngine:
         return {
             'certified': True,
             'capability': contract.name,
-            'certification_date': datetime.utcnow().isoformat(),
+            'certification_date': datetime.now(timezone.utc).isoformat(),
             'certification_level': 'standard',
         }
 
@@ -344,7 +344,7 @@ class CapabilityRuntime:
         # Create entry
         entry = CapabilityRegistryEntry(
             contract=contract,
-            loaded_at=datetime.utcnow().isoformat()
+            loaded_at=datetime.now(timezone.utc).isoformat()
         )
         
         # Register
@@ -424,7 +424,7 @@ class CapabilityRuntime:
         print("[10/16] Generating evidence...")
         result.evidence.append({
             'type': 'execution_evidence',
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'capability': capability_name,
             'success': result.success,
             'execution_time_ms': result.execution_time_ms,
@@ -462,7 +462,7 @@ class CapabilityRuntime:
         self.execution_history.append({
             'capability': capability_name,
             'result': result.success,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
         print(f"  OK Lifecycle complete")
         

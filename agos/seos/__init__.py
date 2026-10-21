@@ -15,7 +15,7 @@ Rules:
 ✅ Everything capability-driven
 """
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -82,7 +82,7 @@ class ExecutionPlan:
     mission_type: MissionType
     steps: List[Dict[str, Any]] = field(default_factory=list)
     estimated_duration_ms: int = 0
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass

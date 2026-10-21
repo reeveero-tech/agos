@@ -6,7 +6,7 @@ The central Knowledge Graph that serves as the source of truth.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Set, Tuple
 from collections import defaultdict
 import json
@@ -41,7 +41,7 @@ class GraphStatistics:
 class GraphVersion:
     """Graph version for immutability."""
     version: int = 1
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     snapshot_hash: str = ""
     changes: List[Dict] = field(default_factory=list)
 
@@ -67,7 +67,7 @@ class KnowledgeGraph:
     
     def __init__(self, name: str = "main"):
         self.name = name
-        self.created_at = datetime.utcnow()
+        self.created_at = datetime.now(timezone.utc)
         
         # Node storage: id -> GraphNode
         self._nodes: Dict[str, GraphNode] = {}
@@ -128,7 +128,7 @@ class KnowledgeGraph:
             'type': 'add_node',
             'id': node.id,
             'node_type': node.type.value,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
         
         return node.id
@@ -163,14 +163,14 @@ class KnowledgeGraph:
             if hasattr(node, key):
                 setattr(node, key, value)
         
-        node.metadata.updated_at = datetime.utcnow().isoformat()
+        node.metadata.updated_at = datetime.now(timezone.utc).isoformat()
         node.metadata.version += 1
         
         # Track change
         self._current_version.changes.append({
             'type': 'update_node',
             'id': node_id,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
         
         return True
@@ -205,7 +205,7 @@ class KnowledgeGraph:
         self._current_version.changes.append({
             'type': 'delete_node',
             'id': node_id,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
         
         return True
@@ -239,7 +239,7 @@ class KnowledgeGraph:
             'rel_type': relationship.type.value,
             'source': relationship.source_id,
             'target': relationship.target_id,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         })
         
         return relationship.id
@@ -337,7 +337,7 @@ class KnowledgeGraph:
         """Create a new version snapshot."""
         version = GraphVersion(
             version=len(self._versions) + 1,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             snapshot_hash=self._compute_hash(),
             changes=self._current_version.changes.copy(),
         )

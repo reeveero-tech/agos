@@ -6,7 +6,7 @@ Core runtime components for engineering reasoning.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from collections import defaultdict
 import uuid
@@ -37,7 +37,7 @@ class ReasoningMemory:
         """Add a reasoning trace."""
         self.traces.append({
             **trace,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         })
     
     def get_decisions_by_type(self, decision_type: DecisionType) -> List[Decision]:
@@ -61,7 +61,7 @@ class ReasoningContext:
     Contains all inputs for a reasoning session.
     """
     context_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     
     # Inputs
     mission: Dict = field(default_factory=dict)
@@ -101,7 +101,7 @@ class ReasoningSession:
     Manages a complete reasoning session from input to decision output.
     """
     session_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     status: str = "initialized"
     
     # Context
@@ -474,7 +474,7 @@ class TraceRecorder:
         trace = {
             'session_id': session_id,
             'step': step,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'data': data,
         }
         self.traces.append(trace)

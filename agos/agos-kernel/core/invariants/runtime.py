@@ -15,7 +15,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 
 
@@ -24,7 +24,7 @@ class InvariantResult:
     """Result of an invariant check."""
     invariant_id: str
     passed: bool
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     violations: List[Dict] = field(default_factory=list)
     execution_time_ms: float = 0.0
     evidence_hash: str = ""
@@ -170,7 +170,7 @@ class InvariantRuntime:
         forbidden_module: str
     ) -> None:
         """Check if any core module imports a forbidden module."""
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         violations = []
         forbidden_name = forbidden_module.split('.')[-1]
         
@@ -182,7 +182,7 @@ class InvariantRuntime:
                     'file': f'{module}.py',
                 })
         
-        elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+        elapsed = (datetime.now(timezone.utc) - start).total_seconds() * 1000
         
         self.results[invariant_id] = InvariantResult(
             invariant_id=invariant_id,
@@ -211,7 +211,7 @@ class InvariantRuntime:
         name: str
     ) -> None:
         """Verify business logic is only in capabilities."""
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         violations = []
         
         capability_dir = self.kernel_root / 'capabilities'
@@ -247,7 +247,7 @@ class InvariantRuntime:
                 except Exception:
                     pass
         
-        elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+        elapsed = (datetime.now(timezone.utc) - start).total_seconds() * 1000
         
         self.results[invariant_id] = InvariantResult(
             invariant_id=invariant_id,
@@ -258,7 +258,7 @@ class InvariantRuntime:
     
     def _verify_contracts_immutable(self, invariant_id: str) -> None:
         """Verify contracts are immutable."""
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         violations = []
         
         contracts_dir = self.kernel_root / 'contracts'
@@ -279,7 +279,7 @@ class InvariantRuntime:
                 except Exception:
                     pass
         
-        elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+        elapsed = (datetime.now(timezone.utc) - start).total_seconds() * 1000
         
         self.results[invariant_id] = InvariantResult(
             invariant_id=invariant_id,
@@ -290,7 +290,7 @@ class InvariantRuntime:
     
     def _verify_events_immutable(self, invariant_id: str) -> None:
         """Verify events are immutable."""
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         violations = []
         
         events_dir = self.kernel_root / 'events'
@@ -311,7 +311,7 @@ class InvariantRuntime:
                 except Exception:
                     pass
         
-        elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+        elapsed = (datetime.now(timezone.utc) - start).total_seconds() * 1000
         
         self.results[invariant_id] = InvariantResult(
             invariant_id=invariant_id,

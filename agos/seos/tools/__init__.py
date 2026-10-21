@@ -1,7 +1,7 @@
 """Universal Tool Execution Platform - Runs every external tool supported by SEOS."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 import subprocess
@@ -92,11 +92,11 @@ class BaseToolAdapter(IToolAdapter):
     
     def execute(self, command: List[str], cwd: str = None, env: Dict[str, str] = None) -> ToolExecution:
         execution = ToolExecution(
-            execution_id=f"exec_{int(datetime.utcnow().timestamp())}",
+            execution_id=f"exec_{int(datetime.now(timezone.utc).timestamp())}",
             tool_name=self._name,
             command=command,
             environment=ExecutionEnvironment.LOCAL,
-            started_at=datetime.utcnow()
+            started_at=datetime.now(timezone.utc)
         )
         
         try:
@@ -117,7 +117,7 @@ class BaseToolAdapter(IToolAdapter):
             execution.success = False
             execution.exit_code = -1
         
-        execution.completed_at = datetime.utcnow()
+        execution.completed_at = datetime.now(timezone.utc)
         return execution
     
     def health_check(self) -> bool:
@@ -254,12 +254,12 @@ class ToolRuntime:
         adapter = self.registry.get(tool_name)
         if not adapter:
             execution = ToolExecution(
-                execution_id=f"exec_{int(datetime.utcnow().timestamp())}",
+                execution_id=f"exec_{int(datetime.now(timezone.utc).timestamp())}",
                 tool_name=tool_name,
                 command=command,
                 environment=ExecutionEnvironment.LOCAL,
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(timezone.utc),
                 success=False,
                 stderr=f"Tool not found: {tool_name}"
             )

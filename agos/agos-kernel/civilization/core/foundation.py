@@ -7,7 +7,7 @@ a fully operational engineering civilization.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 import json
@@ -66,7 +66,7 @@ class Foundation:
     def __init__(self, config: Optional[FoundationConfig] = None):
         self.config = config or FoundationConfig()
         self.metrics = FoundationMetrics()
-        self.started_at = datetime.utcnow()
+        self.started_at = datetime.now(timezone.utc)
         self._knowledge_store: Dict[str, Any] = {}
         self._dna_store: Dict[str, Any] = {}
         self._reports_store: Dict[str, Any] = {}
@@ -107,7 +107,7 @@ class Foundation:
             'architecture': {},
             'dependencies': {},
             'code_quality': {},
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
         
         # Run analyzers
@@ -189,7 +189,7 @@ class Foundation:
         print("AGOS FOUNDATION CIVILIZATION - Repository Processing")
         print("=" * 60)
         print(f"Repository: {repo_path}")
-        print(f"Started: {datetime.utcnow().isoformat()}")
+        print(f"Started: {datetime.now(timezone.utc).isoformat()}")
         print()
         
         results = {
@@ -205,7 +205,7 @@ class Foundation:
             results['steps'].append({
                 'step': 'analysis',
                 'status': 'completed',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
             })
             results['outputs']['analysis'] = analysis
             print("  ✓ Analysis complete")
@@ -216,7 +216,7 @@ class Foundation:
             results['steps'].append({
                 'step': 'dna',
                 'status': 'completed',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
             })
             results['outputs']['dna'] = dna
             print("  ✓ DNA generated")
@@ -227,7 +227,7 @@ class Foundation:
             results['steps'].append({
                 'step': 'knowledge',
                 'status': 'completed',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
             })
             results['outputs']['knowledge'] = knowledge
             print("  ✓ Knowledge extracted")
@@ -238,7 +238,7 @@ class Foundation:
             results['steps'].append({
                 'step': 'report',
                 'status': 'completed',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
             })
             results['outputs']['report'] = report
             print("  ✓ Report generated")
@@ -248,7 +248,7 @@ class Foundation:
             results['steps'].append({
                 'step': 'evidence',
                 'status': 'completed',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
             })
             print("  ✓ Evidence generated")
             
@@ -273,7 +273,7 @@ class Foundation:
         return {
             'version': self.VERSION,
             'phase': self.PHASE,
-            'uptime_seconds': (datetime.utcnow() - self.started_at).total_seconds(),
+            'uptime_seconds': (datetime.now(timezone.utc) - self.started_at).total_seconds(),
             'metrics': {
                 'repositories_analyzed': self.metrics.repositories_analyzed,
                 'dna_generated': self.metrics.dna_generated,

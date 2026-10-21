@@ -9,7 +9,7 @@ import ast
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -85,7 +85,7 @@ class ArchitectureAnalyzer:
             'layer_count': len(architecture['layers']),
         }
         
-        architecture['timestamp'] = datetime.utcnow().isoformat()
+        architecture['timestamp'] = datetime.now(timezone.utc).isoformat()
         
         return architecture
     

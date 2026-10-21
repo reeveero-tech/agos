@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -49,7 +49,7 @@ class RepositoryDNA:
             'version': self.VERSION,
             'repository': repo_path.name,
             'path': str(repo_path),
-            'generated_at': datetime.utcnow().isoformat(),
+            'generated_at': datetime.now(timezone.utc).isoformat(),
             'fragments': fragments,
             'dna': combined,
             'signature': hashlib.sha256(combined.encode()).hexdigest()[:32],

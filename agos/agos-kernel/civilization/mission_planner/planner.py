@@ -6,7 +6,7 @@ Transforms every Mission into an executable engineering plan.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 import uuid
 
@@ -37,7 +37,7 @@ class ExecutionPlan:
     """Execution Plan."""
     plan_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     mission_id: str = ""
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     
     tasks: List[Task] = field(default_factory=list)
     execution_graph: Dict = field(default_factory=dict)
@@ -537,7 +537,7 @@ class MissionPlanner:
         plan.evidence = [
             {
                 'type': 'planning_evidence',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'analysis': analysis,
                 'resources': resources,
                 'risks': risk_info,

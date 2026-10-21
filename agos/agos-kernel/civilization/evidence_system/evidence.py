@@ -6,7 +6,7 @@ Every engineering conclusion produced by AGOS must be backed by verifiable evide
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import hashlib
@@ -65,7 +65,7 @@ class Evidence:
     source_details: Dict[str, Any] = field(default_factory=dict)
     
     # Metadata
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     mission_reference: str = ""
     execution_reference: str = ""
     

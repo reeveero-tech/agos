@@ -3,7 +3,7 @@ import copy
 import os
 import subprocess
 from dataclasses import field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -279,6 +279,6 @@ class RepositoryAnalysisCapability(ICapability):
             directory_tree=sorted(list(dirs))[:20],
             readme_summary=readme_summary,
             license=license_name,
-            generated_at=datetime.utcnow(),
+            generated_at=datetime.now(timezone.utc),
             snapshot_path=""
         )

@@ -1,6 +1,6 @@
 """RIE Application - Pipeline orchestration and feature aggregation."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # R-F-006: relative imports — rie works as `rie`, `agos.rie` and under any sys.path root
@@ -144,7 +144,7 @@ class RepositoryIntelligencePipeline:
     
     def execute(self, url: str, branch: str = "main") -> RepositoryDNA:
         """Execute the complete pipeline."""
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Step 1: Fetch
         print(f"[RIE] Fetching repository: {url}")
@@ -183,7 +183,7 @@ class RepositoryIntelligencePipeline:
             print("[RIE] Generating DNA")
             dna = self._generate_dna(normalized, feature_set, detector_results)
             
-            end_time = datetime.utcnow()
+            end_time = datetime.now(timezone.utc)
             dna.metadata = {
                 "pipeline_duration_ms": int((end_time - start_time).total_seconds() * 1000),
                 "detectors_run": len(detector_results)
@@ -230,7 +230,7 @@ class RepositoryIntelligencePipeline:
             has_documentation=features.has_readme,
             total_files=features.total_files or normalized.get("total_files", 0),
             total_directories=features.total_directories or len(features.directory_tree),
-            generated_at=datetime.utcnow()
+            generated_at=datetime.now(timezone.utc)
         )
 
 

@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -65,7 +65,7 @@ class CodeQualityAnalyzer:
             'scores': scores,
             'issues': metrics.issues[:20],  # Top 20 issues
             'issue_count': len(metrics.issues),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
         }
         
         return result

@@ -1,6 +1,6 @@
 """AGOS Universal Resource Fabric - Millions of managed resources."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -69,7 +69,7 @@ class ResourceAllocator:
             resource_id=resource_id,
             requester="system",
             amount=amount,
-            start_time=datetime.utcnow()
+            start_time=datetime.now(timezone.utc)
         )
     
     def release(self, allocation_id: str) -> bool:

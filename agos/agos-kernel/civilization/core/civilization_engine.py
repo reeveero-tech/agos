@@ -13,7 +13,7 @@ _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 from agos_kernel.civilization.core.foundation import Foundation, FoundationConfig
@@ -56,7 +56,7 @@ class CivilizationEngine:
         self.config = config or FoundationConfig()
         self.foundation = Foundation(self.config)
         self.stats = CivilizationEngineStats()
-        self.started_at = datetime.utcnow()
+        self.started_at = datetime.now(timezone.utc)
         self._output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
     
     def initialize(self) -> bool:
@@ -66,7 +66,7 @@ class CivilizationEngine:
         print("=" * 70)
         print(f"Version: {self.VERSION}")
         print(f"Phase: {self.PHASE}")
-        print(f"Started: {datetime.utcnow().isoformat()}")
+        print(f"Started: {datetime.now(timezone.utc).isoformat()}")
         print("=" * 70)
         print()
         
@@ -213,7 +213,7 @@ class CivilizationEngine:
     def _save_results(self, results: Dict) -> None:
         """Save processing results."""
         repo_name = Path(results['repository']).name if 'repository' in results else 'unknown'
-        output_file = self._output_dir / f"{repo_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+        output_file = self._output_dir / f"{repo_name}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
         
         self._output_dir.mkdir(parents=True, exist_ok=True)
         
@@ -227,7 +227,7 @@ class CivilizationEngine:
         return {
             'version': self.VERSION,
             'phase': self.PHASE,
-            'uptime_seconds': (datetime.utcnow() - self.started_at).total_seconds(),
+            'uptime_seconds': (datetime.now(timezone.utc) - self.started_at).total_seconds(),
             'foundation_stats': self.foundation.get_stats(),
             'engine_stats': {
                 'repositories_processed': self.stats.repositories_processed,
@@ -244,8 +244,8 @@ class CivilizationEngine:
             'status': 'healthy' if self.stats.errors == 0 else 'degraded',
             'version': self.VERSION,
             'phase': self.PHASE,
-            'timestamp': datetime.utcnow().isoformat(),
-            'uptime_seconds': (datetime.utcnow() - self.started_at).total_seconds(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'uptime_seconds': (datetime.now(timezone.utc) - self.started_at).total_seconds(),
         }
 
 

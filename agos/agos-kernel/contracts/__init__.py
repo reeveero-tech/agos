@@ -1,6 +1,6 @@
 """Contracts - Interfaces and contracts for providers."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -29,7 +29,7 @@ class RepositorySnapshot:
     metadata: RepositoryMetadata
     files: List[FileNode] = field(default_factory=list)
     root_path: str = ""
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def get_file(self, path: str) -> Optional[FileNode]:
         """Get a file by path."""
@@ -81,7 +81,7 @@ class RepositoryDNA:
     license: str = ""
     
     # Metadata
-    generated_at: datetime = field(default_factory=datetime.utcnow)
+    generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     snapshot_path: str = ""
     
     def to_dict(self) -> Dict[str, Any]:

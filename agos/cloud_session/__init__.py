@@ -1,6 +1,6 @@
 """Universal Session Platform - Persistent engineering sessions."""
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -11,8 +11,8 @@ SESSION_SUPPORT = ["Browser", "Mobile", "API", "SDK", "CLI", "Realtime"]
 class Session:
     session_id: str
     user_id: str
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    last_active: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_active: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     status: str = "active"
 
 @dataclass
@@ -23,7 +23,7 @@ class Timeline:
     def add_event(self, event_type: str, data: Dict[str, Any]) -> None:
         self.events.append({
             "type": event_type,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": data
         })
 
@@ -37,7 +37,7 @@ class ConversationRuntime:
         self._conversations[session_id].append({
             "role": role,
             "content": content,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
     
     def get_history(self, session_id: str) -> List[Dict[str, Any]]:
