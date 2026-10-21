@@ -90,7 +90,7 @@ class RepositoryAnalysisCapability(ICapability):
             
             # Step 5: Generate DNA
             print(f"[CAPABILITY] Generating DNA")
-            dna = self._generate_dna(snapshot, languages, frameworks)
+            dna = self._generate_dna(snapshot, languages, frameworks, stack=stack)
             dna.framework_evidence = [e.to_dict() for e in stack.evidence]
             dna.runtimes = list(stack.runtimes)
             if revision:
@@ -229,10 +229,17 @@ class RepositoryAnalysisCapability(ICapability):
         self,
         snapshot: RepositorySnapshot,
         languages: List[str],
-        frameworks: List[str]
+        frameworks: List[str],
+        stack=None,
     ) -> RepositoryDNA:
-        """Generate Repository DNA."""
+        """Generate Repository DNA.
+        
+        ``stack`` is the ``stack_detection.StackReport`` of the snapshot (computed here when
+        omitted); dependencies and package managers come from it (R-W2-002).
+        """
         metadata = snapshot.metadata
+        if stack is None:
+            stack = self._detect_stack(snapshot)
         
         # Find README
         readme_summary = ""
@@ -267,24 +274,12 @@ class RepositoryAnalysisCapability(ICapability):
                     config_files.append(file_node.path)
                     break
         
-        # Find package managers
-        package_managers = set()
-        for file_node in snapshot.files:
-            if file_node.is_dir:
-                continue
-            path = file_node.path
-            if "requirements.txt" in path or "pyproject.toml" in path:
-                package_managers.add("pip")
-            elif "package.json" in path:
-                package_managers.add("npm")
-            elif "go.mod" in path:
-                package_managers.add("go")
-            elif "Cargo.toml" in path:
-                package_managers.add("cargo")
-            elif "Gemfile" in path:
-                package_managers.add("bundler")
-            elif "pom.xml" in path or "build.gradle" in path:
-                package_managers.add("maven")
+        # Package managers (R-W2-002): from manifests and lock files, never from substrings
+        # of arbitrary paths (``node_modules/x/package.json`` is not the project's npm, and
+        # Gradle is not Maven).
+        from stack_detection import detect_package_managers, dependency_records, project_dependencies
+        package_managers = detect_package_managers(
+            [f.path for f in snapshot.files if not f.is_dir], self._manifest_files(snapshot))
         
         # Directory tree (top level)
         dirs = set()
@@ -302,7 +297,8 @@ class RepositoryAnalysisCapability(ICapability):
             languages=languages,
             frameworks=frameworks,
             package_managers=sorted(list(package_managers)),
-            dependencies=[],
+            dependencies=project_dependencies(stack),
+            dependency_details=dependency_records(stack),
             config_files=config_files[:20],  # Limit to 20
             entry_points=[],
             directory_tree=sorted(list(dirs))[:20],

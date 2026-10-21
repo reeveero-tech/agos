@@ -403,7 +403,12 @@ class DirectoryDetector(IDetector):
 
 
 class DependencyDetector(IDetector):
-    """Detects package managers and dependencies."""
+    """Detects package managers and dependencies (R-W2-002).
+
+    Both come from the kernel's ``stack_detection``: dependencies are parsed from manifest
+    contents (``context.get_file_content``); package managers from manifests and lock files.
+    ``DEPENDENCY_FILES`` is the historical substring table, kept for reference only.
+    """
     
     DEPENDENCY_FILES = {
         "pip": ["requirements.txt", "pyproject.toml", "setup.py"],
@@ -425,14 +430,11 @@ class DependencyDetector(IDetector):
     def detect(self, context: DetectorContext) -> DetectorResult:
         start = datetime.now(timezone.utc)
         
-        package_managers = []
-        
-        for path in context.files.keys():
-            path_lower = path.lower()
-            for pm, files in self.DEPENDENCY_FILES.items():
-                if any(f.lower() in path_lower for f in files):
-                    if pm not in package_managers:
-                        package_managers.append(pm)
+        sd = _stack_detection()
+        manifests = {path: context.get_file_content(path)
+                     for path in context.files if sd.is_manifest(path)}
+        report = sd.detect_stack(manifests)
+        package_managers = sd.detect_package_managers(context.files.keys(), manifests)
         
         duration_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
         
@@ -440,7 +442,10 @@ class DependencyDetector(IDetector):
             name=self.name,
             success=True,
             features={
-                "package_managers": package_managers
+                "package_managers": package_managers,
+                "dependencies": sd.project_dependencies(report),
+                "dependency_details": sd.dependency_records(report),
+                "manifest_errors": dict(report.errors),
             },
             duration_ms=duration_ms
         )

@@ -210,6 +210,9 @@ class ProjectDNAGenerator:
         # Package managers
         self.dna.package_managers = list(repo_genome.package_managers)
         
+        # External dependencies (R-W2-002): direct runtime/peer names from the manifests
+        self.dna.external_dependencies = list(getattr(repo_genome, "dependencies", []) or [])
+        
         # Metrics
         self.dna.total_files = repo_genome.metrics.total_files
         self.dna.total_lines = repo_genome.metrics.total_lines

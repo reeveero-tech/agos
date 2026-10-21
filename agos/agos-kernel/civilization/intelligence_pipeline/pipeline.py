@@ -203,6 +203,8 @@ class EngineeringIntelligencePipeline:
             dep = DependencyInfo()
             dep.total_count = data.get('total', 0)
             dep.direct_dependencies = [{'name': d} for d in data.get('direct', [])]
+            dep.dev_dependencies = [{'name': d} for d in data.get('dev', [])]  # R-W2-002
+            dep.external_dependencies = list(data.get('details', []))
             dep.internal_dependencies = data.get('internal', [])
             package.dependency_info = dep
             package.mark_stage_complete(stage)

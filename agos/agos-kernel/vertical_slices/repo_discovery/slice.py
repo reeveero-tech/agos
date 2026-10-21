@@ -6,7 +6,7 @@ _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import asyncio
 import hashlib
-import json
+import json  # noqa: F401  (kept: module attribute; no longer used since R-W2-002)
 import os
 import re
 import subprocess
@@ -47,6 +47,8 @@ class DependencyGraph:
     dependencies: List[Dict] = field(default_factory=list)
     dev_dependencies: List[Dict] = field(default_factory=list)
     security_warnings: List[Dict] = field(default_factory=list)
+    # R-W2-002: optional/build/indirect/example-scoped dependencies (not runtime, not dev).
+    other_dependencies: List[Dict] = field(default_factory=list)
 
 
 @dataclass
@@ -242,25 +244,23 @@ class RepositoryDiscoveryMission:
         """Analyze dependencies."""
         deps = DependencyGraph()
         
-        for pkg in Path(repo_path).rglob("package.json"):
-            try:
-                with open(pkg) as f:
-                    data = json.load(f)
-                    deps.dependencies.extend([{"name": n, "version": v} 
-                                            for n, v in data.get("dependencies", {}).items()])
-                    deps.dev_dependencies.extend([{"name": n, "version": v}
-                                                for n, v in data.get("devDependencies", {}).items()])
-            except: pass
-        
-        for req in Path(repo_path).rglob("requirements.txt"):
-            try:
-                with open(req) as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith("#"):
-                            parts = line.split("==")
-                            deps.dependencies.append({"name": parts[0], "version": parts[1] if len(parts) > 1 else "*"})
-            except: pass
+        # R-W2-002: every manifest format through the kernel's stack_detection (the old
+        # loop read only package.json/requirements.txt, descended into node_modules and kept
+        # "-r"/"--index-url" lines as packages).
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        report = stack_detection.detect_stack(stack_detection.read_manifests(repo_path))
+        for rec in stack_detection.dependency_records(report):
+            item = {"name": rec["name"], "version": rec["specifier"] or "*",
+                    "ecosystem": rec["ecosystem"], "scope": rec["scope"], "manifest": rec["manifest"]}
+            if rec["scope"] in stack_detection.COUNTED_SCOPES:
+                deps.dependencies.append(item)
+            elif rec["scope"] == "dev":
+                deps.dev_dependencies.append(item)
+            else:
+                deps.other_dependencies.append(item)
         
         return deps
     

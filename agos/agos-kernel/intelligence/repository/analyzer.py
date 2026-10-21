@@ -170,6 +170,7 @@ class RepositoryAnalyzer:
         self._detect_frameworks()
         self._detect_build_systems()
         self._detect_package_managers()
+        self._detect_dependencies()
         self._detect_test_frameworks()
         self._detect_ci_cd()
         self._detect_containers()
@@ -304,7 +305,30 @@ class RepositoryAnalyzer:
         self.genome.build_systems = detected
     
     def _detect_package_managers(self) -> None:
-        """Detect package managers."""
+        """Detect package managers from manifests and lock files (R-W2-002)."""
+        stack_detection = self._stack_detection()
+        self.genome.package_managers = set(stack_detection.detect_package_managers_at(self.root_path))
+    
+    def _detect_dependencies(self) -> None:
+        """Direct runtime/peer dependencies + full records from manifests (R-W2-002)."""
+        stack_detection = self._stack_detection()
+        report = stack_detection.detect_stack(stack_detection.read_manifests(self.root_path))
+        self.genome.dependencies = stack_detection.project_dependencies(report)
+        self.genome.dependency_details = stack_detection.dependency_records(report)
+    
+    @staticmethod
+    def _stack_detection():
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        return stack_detection
+    
+    def _detect_package_managers_by_root_files(self) -> None:
+        """Legacy root-file check (kept for reference, NOT used — R-W2-002).
+
+        Any pyproject.toml meant "poetry" and only the repository root was inspected.
+        """
         managers = set()
         
         # Python

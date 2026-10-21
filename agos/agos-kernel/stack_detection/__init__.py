@@ -8,7 +8,12 @@
     manage.py, settings.py …) **ليس دليلاً**.
 
 كل قرار مصحوب بدليل: (الإطار، الاعتمادية، الملف، النظام البيئي، النطاق، هل احتُسب).
-الاعتماديات ذات النطاق dev/test/optional/build/example تُسجَّل في الأدلة لكنها لا تُحتسب.
+الاعتماديات ذات النطاق dev/test/optional/build/indirect/local/example تُسجَّل في الأدلة لكنها لا
+تُحتسب. أب Maven وإضافة Gradle (parent/plugin) دليلان على الإطار لا اعتماديتان.
+
+R-W2-002: الوحدة نفسها هي مصدر ``dependencies`` (``project_dependencies``: runtime/peer
+المباشرة) و``dependency_details`` (``dependency_records``) ومديري الحزم
+(``detect_package_managers``).
 
 الوحدة نقية (مكتبة Python القياسية فقط) ولا تقرأ القرص إلا عبر ``read_manifests``.
 """
@@ -31,11 +36,16 @@ except ModuleNotFoundError:  # pragma: no cover - المشروع يتطلب 3.11
 
 __all__ = [
     "COUNTED_SCOPES",
+    "FRAMEWORK_SCOPES",
     "Dependency",
     "Evidence",
     "StackReport",
     "detect_stack",
     "detect_frameworks",
+    "detect_package_managers",
+    "detect_package_managers_at",
+    "dependency_records",
+    "project_dependencies",
     "framework_for",
     "is_manifest",
     "iter_counted",
@@ -45,8 +55,13 @@ __all__ = [
     "normalize_name",
 ]
 
-# النطاقات التي تجعل الاعتمادية دليلاً على إطار المشروع نفسه.
+# النطاقات التي تجعل الاعتمادية اعتماديةً مباشرة يحتاجها المشروع ليعمل (R-W2-002).
 COUNTED_SCOPES = frozenset({"runtime", "peer"})
+# النطاقات التي تُعدّ دليلاً على إطار: ما سبق + أب Maven (spring-boot-starter-parent) وإضافة
+# Gradle (org.springframework.boot) — دليلان على الإطار لكنهما ليسا اعتماديتين.
+FRAMEWORK_SCOPES = COUNTED_SCOPES | frozenset({"parent", "plugin"})
+# أسبقيات مسارات/إشارات محلية: حزم داخل المستودع نفسه (workspace) لا اعتماديات خارجية.
+_LOCAL_NPM_PREFIXES = ("file:", "link:", "workspace:", "portal:")
 
 # مجلدات لا تمثل المشروع: اعتماديات مُورَّدة أو بيئات افتراضية — تُتجاهل كلياً.
 SKIP_DIRS = frozenset({
@@ -109,8 +124,9 @@ class Dependency:
 
     name: str          # الاسم المطبَّع (pypi: أحرف صغيرة و'-'؛ maven: group:artifact)
     ecosystem: str     # pypi | npm | rubygems | composer | maven | go | cargo | pub
-    scope: str         # runtime | peer | dev | optional | build | indirect | example
+    scope: str         # runtime | peer | dev | optional | build | indirect | local | parent | plugin | example
     manifest: str      # المسار النسبي لملف الاعتماديات
+    specifier: str = ""  # قيد الإصدار كما كُتب (">=2.0" / "^18.2.0" / "v1.9.1" / "${spring.version}") — R-W2-002
 
 
 @dataclass(frozen=True)
@@ -174,6 +190,8 @@ def manifest_kind(path: str) -> Optional[str]:
     p = _posix(path)
     name = p.name
     low = name.lower()
+    if low.endswith(".gemspec") and len(low) > len(".gemspec"):
+        return "gemspec"
     if low.endswith(".txt") and (low.startswith("requirements") or p.parent.name.lower() == "requirements"):
         return "requirements"
     return {
@@ -210,8 +228,12 @@ def _req_file_scope(path: str) -> str:
     if stem.startswith("requirements"):
         stem = stem[len("requirements"):]
     tokens = [t for t in re.split(r"[-_.]+", stem) if t]
+    if any(t.startswith("build") for t in tokens):
+        return "build"
     if any(t.startswith(h) for t in tokens for h in _DEV_REQ_HINTS):
         return "dev"
+    if p.parent.name.lower() == "requirements" and stem.startswith("build"):
+        return "build"
     if p.parent.name.lower() == "requirements" and any(stem.startswith(h) for h in _DEV_REQ_HINTS):
         return "dev"
     return "runtime"
@@ -220,7 +242,18 @@ def _req_file_scope(path: str) -> str:
 # ---------------------------------------------------------------------------
 # محللات ملفات الاعتماديات — كل محلل يعيد [(name, ecosystem, scope)]
 # ---------------------------------------------------------------------------
-Parsed = List[Tuple[str, str, str]]
+# (name, ecosystem, scope[, specifier]) — المحللات القديمة تعيد ثلاثية والجديدة رباعية.
+Parsed = List[Tuple[str, ...]]
+
+
+def _pep508_specifier(spec: str, name: str) -> str:
+    """ما بعد الاسم في متطلب PEP 508: بلا extras وبلا markers (``flask[async]>=2 ; x`` → ``>=2``)."""
+    rest = spec.split(";", 1)[0].strip()[len(name):].strip()
+    if rest.startswith("["):
+        rest = rest.split("]", 1)[-1].strip()
+    if rest.startswith("@"):
+        return rest  # مرجع مباشر: "@ https://..."
+    return rest.lstrip("(").rstrip(")").replace(" ", "")
 
 
 def _pep508_name(spec: str) -> Optional[str]:
@@ -246,10 +279,13 @@ def _parse_requirements(text: str, path: str) -> Parsed:
         if line.startswith("-"):  # -r, -c, --index-url ...
             continue
         if " @ " in line:
-            line = line.split(" @ ", 1)[0]
+            name = _pep508_name(line.split(" @ ", 1)[0])
+            if name:
+                out.append((name, "pypi", scope, "@ " + line.split(" @ ", 1)[1].strip()))
+            continue
         name = _pep508_name(line)
         if name:
-            out.append((name, "pypi", scope))
+            out.append((name, "pypi", scope, _pep508_specifier(line, name)))
     return out
 
 
@@ -260,16 +296,28 @@ def _pep508_list(items: object, scope: str) -> Parsed:
             if isinstance(item, str):
                 name = _pep508_name(item)
                 if name:
-                    out.append((name, "pypi", scope))
+                    out.append((name, "pypi", scope, _pep508_specifier(item, name)))
     return out
+
+
+def _spec_value(spec: object) -> str:
+    """قيد الإصدار من قيمة جدول (نص، أو {version=...}، أو {git/path=...})."""
+    if isinstance(spec, str):
+        return spec.strip()
+    if isinstance(spec, dict):
+        for key in ("version", "git", "path", "url"):
+            if isinstance(spec.get(key), str):
+                return spec[key] if key == "version" else f"{key}:{spec[key]}"
+    return ""
 
 
 def _poetry_table(table: object, scope: str) -> Parsed:
     out: Parsed = []
     if isinstance(table, dict):
-        for name in table:
+        for name, spec in table.items():
             if str(name).lower() != "python":
-                out.append((str(name), "pypi", scope))
+                local = isinstance(spec, dict) and "path" in spec
+                out.append((str(name), "pypi", "local" if local else scope, _spec_value(spec)))
     return out
 
 
@@ -363,11 +411,22 @@ def _parse_package_json(text: str, path: str) -> Parsed:
                        ("devDependencies", "dev"), ("optionalDependencies", "optional")):
         table = data.get(key)
         if isinstance(table, dict):
-            out += [(str(n), "npm", scope) for n in table]
+            for n, v in table.items():
+                spec = _spec_value(v)
+                local = scope in ("runtime", "peer") and spec.startswith(_LOCAL_NPM_PREFIXES)
+                out.append((str(n), "npm", "local" if local else scope, spec))
     return out
 
 
 _GEM = re.compile(r"""^\s*gem\s*\(?\s*['"]([^'"]+)['"]""")
+_QUOTED = re.compile(r"""['"]([^'"]*)['"]""")
+
+
+def _gem_versions(line: str, after: int) -> str:
+    """القيود النصية بعد اسم الجوهرة حتى أول خيار مسمّى (``'~> 7.0', '>= 7.0.1'``)."""
+    rest = line[after:]
+    rest = re.split(r",\s*[A-Za-z_]+\s*(?::|=>)", rest, maxsplit=1)[0]
+    return ", ".join(q for q in _QUOTED.findall(rest) if re.match(r"^\s*[~<>=!]*\s*[0-9]", q))
 _GROUP_OPEN = re.compile(r"^\s*group\b(.*)\bdo\b")
 _BLOCK_OPEN = re.compile(r"\bdo\b(\s*\|[^|]*\|)?\s*$")
 _GEM_GROUP_KW = re.compile(r"""(?:group|groups)\s*(?::|=>)\s*\[?([^\]\n]*)""")
@@ -375,6 +434,9 @@ _GEM_GROUP_KW = re.compile(r"""(?:group|groups)\s*(?::|=>)\s*\[?([^\]\n]*)""")
 
 def _parse_gemfile(text: str, path: str) -> Parsed:
     out: Parsed = []
+    # Gemfile فيه ``gemspec``: مستودع مكتبة؛ اعتمادياتها التشغيلية في ‎*.gemspec وGemfile بيئة
+    # تطويرها (اصطلاح Bundler) — فكل جواهره هنا نطاقها dev.
+    library = re.search(r"^\s*gemspec\b", text, re.M) is not None
     stack: List[bool] = []  # لكل كتلة مفتوحة: هل هي مجموعة تطوير/اختبار؟
     for raw in text.splitlines():
         line = raw.split("#", 1)[0].rstrip()
@@ -394,7 +456,9 @@ def _parse_gemfile(text: str, path: str) -> Parsed:
             kw = _GEM_GROUP_KW.search(line)
             if kw and re.search(r"development|test", kw.group(1)):
                 dev = True
-            out.append((m.group(1), "rubygems", "dev" if dev else "runtime"))
+            local = re.search(r"(?:\bpath\s*:|:path\s*=>)", line) is not None
+            scope = "local" if local else "dev" if (dev or library) else "runtime"
+            out.append((m.group(1), "rubygems", scope, _gem_versions(line, m.end())))
             continue
         if _BLOCK_OPEN.search(line):  # كتل أخرى (platforms/source ... do)
             stack.append(False)
@@ -409,11 +473,11 @@ def _parse_composer(text: str, path: str) -> Parsed:
     for key, scope in (("require", "runtime"), ("require-dev", "dev")):
         table = data.get(key)
         if isinstance(table, dict):
-            for n in table:
+            for n, v in table.items():
                 n = str(n)
                 if n == "php" or n.startswith("ext-") or "/" not in n:
                     continue
-                out.append((n, "composer", scope))
+                out.append((n, "composer", scope, _spec_value(v)))
     return out
 
 
@@ -436,7 +500,7 @@ def _parse_pom(text: str, path: str) -> Parsed:
         if tag == "parent":
             g, a = child(el, "groupId"), child(el, "artifactId")
             if g:
-                out.append((f"{g}:{a}", "maven", "runtime"))
+                out.append((f"{g}:{a}", "maven", "parent", child(el, "version")))
         elif tag == "dependencies":
             for dep in el:
                 if _strip_ns(dep.tag) != "dependency":
@@ -447,13 +511,13 @@ def _parse_pom(text: str, path: str) -> Parsed:
                 s = "dev" if scope == "test" else "optional" if optional else \
                     "build" if scope == "provided" else "runtime"
                 if g:
-                    out.append((f"{g}:{a}", "maven", s))
+                    out.append((f"{g}:{a}", "maven", s, child(dep, "version")))
     # dependencyManagement وbuild/plugins لا تُعدّ اعتماديات تشغيلية.
     return out
 
 
 _GRADLE_CONF = re.compile(
-    r"""^\s*([A-Za-z]+)\s*\(?\s*(?:platform\s*\(\s*)?['"]([A-Za-z0-9_.\-]+):([A-Za-z0-9_.\-]+)""")
+    r"""^\s*([A-Za-z]+)\s*\(?\s*(?:platform\s*\(\s*)?['"]([A-Za-z0-9_.\-]+):([A-Za-z0-9_.\-]+)(?::([^'"@:]+))?""")
 _GRADLE_PLUGIN = re.compile(r"""\bid\s*\(?\s*['"](org\.springframework[A-Za-z0-9_.\-]*)['"]""")
 _GRADLE_RUNTIME = {"implementation", "api", "compile", "runtimeOnly", "runtime", "compileOnly"}
 
@@ -467,15 +531,15 @@ def _parse_gradle(text: str, path: str) -> Parsed:
             conf = m.group(1)
             scope = "runtime" if conf in _GRADLE_RUNTIME else \
                 "dev" if conf.lower().startswith("test") else "build"
-            out.append((f"{m.group(2)}:{m.group(3)}", "maven", scope))
+            out.append((f"{m.group(2)}:{m.group(3)}", "maven", scope, m.group(4) or ""))
             continue
         p = _GRADLE_PLUGIN.search(line)
         if p:
-            out.append((f"{p.group(1)}:plugin", "maven", "runtime"))
+            out.append((f"{p.group(1)}:plugin", "maven", "plugin"))
     return out
 
 
-_GO_REQ = re.compile(r"^\s*([A-Za-z0-9._~\-/]+)\s+v[0-9][^\s]*\s*(//\s*indirect)?")
+_GO_REQ = re.compile(r"^\s*([A-Za-z0-9._~\-/]+)\s+(v[0-9][^\s]*)\s*(//\s*indirect)?")
 
 
 def _parse_go_mod(text: str, path: str) -> Parsed:
@@ -495,7 +559,7 @@ def _parse_go_mod(text: str, path: str) -> Parsed:
             continue
         m = _GO_REQ.match(line)
         if m:
-            out.append((m.group(1), "go", "indirect" if m.group(2) else "runtime"))
+            out.append((m.group(1), "go", "indirect" if m.group(3) else "runtime", m.group(2)))
     return out
 
 
@@ -510,7 +574,9 @@ def _parse_cargo(text: str, path: str) -> Parsed:
             for name, spec in t.items():
                 real = spec.get("package", name) if isinstance(spec, dict) else name
                 opt = isinstance(spec, dict) and spec.get("optional") is True
-                out.append((str(real), "cargo", "optional" if opt and scope == "runtime" else scope))
+                local = isinstance(spec, dict) and "path" in spec
+                eff = "local" if local else "optional" if opt and scope == "runtime" else scope
+                out.append((str(real), "cargo", eff, _spec_value(spec)))
 
     table(data.get("dependencies"), "runtime")
     table(data.get("dev-dependencies"), "dev")
@@ -538,7 +604,25 @@ def _parse_pubspec(text: str, path: str) -> Parsed:
             section = {"dependencies": "runtime", "dev_dependencies": "dev"}.get(key)
             continue
         if section and indent == 2 and ":" in line:
-            out.append((line.split(":", 1)[0].strip(), "pub", section))
+            key, _, value = line.partition(":")
+            out.append((key.strip(), "pub", section, value.strip().strip("'\"")))
+    return out
+
+
+_GEMSPEC_DEP = re.compile(
+    r"""\.\s*add_(runtime_|development_)?dependency\s*\(?\s*(?:['"]([^'"]+)['"]|%q[<{(\[]([^>})\]]+)[>})\]])""")
+
+
+def _parse_gemspec(text: str, path: str) -> Parsed:
+    """``spec.add_dependency`` / ``add_runtime_dependency`` / ``add_development_dependency``."""
+    out: Parsed = []
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0]
+        m = _GEMSPEC_DEP.search(line)
+        if m:
+            name = m.group(2) or m.group(3)
+            scope = "dev" if m.group(1) == "development_" else "runtime"
+            out.append((name, "rubygems", scope, _gem_versions(line, m.end())))
     return out
 
 
@@ -556,12 +640,14 @@ _PARSERS = {
     "go.mod": _parse_go_mod,
     "cargo": _parse_cargo,
     "pubspec": _parse_pubspec,
+    "gemspec": _parse_gemspec,
 }
 
 _RUNTIME_OF_KIND = {
     "requirements": "Python", "pyproject": "Python", "setup.cfg": "Python", "setup.py": "Python",
     "pipfile": "Python", "package.json": "Node.js", "gemfile": "Ruby", "composer": "PHP",
     "pom": "JVM", "gradle": "JVM", "go.mod": "Go", "cargo": "Rust", "pubspec": "Dart",
+    "gemspec": "Ruby",
 }
 
 
@@ -572,12 +658,14 @@ def parse_manifest(path: str, text: str) -> List[Dependency]:
         return []
     example = _is_example_path(path)
     deps: List[Dependency] = []
-    for name, eco, scope in _PARSERS[kind](text, path):
+    for item in _PARSERS[kind](text, path):
+        name, eco, scope = item[0], item[1], item[2]
         deps.append(Dependency(
             name=normalize_name(name, eco),
             ecosystem=eco,
             scope="example" if example else scope,
             manifest=str(_posix(path)),
+            specifier=item[3] if len(item) > 3 else "",
         ))
     return deps
 
@@ -634,7 +722,7 @@ def detect_stack(files: Mapping[str, Optional[str]]) -> StackReport:
             fw = framework_for(dep)
             if fw is None:
                 continue
-            counted = dep.scope in COUNTED_SCOPES
+            counted = dep.scope in FRAMEWORK_SCOPES
             report.evidence.append(Evidence(fw, dep.name, dep.manifest, dep.ecosystem, dep.scope, counted))
             if counted:
                 frameworks.setdefault(fw, None)
@@ -673,3 +761,80 @@ def read_manifests(root: "os.PathLike[str] | str", max_bytes: int = 1_000_000) -
 def iter_counted(report: StackReport) -> Iterable[Evidence]:
     """الأدلة المحتسبة فقط."""
     return (e for e in report.evidence if e.counted)
+
+
+# ---------------------------------------------------------------------------
+# R-W2-002 — استخراج الاعتماديات ومديري الحزم
+# ---------------------------------------------------------------------------
+def project_dependencies(report: StackReport, scopes: Iterable[str] = COUNTED_SCOPES) -> List[str]:
+    """الاعتماديات المباشرة التي يحتاجها المشروع ليعمل: أسماء مطبَّعة، فريدة، مرتبة.
+
+    افتراضياً النطاقان ``runtime`` و``peer`` فقط ومن غير ملفات الأمثلة؛ dev/optional/build/
+    indirect/example تبقى في ``dependency_records``.
+    """
+    wanted = set(scopes)
+    return sorted({d.name for d in report.dependencies if d.scope in wanted})
+
+
+def dependency_records(report: StackReport) -> List[Dict[str, object]]:
+    """كل اعتمادية بكل حقولها (الاسم، النظام، النطاق، القيد، الملف) — مرتبة حتمياً."""
+    return [asdict(d) for d in sorted(
+        report.dependencies, key=lambda d: (d.ecosystem, d.name, d.scope, d.manifest, d.specifier))]
+
+
+_LOCKFILE_MANAGERS = {
+    "poetry.lock": "poetry", "uv.lock": "uv", "pdm.lock": "pdm", "Pipfile.lock": "pipenv",
+    "package-lock.json": "npm", "npm-shrinkwrap.json": "npm", "yarn.lock": "yarn",
+    "pnpm-lock.yaml": "pnpm", "bun.lockb": "bun", "bun.lock": "bun",
+    "Gemfile.lock": "bundler", "composer.lock": "composer", "Cargo.lock": "cargo",
+    "go.sum": "go", "pubspec.lock": "pub", "gradle.lockfile": "gradle",
+}
+_KIND_MANAGERS = {
+    "requirements": "pip", "setup.py": "pip", "setup.cfg": "pip", "pipfile": "pipenv",
+    "package.json": "npm", "go.mod": "go", "cargo": "cargo", "gemfile": "bundler",
+    "gemspec": "bundler", "composer": "composer", "pom": "maven", "gradle": "gradle",
+    "pubspec": "pub",
+}
+
+
+def detect_package_managers(paths: Iterable[str],
+                            manifests: Optional[Mapping[str, Optional[str]]] = None) -> List[str]:
+    """مديرو الحزم من ملفات الاعتماديات وملفات القفل (خارج المجلدات المُورَّدة والأمثلة).
+
+    ``pyproject.toml`` يعني ``pip`` ما لم يكن فيه ``[tool.poetry]`` (→ ``poetry``) أو
+    ``[tool.pdm]`` (→ ``pdm``)؛ ووجود ملف قفل يضيف مديره (yarn.lock → yarn …).
+    """
+    found: Dict[str, None] = {}
+    for path in sorted(set(paths)):
+        p = _posix(path)
+        if any(part in SKIP_DIRS for part in p.parts[:-1]) or _is_example_path(path):
+            continue
+        if p.name in _LOCKFILE_MANAGERS:
+            found.setdefault(_LOCKFILE_MANAGERS[p.name], None)
+            continue
+        kind = manifest_kind(path)
+        if kind == "pyproject":
+            text = (manifests or {}).get(path) or ""
+            if re.search(r"^\[tool\.poetry", text, re.M):
+                found.setdefault("poetry", None)
+            elif re.search(r"^\[tool\.pdm", text, re.M):
+                found.setdefault("pdm", None)
+            else:
+                found.setdefault("pip", None)
+        elif kind in _KIND_MANAGERS:
+            found.setdefault(_KIND_MANAGERS[kind], None)
+    return sorted(found)
+
+
+def detect_package_managers_at(root: "os.PathLike[str] | str") -> List[str]:
+    """``detect_package_managers`` على مجلد في القرص (ملفات الاعتماديات + ملفات القفل)."""
+    base = Path(root)
+    if not base.is_dir():
+        return []
+    paths: List[str] = []
+    for dirpath, dirnames, filenames in os.walk(base):
+        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not os.path.islink(os.path.join(dirpath, d)))
+        for fname in filenames:
+            if fname in _LOCKFILE_MANAGERS or manifest_kind(fname) is not None:
+                paths.append((Path(dirpath) / fname).relative_to(base).as_posix())
+    return detect_package_managers(paths, read_manifests(base))

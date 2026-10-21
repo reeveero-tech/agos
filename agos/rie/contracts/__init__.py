@@ -47,6 +47,10 @@ class RepositoryDNA:
     generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     version: str = "1.0.0"
     
+    # R-W2-002: every manifest dependency with ecosystem/scope/specifier/manifest.
+    # ``dependencies`` holds the direct runtime/peer names only.
+    dependency_details: List[Dict[str, Any]] = field(default_factory=list)
+    
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -70,7 +74,8 @@ class RepositoryDNA:
             "total_directories": self.total_directories,
             "total_size_bytes": self.total_size_bytes,
             "generated_at": self.generated_at.isoformat(),
-            "version": self.version
+            "version": self.version,
+            "dependency_details": self.dependency_details,
         }
 
 
@@ -166,6 +171,9 @@ class RepositoryFeatureSet:
     is_valid: bool = True
     validation_errors: List[str] = field(default_factory=list)
     
+    # R-W2-002 (appended last: positional construction unchanged)
+    dependency_details: List[Dict[str, Any]] = field(default_factory=list)
+    
     def to_dict(self) -> Dict[str, Any]:
         return {
             "repository_url": self.repository_url,
@@ -187,5 +195,6 @@ class RepositoryFeatureSet:
             "total_directories": self.total_directories,
             "total_size_bytes": self.total_size_bytes,
             "is_valid": self.is_valid,
-            "validation_errors": self.validation_errors
+            "validation_errors": self.validation_errors,
+            "dependency_details": self.dependency_details,
         }

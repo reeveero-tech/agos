@@ -89,6 +89,10 @@ class RepositoryDNA:
     # runtimes, not frameworks. Appended last so positional construction is unchanged.
     framework_evidence: List[Dict[str, Any]] = field(default_factory=list)
     runtimes: List[str] = field(default_factory=list)
+    # R-W2-002: every dependency found in the manifests, with ecosystem, scope (runtime/peer/
+    # dev/optional/build/indirect/example), version specifier and manifest path.
+    # ``dependencies`` above holds the direct runtime/peer names only.
+    dependency_details: List[Dict[str, Any]] = field(default_factory=list)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -110,4 +114,5 @@ class RepositoryDNA:
             "snapshot_path": self.snapshot_path,
             "framework_evidence": self.framework_evidence,
             "runtimes": self.runtimes,
+            "dependency_details": self.dependency_details,
         }

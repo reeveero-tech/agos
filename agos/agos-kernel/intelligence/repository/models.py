@@ -191,11 +191,17 @@ class RepositoryGenome:
     analyzed_at: datetime = field(default_factory=datetime.now)
     version: str = "1.0.0"
     
+    # R-W2-002: direct runtime/peer dependency names + full manifest records.
+    dependencies: List[str] = field(default_factory=list)
+    dependency_details: List[Dict[str, Any]] = field(default_factory=list)
+    
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
             "name": self.name,
             "path": self.path,
+            "dependencies": list(self.dependencies),
+            "dependency_details": list(self.dependency_details),
             "languages": [l.value for l in self.languages],
             "frameworks": [f.value for f in self.frameworks],
             "build_systems": [b.value for b in self.build_systems],

@@ -39,6 +39,10 @@ class DependencyAnalyzer:
     """
     
     def __init__(self):
+        # Historical per-file parsers, kept for reference only (R-W2-002): several returned
+        # [] unconditionally (Pipfile, pyproject, Cargo, Maven, Gradle), go.mod took every
+        # line, and rglob descended into node_modules/.venv. ``analyze`` now uses the
+        # kernel's ``stack_detection`` (one parser per manifest format, with scopes).
         self.dependency_files = {
             'requirements.txt': self._parse_requirements,
             'Pipfile': self._parse_pipfile,
@@ -59,25 +63,33 @@ class DependencyAnalyzer:
         dependencies = []
         sources = []
         
-        # Find dependency files
-        for dep_file, parser in self.dependency_files.items():
-            for file_path in repo_path.rglob(dep_file):
-                try:
-                    deps = parser(file_path)
-                    dependencies.extend(deps)
-                    sources.append({
-                        'file': str(file_path.relative_to(repo_path)),
-                        'count': len(deps),
-                        'type': dep_file,
-                    })
-                    
-                    for dep in deps:
-                        if dep.get('is_dev', False):
-                            metrics.external_deps += 1
-                        else:
-                            metrics.direct_deps += 1
-                except Exception:
-                    pass
+        # Dependency manifests → records (R-W2-002)
+        try:
+            from agos.kernel import stack_detection
+        except ImportError:
+            import stack_detection
+        report = stack_detection.detect_stack(stack_detection.read_manifests(repo_path))
+        for rec in stack_detection.dependency_records(report):
+            dependencies.append({
+                'name': rec['name'],
+                'version': rec['specifier'] or '*',
+                'source': Path(rec['manifest']).name,
+                'manifest': rec['manifest'],
+                'ecosystem': rec['ecosystem'],
+                'scope': rec['scope'],
+                'is_dev': rec['scope'] not in stack_detection.COUNTED_SCOPES,
+            })
+        for manifest in report.manifests:
+            sources.append({
+                'file': manifest,
+                'count': sum(1 for d in report.dependencies if d.manifest == manifest),
+                'type': Path(manifest).name,
+            })
+        direct = stack_detection.project_dependencies(report)
+        metrics.direct_deps = len(direct)
+        # every manifest dependency is a third-party (external) package; transitive ones
+        # are not read (lock files are deliberately not used), so transitive_deps stays 0.
+        metrics.external_deps = len({(d.ecosystem, d.name) for d in report.dependencies})
         
         # Analyze internal dependencies (Python imports)
         internal_deps = self._find_internal_deps(repo_path)
@@ -94,6 +106,8 @@ class DependencyAnalyzer:
                 'transitive_deps': metrics.transitive_deps,
             },
             'dependencies': dependencies[:50],  # Limit for report size
+            'direct_dependencies': direct,
+            'manifest_errors': dict(report.errors),
             'timestamp': datetime.now(timezone.utc).isoformat(),
         }
         

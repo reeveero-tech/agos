@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from pathlib import Path
 import ast
-import json
+import json  # noqa: F401  (kept: module attribute; no longer used since R-W2-002)
 import hashlib
 from dataclasses import dataclass
 
@@ -332,28 +332,16 @@ class DependencyResolutionStage(PipelineStage):
             'internal': [],
         }
         
-        # Python requirements.txt
-        req_file = repo / 'requirements.txt'
-        if req_file.exists():
-            try:
-                with open(req_file, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith('#'):
-                            dependencies['direct'].append(line)
-            except Exception as e:
-                result.warnings.append(f"Could not parse requirements.txt: {e}")
-        
-        # package.json
-        pkg_file = repo / 'package.json'
-        if pkg_file.exists():
-            try:
-                with open(pkg_file, 'r') as f:
-                    pkg_data = json.load(f)
-                    dependencies['direct'].extend(pkg_data.get('dependencies', {}).keys())
-                    dependencies['dev'].extend(pkg_data.get('devDependencies', {}).keys())
-            except Exception as e:
-                result.warnings.append(f"Could not parse package.json: {e}")
+        # Manifests (R-W2-002): every supported format anywhere in the repository (not only
+        # the root requirements.txt/package.json), with scopes; "-r"/"--index-url" lines
+        # are no longer recorded as packages. ``direct`` = runtime/peer names.
+        sd = _stack_detection()
+        report = sd.detect_stack(sd.read_manifests(repo))
+        dependencies['direct'] = sd.project_dependencies(report)
+        dependencies['dev'] = sd.project_dependencies(report, scopes=("dev",))
+        dependencies['details'] = sd.dependency_records(report)
+        for manifest, error in report.errors.items():
+            result.warnings.append(f"Could not parse {manifest}: {error}")
         
         # Internal modules
         py_files = list(repo.rglob('__init__.py'))

@@ -5,6 +5,36 @@
 
 ## [غير مُصدَر]
 
+### 0018 — استخراج الاعتماديات من ملفات الاعتماديات، مطابقاً لمستودعات مرجعية — 2026-10-21 — R-W2-002
+#### أُصلح
+- **`dependencies` كانت فارغة دائماً** في DNA المسار الحي (`dependencies=[]`) وفي rie. صارت تحمل الاعتماديات المباشرة (runtime وpeer).
+- **ستة مستخرجين معطوبين:**
+  - civilization `DependencyAnalyzer`: محللات pyproject وPipfile وCargo وMaven وGradle تعيد `[]`، وgo.mod يأخذ كل سطر، و`-r` و`--index-url` تُعدّ حزماً، والبحث ينزل إلى `node_modules`؛
+  - `DependencyResolutionStage`: الجذر فقط وبأسطر خام؛
+  - شريحة repo_discovery: تنزل إلى `node_modules`؛
+  - intelligence: الجذر فقط، وكل pyproject يعني poetry؛
+  - مديرو الحزم بالمطابقة الجزئية: Gradle يعني "maven"، وcomposer وpub غائبان.
+#### أُضيف
+- **في `stack_detection`:**
+  - `Dependency.specifier` (قيد الإصدار كما كُتب، في كل الصيغ)؛
+  - صيغة `*.gemspec`؛
+  - `project_dependencies` و`dependency_records`؛
+  - `detect_package_managers` و`detect_package_managers_at` (من ملفات الاعتماديات والقفل)؛
+  - النطاقات `build` و`local` و`parent` و`plugin`؛
+  - `FRAMEWORK_SCOPES`.
+- **حقل `dependency_details`:** في `RepositoryDNA` في النواة، و`RepositoryDNA` و`RepositoryFeatureSet` في rie، و`RepositoryGenome`، ودائماً آخراً وفي `to_dict()`.
+- **حقول أخرى:** `RepositoryGenome.dependencies`، و`DependencyGraph.other_dependencies`، و`_detect_dependencies` في `RepositoryAnalyzer`.
+- **`tests/test_dependency_extraction.py`** (59 اختباراً): 15 مستودعاً مرجعياً محلياً، و7 مستودعات حقيقية مثبتة بالوسوم، و14 كناري قيود، و11 كناري نطاقات، و7 مسارات من طرف إلى طرف.
+#### تغيّر
+- **المسارات السبعة صارت واجهات لمصدر واحد:** القدرة الحية، وrie، وDependencyAnalyzer، وDependencyResolutionStage مع pipeline، وRepositoryAnalyzer مع ProjectDNA، والشريحة.
+- **`_generate_dna`** يقبل `stack` اختيارياً.
+- **مديرو الحزم:** gradle بدل maven، وملفات القفل تضيف yarn وpnpm وuv وbun وغيرها.
+- **الدوال والجداول القديمة محفوظة** مرجعاً غير مستعمل (لا حذف): `DEPENDENCY_FILES` و`dependency_files` و`_detect_package_managers_by_root_files`.
+#### النتيجة
+- **الاختبارات:** 375 / 0 / 0 / 0. التحذيرات 38، وكلها R-Q-001.
+- **المستودعات المرجعية:** 22 من 22 مطابقة، ومنها `psf/requests@v2.32.3` ← 4، و`pallets/flask@3.0.3` ← 6، و`gin@v1.9.1` ← 12، و`sinatra@v4.0.0` ← 8، و`ripgrep@14.1.0` ← 21، و`express@4.19.2` ← 31.
+- **أدوات التدقيق:** فشل الاستيراد 0 / 522، والبيئة النظيفة 491 / 491، ومشاكل التبعيات 0.
+
 ### 0017 — كشف الأطر من ملفات الاعتماديات بالأدلة، وتوحيد الكواشف الستة — 2026-10-21 — R-W2-001
 #### أُصلح
 - **الإيجابيات الكاذبة في كشف الأطر** (التدقيق §3.6). ذِكر اسم إطار في README أو توثيق أو نص شيفرة أو اسم ملف (`app.py` و`manage.py` و`settings.py` و`config.ru` و`pages/`) لم يعد دليلاً. `psf/requests` كان ينتج `Express, Flask, Next.js, Vue`، وصار `[]`.

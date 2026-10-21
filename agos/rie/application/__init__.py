@@ -62,6 +62,11 @@ class FeatureAggregator:
                     features.dependencies.append(dep)
         
         # Package managers
+        if "dependency_details" in detector_features:  # R-W2-002
+            for rec in detector_features["dependency_details"]:
+                if rec not in features.dependency_details:
+                    features.dependency_details.append(rec)
+        
         if "package_managers" in detector_features:
             for pm in detector_features["package_managers"]:
                 if pm not in features.package_managers:
@@ -222,6 +227,7 @@ class RepositoryIntelligencePipeline:
             frameworks=features.frameworks,
             package_managers=features.package_managers,
             dependencies=features.dependencies,
+            dependency_details=list(features.dependency_details),
             config_files=features.config_files,
             entry_points=features.entry_points,
             directory_tree=features.directory_tree,
