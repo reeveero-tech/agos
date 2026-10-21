@@ -6,8 +6,8 @@
 
 ## ملخص المستويات
 
-- **L0**: 3 حزمة
-- **L1**: 111 حزمة
+- **L0**: 1 حزمة
+- **L1**: 113 حزمة
 - **L2**: 14 حزمة
 - **L3**: 2 حزمة
 - **L4**: 2 حزمة
@@ -36,10 +36,10 @@
 | L1 | `agos-kernel/contract_engine` | contracts | 1 | 360 | 0 | yes | no | yes | L1 | R-W1-019 |
 | L1 | `agos-kernel/contracts` | contracts | 1 | 106 | 0 | yes | yes | no | L2 | R-W1-019 |
 | L1 | `agos-kernel/core` | core-brain | 21 | 3260 | 0 | yes | no | yes | L1 | R-F-002, R-F-008, R-W3-003, R-W1-022 |
-| L1 | `agos-kernel/decision` | decision | 1 | 86 | 0 | NO | no | no | L0 | R-F-007, R-W3-004 |
+| L1 | `agos-kernel/decision` | decision | 1 | 86 | 0 | yes | no | no | L1 | R-F-007, R-W3-004 |
 | L1 | `agos-kernel/decision-pipeline` | decision | 1 | 305 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/decision_pipeline` | decision | 1 | 15 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
-| L1 | `agos-kernel/diagnostics` | healing | 1 | 6 | 0 | NO | no | yes | L0 | R-F-007, R-W3-013 |
+| L1 | `agos-kernel/diagnostics` | healing | 2 | 18 | 0 | yes | no | yes | L1 | R-F-007, R-W3-013 |
 | L1 | `agos-kernel/discovery` | registry | 1 | 329 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/event-engine` | events | 1 | 211 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
 | L1 | `agos-kernel/event_engine` | events | 1 | 15 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
@@ -52,7 +52,7 @@
 | L1 | `agos-kernel/policies` | governance | 1 | 109 | 0 | yes | no | yes | L1 | R-W4-005 |
 | L1 | `agos-kernel/registry` | registry | 3 | 80 | 0 | yes | yes | no | L2 | R-W3-002 |
 | L1 | `agos-kernel/resolvers` | registry | 1 | 205 | 0 | yes | yes | no | L2 | R-W3-002 |
-| L1 | `agos-kernel/shared` | contracts | 1 | 52 | 0 | yes | yes | no | L2 | R-W1-019 |
+| L1 | `agos-kernel/shared` | contracts | 1 | 60 | 0 | yes | yes | no | L2 | R-W1-019 |
 | L1 | `agos_kernel` | namespace | 1 | 158 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
 | L2 | `agos-kernel` | quality | 19 | 3504 | 0 | NO | yes | yes | L0 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |

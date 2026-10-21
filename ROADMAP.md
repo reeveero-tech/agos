@@ -56,7 +56,7 @@
 | R-F-004 | أسماء بديلة قابلة للاستيراد للمجلدات ذات الشرطة (8 حزم) | `bootstrapper` و`hardening` يُستوردان | — | DONE |
 | R-F-005 | مساحة الاسم `agos.*` للوحدات الخارجية + `agos.kernel`؛ حل التصادمات التسعة؛ استيرادات نسبية في `cloud`/`seos` | كل الوحدات الخارجية تُستورد كـ `agos.<name>` مع النواة في نفس العملية | R-F-003 | DONE |
 | R-F-006 | إصلاح استيرادات `rie` (نسبية) | ملفات `rie` الخمسة تُستورد | R-F-005 | DONE |
-| R-F-007 | تصفير بقية أعطال الاستيراد (`decision`, `diagnostics`, `core/tests`, ...) | `import_fail = 0` | R-F-002..006 | TODO |
+| R-F-007 | تصفير بقية أعطال الاستيراد (`decision`, `diagnostics`, `core/tests`, ...) | `import_fail = 0` — عدا `test_validation.py` الذي يتطلب بناء واجهة نواة فهو نطاق R-F-008 | R-F-002..006 | DONE |
 | R-F-008 | `test_validation.py`: إضافة واجهة توافق `AGOSKernel` في `core` (إضافة لا تعديل اختبار) | الاختبار يُجمع وينجح | R-W3-001 جزئياً | TODO |
 | R-F-009 | دعم الاختبارات غير المتزامنة (`pytest-asyncio`) + إعداد `asyncio_mode` | اختبارات `test_execution_implementation` تعمل | R-F-001 | DONE |
 | R-F-010 | كل الاختبارات الحالية خضراء؛ خط الأساس فارغ | `known_failures = []` | R-F-001..009 | TODO |

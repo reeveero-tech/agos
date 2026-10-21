@@ -1,14 +1,14 @@
 {
  "totals": {
-  "files": 516,
-  "lines": 86695,
+  "files": 517,
+  "lines": 86715,
   "functions": 5608,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 254,
-  "import_ok": 511,
-  "import_fail": 3
+  "import_ok": 514,
+  "import_fail": 1
  },
  "packages": {
   "__init__.py": {
@@ -305,8 +305,8 @@
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 1,
+   "import_fail": 0
   },
   "agos-kernel/decision-pipeline": {
    "files": 1,
@@ -331,15 +331,15 @@
    "import_fail": 0
   },
   "agos-kernel/diagnostics": {
-   "files": 1,
-   "lines": 6,
+   "files": 2,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 0,
-   "import_fail": 1
+   "import_ok": 2,
+   "import_fail": 0
   },
   "agos-kernel/discovery": {
    "files": 1,
@@ -970,7 +970,7 @@
   },
   "agos-kernel/shared": {
    "files": 1,
-   "lines": 52,
+   "lines": 60,
    "functions": 2,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -6158,6 +6158,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:crossdomain",
+    "K:diagnostics.runtime",
     "K:platform_runtime.runtime"
    ],
    "import_status": "OK"
@@ -6192,7 +6193,7 @@
     "K:shared"
    ],
    "imported_by": [],
-   "import_status": "ERR TypeError: type 'Result' is not subscriptable"
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/decision-pipeline/__init__.py",
@@ -6255,11 +6256,37 @@
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:diagnostics",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:diagnostics.runtime"
+   ],
    "imported_by": [
     "K:test_validation"
    ],
-   "import_status": "ERR ModuleNotFoundError: No module named 'diagnostics.runtime'"
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/diagnostics/runtime.py",
+   "module": "diagnostics.runtime",
+   "root": "kernel",
+   "lines": 12,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 0,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "crossdomain.runtime"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:diagnostics.runtime",
+   "resolved_imports": [
+    "K:crossdomain.runtime"
+   ],
+   "imported_by": [
+    "K:diagnostics"
+   ],
+   "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/discovery/__init__.py",
@@ -10457,7 +10484,7 @@
    "path": "agos/agos-kernel/shared/__init__.py",
    "module": "shared",
    "root": "kernel",
-   "lines": 52,
+   "lines": 60,
    "syntax_ok": true,
    "classes": 5,
    "functions": 2,

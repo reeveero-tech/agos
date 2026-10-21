@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 516
+- **files**: 517
 - **functions**: 5608
 - **hardcoded_paths**: 0
-- **import_fail**: 3
-- **import_ok**: 511
-- **lines**: 86695
+- **import_fail**: 1
+- **import_ok**: 514
+- **lines**: 86715
 - **not_imported_by_others**: 254
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -44,10 +44,10 @@
 | `agos-kernel/contracts` | 1 | 106 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/core` | 21 | 3260 | 146 | 0 | 0 | 21 | 0 | 13 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 0 | 1 | 1 |
+| `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision_pipeline` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/diagnostics` | 1 | 6 | 0 | 0 | 0 | 0 | 1 | 0 |
+| `agos-kernel/diagnostics` | 2 | 18 | 0 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/discovery` | 1 | 329 | 17 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/domains` | 3 | 565 | 37 | 0 | 0 | 3 | 0 | 0 |
@@ -105,7 +105,7 @@
 | `agos-kernel/sdk` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/sdks` | 3 | 545 | 66 | 9 | 0 | 3 | 0 | 1 |
 | `agos-kernel/self_hosting` | 1 | 379 | 16 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/shared` | 1 | 52 | 2 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/shared` | 1 | 60 | 2 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/simulation` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/skill-engine` | 1 | 209 | 17 | 1 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skill_engine` | 1 | 15 | 0 | 0 | 0 | 1 | 0 | 1 |
@@ -151,15 +151,7 @@
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1206 | 68 | 2 | 0 | 5 | 0 | 4 |
 
-## Import failures (3)
-
-### ERR TypeError — 1
-
-- `agos/agos-kernel/decision/__init__.py` — ERR TypeError: type 'Result' is not subscriptable
-
-### ERR ModuleNotFoundError — 1
-
-- `agos/agos-kernel/diagnostics/__init__.py` — ERR ModuleNotFoundError: No module named 'diagnostics.runtime'
+## Import failures (1)
 
 ### ERR ImportError — 1
 

@@ -5,6 +5,16 @@
 
 ## [غير مُصدَر]
 
+### 0009 — تصفير أعطال الاستيراد — 2026-10-21 — R-F-007
+**أُضيف**
+- `agos/agos-kernel/diagnostics/runtime.py`: الوحدة التي يستوردها `diagnostics/__init__.py` ولم تُلتزم قط؛ تعيد تصدير `SelfDiagnosticsRuntime` و`DiagnosticReport` من `crossdomain/runtime.py`، فالتنفيذ واحد والعنوانان صالحان.
+- `tests/test_import_health.py`: 3 اختبارات (استيراد `diagnostics` مع وحدة الهوية، استيراد `decision`، و`Result` العام مع التوافق الخلفي).
+
+**تغيّر**
+- `agos/agos-kernel/shared/__init__.py`: صار `Result` عاماً (`Generic[T]`)، فأصبح `Result[Decision]` في `decision` صالحاً. السلوك وقت التشغيل لم يتغير.
+
+**النتيجة:** أعطال الاستيراد 3 ← 1 (الباقي `test_validation` وهو نطاق R-F-008)، والاختبارات 133 ← 136 ناجحاً، وحزم L0 3 ← 1.
+
 ### 0008 — الاختبارات غير المتزامنة — 2026-10-21 — R-F-009
 **تغيّر**
 - `pyproject.toml`: `pytest-asyncio>=0.24` في مجموعة `dev`؛ `asyncio_mode = "auto"`.

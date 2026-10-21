@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 from uuid import uuid4
 
 
@@ -13,9 +13,17 @@ class ResultStatus(Enum):
     PENDING = "pending"
 
 
+T = TypeVar("T")
+
+
 @dataclass
-class Result:
-    """Base result type."""
+class Result(Generic[T]):
+    """Base result type.
+
+    Generic over its payload (R-F-007): ``Result[Decision]`` is a valid annotation
+    (used by ``decision.DecisionEngine``). Runtime behaviour is unchanged — ``data``
+    still accepts any value and ``Result(status=...)`` works as before.
+    """
     status: ResultStatus
     data: Optional[Any] = None
     error: Optional[str] = None
