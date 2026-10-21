@@ -4,10 +4,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from seos import MissionType
-from seos.workspace import WorkspaceManager, Workspace, SourceType
-from seos.tools import ToolRuntime, ExecutionEnvironment
-from seos.knowledge import ProjectAnalyzer, ProjectIntelligenceReport
+# R-F-005: relative imports, so the package works as `seos` and as `agos.seos`
+from .. import MissionType
+from ..workspace import WorkspaceManager, Workspace, SourceType
+from ..tools import ToolRuntime, ExecutionEnvironment
+from ..knowledge import ProjectAnalyzer, ProjectIntelligenceReport
 
 
 class PipelineStage(Enum):

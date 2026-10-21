@@ -3,11 +3,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List
 
-# Import all subsystems
-from cloud import CloudRuntime, APIGateway
-from cloud.distributed import DistributedRuntime
-from cloud.agents import AgentInvocationRuntime
-from cloud.models import UniversalModelPlatform
+# Import all subsystems (R-F-005: relative, so the package works as `cloud` and as `agos.cloud`)
+from . import CloudRuntime, APIGateway
+from .distributed import DistributedRuntime
+from .agents import AgentInvocationRuntime
+from .models import UniversalModelPlatform
 
 @dataclass
 class CloudPlatform:

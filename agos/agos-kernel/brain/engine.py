@@ -9,7 +9,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import sys
-sys.path.insert(0, str(_AGOS_KERNEL))
+# R-F-005: append (not insert at 0) and only once — inserting the kernel first on sys.path
+# at import time shadowed platform packages that share a name (e.g. agos/civilization).
+if str(_AGOS_KERNEL) not in sys.path:
+    sys.path.append(str(_AGOS_KERNEL))
 
 from knowledge.runtime import KnowledgeRuntime
 from memory.runtime import MemoryRuntime, MemoryType, MemoryPriority

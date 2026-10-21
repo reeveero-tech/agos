@@ -5,6 +5,20 @@
 
 ## [غير مُصدَر]
 
+### 0005 — مساحة الاسم الموحدة agos.* — 2026-10-21 — R-F-005
+**أُضيف**
+- `agos/__init__.py`: الحزمة `agos` — كل حزمة منصة كـ `agos.<name>`، والنواة كـ `agos.kernel` (نفس كائنات `agos_kernel`)، مع هوية وحدة واحدة في كل الاتجاهات (`agos.X` ⇄ `X` المجرد لغير المتصادمة)، و`platform_packages()`.
+- `agos/ecosystem/global_ecosystem.py`: اسم قابل للاستيراد لـ `ecosystem/global.py` (`global` كلمة محجوزة) — نفس الكائن.
+- `tests/test_namespace_identity.py`: 19 اختباراً لضمانات الهوية والترتيب والتصادم (R-F-003/004/005)، منها اختبار قبول R-F-005 مع قائمة أعطال معروفة لا تتسع.
+- مدخل `__init__.py` في `tools/audit/module_map.py`.
+
+**تغيّر**
+- `cloud/integration.py`, `seos/execution/__init__.py`: استيرادات نسبية.
+- 5 وحدات مكتبية في النواة (`core/autonomous`, `v2/runtime`, `brain/engine`, `civilization/runtime`, `platform_runtime/runtime`): `sys.path.insert(0, kernel)` ← إلحاق مشروط مرة واحدة (كان يحجب حزم المنصة المتسمّية بنفس الاسم).
+- 7 ملفات نواة (21 استيراداً): استيراد الأسماء المتصادمة التسعة عبر `agos_kernel.X` بدل الاسم المجرد.
+
+**النتيجة:** 132/137 وحدة منصة تُستورد كـ `agos.<name>` مع النواة في عملية واحدة (الباقي `rie` ← R-F-006)؛ 58/58 وحدة `agos_kernel` تعمل من `agos/` ومن `agos-kernel/`؛ الاختبارات 105 ← 124 ناجحاً؛ `main.py` يعمل.
+
 ### 0004 — أسماء قابلة للاستيراد للمجلدات ذات الشرطة — 2026-10-21 — R-F-004
 **أُضيف**
 - 7 حزم بديلة في `agos/agos-kernel/`: `event_engine`, `mission_engine`, `skill_engine`, `decision_pipeline`, `execution_context`, `resource_manager`, `state_store` — كل منها يوجّه `__path__` إلى المجلد الأصلي وينفّذ شيفرته (المجلد الأصلي مصدر الحقيقة، لم يُنقل ولم يُسمَّ).

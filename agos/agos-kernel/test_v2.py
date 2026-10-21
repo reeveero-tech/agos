@@ -11,10 +11,11 @@ sys.path.insert(0, str(_AGOS_KERNEL))
 from distributed import DistributedRuntime, ClusterState
 from marketplace import MarketplaceRuntime, MarketplaceAssetType
 from extension import ExtensionRuntime, ExtensionType
-from sdk import SDKGenerator, SDKLanguage
+# R-F-005: kernel packages sharing a name with agos/<name> are imported via agos_kernel
+from agos_kernel.sdk import SDKGenerator, SDKLanguage
 from certification import CertificationRuntime
 from laboratory import EvolutionLaboratory
-from observatory import CivilizationObservatory, ExpansionEngine
+from agos_kernel.observatory import CivilizationObservatory, ExpansionEngine
 from v2 import get_platform_v2
 
 
@@ -126,7 +127,7 @@ def test_certification():
     runtime = CertificationRuntime()
     
     # Certify
-    from sdk.runtime import CertificationType
+    from agos_kernel.sdk.runtime import CertificationType
     cert = runtime.certify("capability-1", CertificationType.CAPABILITY)
     print(f"✓ Certification created: {cert.id}")
     print(f"  Status: {cert.status.value}")

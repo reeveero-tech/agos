@@ -8,15 +8,17 @@ _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
 sys.path.insert(0, str(_AGOS_KERNEL))
 
-from execution import MissionCompiler, GraphRuntime, ParallelExecutor
-from execution import NodeType, EdgeType
+# R-F-005: kernel packages sharing a name with agos/<name> are imported via agos_kernel
+
+from agos_kernel.execution import MissionCompiler, GraphRuntime, ParallelExecutor
+from agos_kernel.execution import NodeType, EdgeType
 from verification import VerificationRuntime, VerificationType
 from approval import ApprovalRuntime, ApprovalSource
 from collaboration import HumanRuntime, CollaborationAction
 from organization import OrganizationRuntime, OrganizationType
-from governance import GovernanceRuntime, GovernanceDomain
+from agos_kernel.governance import GovernanceRuntime, GovernanceDomain
 from trust import TrustRuntime, TrustLevel
-from civilization import get_civilization
+from agos_kernel.civilization import get_civilization
 
 
 def test_mission_compiler():
@@ -82,7 +84,7 @@ def test_parallel_executor():
     # Create tasks
     tasks = []
     for i in range(3):
-        from execution.parallel import ExecutionTask
+        from agos_kernel.execution.parallel import ExecutionTask
         task = ExecutionTask(
             id=f"task-{i}",
             name=f"Task {i}",

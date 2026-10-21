@@ -5,7 +5,10 @@ from pathlib import Path as _AgosPath
 _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
-sys.path.insert(0, str(_AGOS_KERNEL))
+# R-F-005: append (not insert at 0) and only once — inserting the kernel first on sys.path
+# at import time shadowed platform packages that share a name (e.g. agos/civilization).
+if str(_AGOS_KERNEL) not in sys.path:
+    sys.path.append(str(_AGOS_KERNEL))
 
 from datetime import datetime
 from typing import Any, Dict, Optional
@@ -15,16 +18,17 @@ from knowledge.runtime import KnowledgeRuntime
 from memory.runtime import MemoryRuntime
 from brain.engine import EngineeringBrain
 from core.autonomous import AutonomousCore
-from execution.compiler import MissionCompiler
-from execution.graph import GraphRuntime
-from execution.parallel import ParallelExecutor
+# R-F-005: kernel packages sharing a name with agos/<name> are imported via agos_kernel
+from agos_kernel.execution.compiler import MissionCompiler
+from agos_kernel.execution.graph import GraphRuntime
+from agos_kernel.execution.parallel import ParallelExecutor
 from verification.runtime import VerificationRuntime
 from approval.runtime import ApprovalRuntime
 from collaboration.runtime import HumanRuntime
 from organization.runtime import OrganizationRuntime
-from governance.runtime import GovernanceRuntime
+from agos_kernel.governance.runtime import GovernanceRuntime
 from trust.runtime import TrustRuntime
-from civilization.runtime import CivilizationRuntime
+from agos_kernel.civilization.runtime import CivilizationRuntime
 
 # Import new subsystems
 from orchestrator.runtime import WorkspaceOrchestrator

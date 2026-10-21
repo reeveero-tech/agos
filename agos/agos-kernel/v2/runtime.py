@@ -5,7 +5,10 @@ from pathlib import Path as _AgosPath
 _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
-sys.path.insert(0, str(_AGOS_KERNEL))
+# R-F-005: append (not insert at 0) and only once — inserting the kernel first on sys.path
+# at import time shadowed platform packages that share a name (e.g. agos/civilization).
+if str(_AGOS_KERNEL) not in sys.path:
+    sys.path.append(str(_AGOS_KERNEL))
 
 from datetime import datetime
 from typing import Any, Dict, Optional
@@ -19,8 +22,9 @@ from marketplace.runtime import (
     PlanetaryKnowledgeFabric, MarketplaceRuntime, MarketplaceAssetType,
     ExtensionRuntime, ExtensionType
 )
-from sdk.runtime import SDKGenerator, SDKLanguage, CertificationRuntime, EvolutionLaboratory
-from observatory.runtime import CivilizationObservatory, ExpansionEngine
+# R-F-005: kernel packages sharing a name with agos/<name> are imported via agos_kernel
+from agos_kernel.sdk.runtime import SDKGenerator, SDKLanguage, CertificationRuntime, EvolutionLaboratory
+from agos_kernel.observatory.runtime import CivilizationObservatory, ExpansionEngine
 
 
 class CivilizationPlatformV2:

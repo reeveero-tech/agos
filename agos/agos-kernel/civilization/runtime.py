@@ -5,21 +5,25 @@ from pathlib import Path as _AgosPath
 _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[2])
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 import sys
-sys.path.insert(0, str(_AGOS_KERNEL))
+# R-F-005: append (not insert at 0) and only once — inserting the kernel first on sys.path
+# at import time shadowed platform packages that share a name (e.g. agos/civilization).
+if str(_AGOS_KERNEL) not in sys.path:
+    sys.path.append(str(_AGOS_KERNEL))
 
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 # Import all subsystems
-from execution.compiler import MissionCompiler, ExecutableMission
-from execution.graph import GraphRuntime, ExecutionGraph, NodeType, EdgeType
-from execution.parallel import ParallelExecutor, ExecutionTask
+# R-F-005: kernel packages sharing a name with agos/<name> are imported via agos_kernel
+from agos_kernel.execution.compiler import MissionCompiler, ExecutableMission
+from agos_kernel.execution.graph import GraphRuntime, ExecutionGraph, NodeType, EdgeType
+from agos_kernel.execution.parallel import ParallelExecutor, ExecutionTask
 from verification.runtime import VerificationRuntime, VerificationType
 from approval.runtime import ApprovalRuntime, ApprovalSource
 from collaboration.runtime import HumanRuntime, CollaborationAction
 from organization.runtime import OrganizationRuntime, OrganizationType
-from governance.runtime import GovernanceRuntime, GovernanceDomain
+from agos_kernel.governance.runtime import GovernanceRuntime, GovernanceDomain
 from trust.runtime import TrustRuntime, TrustLevel
 
 # Import existing subsystems

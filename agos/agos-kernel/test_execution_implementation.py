@@ -9,7 +9,9 @@ import asyncio
 import sys
 sys.path.insert(0, str(_AGOS_KERNEL))
 
-from execution.engine import (
+# R-F-005: kernel packages sharing a name with agos/<name> are imported via agos_kernel
+
+from agos_kernel.execution.engine import (
     ExecutionEngine, ExecutionStatus, ExecutionEvent,
     ExecutionGraph, ExecutionNode, ExecutionPolicy,
     get_engine
