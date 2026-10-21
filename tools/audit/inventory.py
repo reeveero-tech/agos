@@ -154,6 +154,55 @@ def analyse(path: Path) -> dict:
     return info
 
 
+EXTERNAL_TESTS = REPO / "tests"
+
+
+def _imports_of(tree: ast.AST) -> list[str]:
+    out: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            out += [a.name for a in node.names]
+        elif isinstance(node, ast.ImportFrom) and not node.level and node.module:
+            out.append(node.module)
+    return out
+
+
+def external_test_references(path: Path) -> dict:
+    """R-Q-010: what a test module under ``tests/`` exercises.
+
+    Collects (1) its own imports, (2) imports inside string constants that parse as Python
+    — the code it runs in fresh interpreters (``subprocess`` + ``python -c``), and (3)
+    ``"<name>.py"`` string constants naming a kernel top-level script it executes.
+    """
+    import textwrap
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    tree = ast.parse(text)
+    imports = _imports_of(tree)
+    scripts: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            value = node.value
+            if value.endswith(".py") and "/" not in value and (KERNEL / value).is_file():
+                scripts.append(value[:-3])
+            if "import" in value:
+                try:
+                    imports += _imports_of(ast.parse(textwrap.dedent(value)))
+                except SyntaxError:
+                    pass
+        elif isinstance(node, ast.JoinedStr):  # f-strings: parse the literal parts' code
+            # interpolations become a neutral placeholder so the code still parses
+            literal = "".join(v.value if isinstance(v, ast.Constant) and isinstance(v.value, str)
+                              else "None" for v in node.values)
+            if "import" in literal:
+                try:
+                    imports += _imports_of(ast.parse(textwrap.dedent(literal)))
+                except SyntaxError:
+                    pass
+    shown = path.relative_to(REPO) if path.is_relative_to(REPO) else path
+    return {"path": str(shown), "imports": sorted(set(imports)),
+            "scripts": sorted(set(scripts))}
+
+
 PROBE = r"""
 import sys, importlib, signal
 sys.path.insert(0, sys.argv[1])
@@ -228,6 +277,27 @@ def main():
     for i in infos:
         i["imported_by"] = sorted(importers.get(i["id"], []))
 
+    # R-Q-010: tests outside agos/ (tests/*.py). Recorded separately so the agos/ totals
+    # keep their meaning; module_register.py uses them for the "tested" column.
+    external = []
+    if EXTERNAL_TESTS.is_dir():
+        for tp in sorted(EXTERNAL_TESTS.glob("test_*.py")):
+            ref = external_test_references(tp)
+            pseudo = {"root": "kernel", "module": "", "id": "T:" + ref["path"]}
+            resolved = set()
+            for imp in ref["imports"]:
+                if imp == "agos":
+                    resolved.add("S:")  # agos/__init__.py
+                    continue
+                r = resolve(pseudo, imp)
+                if r:
+                    resolved.add(r)
+            resolved |= {"K:" + s for s in ref["scripts"] if "K:" + s in by_id}
+            ref["resolved"] = sorted(resolved)
+            external.append(ref)
+            for r in ref["resolved"]:
+                by_id[r].setdefault("tested_by_external", []).append(ref["path"])
+
     if not args.no_import:
         for n, i in enumerate(infos, 1):
             i["import_status"] = probe_import(i, args.python)
@@ -257,7 +327,7 @@ def main():
         for k, v in p.items():
             totals[k] += v
     (OUT_DIR / "inventory.json").write_text(json.dumps(
-        {"totals": totals, "packages": pkgs, "files": infos}, indent=1, ensure_ascii=False, default=dict))
+        {"totals": totals, "packages": pkgs, "files": infos, "external_tests": external}, indent=1, ensure_ascii=False, default=dict))
 
     md = ["# AGOS — Automated Inventory",
           "",

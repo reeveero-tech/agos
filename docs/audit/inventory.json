@@ -1500,6 +1500,11 @@
    "id": "S:",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_bootstrap.py",
+    "tests/test_namespace_identity.py",
+    "tests/test_packaging.py"
+   ],
    "import_status": "SKIP"
   },
   {
@@ -1843,6 +1848,9 @@
    "imported_by": [
     "K:core.tests.test_golden_runtime"
    ],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -1872,6 +1880,10 @@
    "imported_by": [
     "K:core.kernel",
     "K:main"
+   ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py",
+    "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
   },
@@ -2182,6 +2194,10 @@
    "imported_by": [
     "K:agos_runtime"
    ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py",
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -2286,6 +2302,9 @@
    "imported_by": [
     "K:main",
     "K:test_validation"
+   ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
    ],
    "import_status": "OK"
   },
@@ -2638,6 +2657,9 @@
    ],
    "imported_by": [
     "K:test_civilization"
+   ],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
    ],
    "import_status": "OK"
   },
@@ -4049,6 +4071,9 @@
     "K:civilization.knowledge_graph.relationships"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -5450,6 +5475,9 @@
    "id": "K:conftest",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_facade.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -5606,6 +5634,9 @@
     "K:test_integration",
     "K:test_knowledge_brain",
     "K:test_validation"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
   },
@@ -5929,6 +5960,9 @@
    "id": "K:core.seal",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -6269,6 +6303,9 @@
     "K:diagnostics.runtime",
     "K:platform_runtime.runtime"
    ],
+   "tested_by_external": [
+    "tests/test_import_health.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -6301,6 +6338,9 @@
     "K:shared"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_import_health.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -6373,6 +6413,10 @@
     "K:core.kernel",
     "K:test_validation"
    ],
+   "tested_by_external": [
+    "tests/test_import_health.py",
+    "tests/test_kernel_facade.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -6428,6 +6472,9 @@
    "imported_by": [
     "K:diagnostics"
    ],
+   "tested_by_external": [
+    "tests/test_import_health.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -6459,6 +6506,9 @@
    ],
    "imported_by": [
     "K:bootstrapper"
+   ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
    ],
    "import_status": "OK"
   },
@@ -8133,6 +8183,9 @@
     "K:registry.provider",
     "K:resolvers"
    ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -8416,6 +8469,9 @@
     "K:capabilities"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -8608,6 +8664,9 @@
     "K:resolvers",
     "K:test_validation"
    ],
+   "tested_by_external": [
+    "tests/test_kernel_facade.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -8658,6 +8717,9 @@
    "resolved_imports": [],
    "imported_by": [
     "K:bootstrapper"
+   ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
    ],
    "import_status": "OK"
   },
@@ -9177,6 +9239,9 @@
     "K:test_integration",
     "K:test_validation"
    ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -9486,6 +9551,10 @@
     "K:decision",
     "K:resolvers"
    ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py",
+    "tests/test_kernel_facade.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -9512,6 +9581,10 @@
     "K:bootstrapper",
     "K:decision",
     "K:resolvers"
+   ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py",
+    "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
   },
@@ -9601,6 +9674,9 @@
    "imported_by": [
     "K:bootstrapper",
     "K:pipeline"
+   ],
+   "tested_by_external": [
+    "tests/test_bootstrap.py"
    ],
    "import_status": "OK"
   },
@@ -10655,6 +10731,9 @@
     "K:decision",
     "K:interfaces"
    ],
+   "tested_by_external": [
+    "tests/test_import_health.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -11668,6 +11747,9 @@
     "K:providers"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_facade.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -11974,6 +12056,9 @@
     "S:civilization.optimization",
     "S:civilization.release"
    ],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -12093,6 +12178,9 @@
    "id": "S:cli",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_packaging.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -12200,6 +12288,9 @@
     "S:cloud"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -13061,6 +13152,9 @@
     "S:ecosystem"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -14857,6 +14951,9 @@
     "S:rie"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_rie_pipeline.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -14884,6 +14981,9 @@
     "S:rie"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_rie_pipeline.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15192,6 +15292,9 @@
     "S:seos"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_namespace_identity.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15275,6 +15378,189 @@
    ],
    "imported_by": [],
    "import_status": "OK"
+  }
+ ],
+ "external_tests": [
+  {
+   "path": "tests/test_audit_tools.py",
+   "imports": [
+    "importlib.util",
+    "json",
+    "pathlib"
+   ],
+   "scripts": [],
+   "resolved": []
+  },
+  {
+   "path": "tests/test_bootstrap.py",
+   "imports": [
+    "agos",
+    "agos.kernel.agos_runtime",
+    "agos_kernel.agos_runtime",
+    "agos_runtime",
+    "bootstrapper",
+    "capabilities",
+    "discovery",
+    "flask",
+    "interfaces",
+    "json",
+    "mission_engine",
+    "os",
+    "pathlib",
+    "providers",
+    "pytest",
+    "registry.capability",
+    "registry.provider",
+    "resolvers",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [
+    "main"
+   ],
+   "resolved": [
+    "K:agos_runtime",
+    "K:bootstrapper",
+    "K:capabilities",
+    "K:discovery",
+    "K:interfaces",
+    "K:main",
+    "K:mission_engine",
+    "K:providers",
+    "K:registry.capability",
+    "K:registry.provider",
+    "K:resolvers",
+    "S:"
+   ]
+  },
+  {
+   "path": "tests/test_import_health.py",
+   "imports": [
+    "crossdomain.runtime",
+    "decision",
+    "diagnostics",
+    "diagnostics.runtime",
+    "pathlib",
+    "shared",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:crossdomain.runtime",
+    "K:decision",
+    "K:diagnostics",
+    "K:diagnostics.runtime",
+    "K:shared"
+   ]
+  },
+  {
+   "path": "tests/test_kernel_facade.py",
+   "imports": [
+    "agos_runtime",
+    "core",
+    "diagnostics",
+    "flask",
+    "json",
+    "mission",
+    "pathlib",
+    "pytest",
+    "registry.capability",
+    "registry.provider",
+    "shutil",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [
+    "conftest",
+    "test_validation"
+   ],
+   "resolved": [
+    "K:agos_runtime",
+    "K:conftest",
+    "K:core",
+    "K:diagnostics",
+    "K:mission",
+    "K:registry.capability",
+    "K:registry.provider",
+    "K:test_validation"
+   ]
+  },
+  {
+   "path": "tests/test_namespace_identity.py",
+   "imports": [
+    "agos",
+    "agos.civilization",
+    "agos.cloud.integration",
+    "agos.ecosystem.global_ecosystem",
+    "agos.kernel",
+    "agos.kernel.bootstrapper",
+    "agos.kernel.civilization",
+    "agos.kernel.civilization.knowledge_graph",
+    "agos.kernel.core.seal",
+    "agos.seos.execution",
+    "agos_kernel",
+    "agos_kernel.civilization",
+    "agos_kernel.civilization.knowledge_graph",
+    "agos_kernel.core.seal",
+    "bootstrapper",
+    "civilization",
+    "core.seal",
+    "importlib",
+    "json",
+    "pathlib",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_kernel",
+    "K:bootstrapper",
+    "K:civilization",
+    "K:civilization.knowledge_graph",
+    "K:core.seal",
+    "S:",
+    "S:civilization",
+    "S:cloud.integration",
+    "S:ecosystem.global_ecosystem",
+    "S:seos.execution"
+   ]
+  },
+  {
+   "path": "tests/test_packaging.py",
+   "imports": [
+    "agos",
+    "agos.cli",
+    "ast",
+    "pathlib",
+    "sys",
+    "tomllib"
+   ],
+   "scripts": [],
+   "resolved": [
+    "S:",
+    "S:cli"
+   ]
+  },
+  {
+   "path": "tests/test_rie_pipeline.py",
+   "imports": [
+    "agos.rie.adapters",
+    "agos.rie.application",
+    "pytest",
+    "shutil",
+    "subprocess"
+   ],
+   "scripts": [],
+   "resolved": [
+    "S:rie.adapters",
+    "S:rie.application"
+   ]
   }
  ]
 }

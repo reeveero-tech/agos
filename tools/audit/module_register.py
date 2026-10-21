@@ -6,7 +6,8 @@ Liveness levels (ADR-0003):
     L0  dead       — at least one file fails to import
     L1  importable — every file imports
     L2  connected  — reachable from a runtime entry point (boot path / CLI)
-    L3  tested     — exercised by at least one test module
+    L3  tested     — exercised by at least one test module (in agos/ or, since R-Q-010,
+                     tests/*.py — including code those tests run in fresh interpreters)
     L4  real       — L2 + L3 and zero stub functions
 
 Run after tools/audit/inventory.py.
@@ -66,7 +67,8 @@ def main() -> int:
         imp_ok = all(f.get("import_status", "OK") in ("OK", "SKIP") for f in fs)
         connected = any(f["id"] in reach for f in src) if src else False
         tested = any(any(is_test(by_id[x]) for x in f["imported_by"] if x in by_id) for f in src) or \
-            (key == "agos-kernel" and any(is_test(f) for f in fs))
+            (key == "agos-kernel" and any(is_test(f) for f in fs)) or \
+            any(f.get("tested_by_external") for f in src)  # R-Q-010: tests/*.py
         stubs = sum(f["stub_functions"] for f in fs)
         if not imp_ok:
             lvl = "L0"

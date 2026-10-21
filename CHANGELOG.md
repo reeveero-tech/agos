@@ -5,6 +5,16 @@
 
 ## [غير مُصدَر]
 
+### 0012 — سجل الوحدات يرى اختبارات tests/ — 2026-10-21 — R-Q-010
+**أُضيف**
+- `tools/audit/inventory.py`: الدالة `external_test_references()` والقسم `external_tests` في `inventory.json`. يُسجَّل في الملفات الحقل `tested_by_external`. تُقرأ الاستيرادات من ثلاثة مواضع: ملف الاختبار نفسه، وسلاسل الكود التي يشغّلها في مفسّر مستقل (ومنها f-strings)، وأسماء سكربتات النواة التي ينفّذها مثل `main.py`.
+- `tests/test_audit_tools.py`: اختباران.
+
+**تغيّر**
+- `tools/audit/module_register.py`: عمود «مختبَر» يحتسب `tests/*.py`. لم تتغير مجاميع الجرد (521 ملفاً داخل `agos/`).
+
+**النتيجة:** L4 صارت 12 بعد أن كانت 4، وL2 صارت 7 بعد أن كانت 15. صعدت إلى L4 الحزم: `bootstrapper`، و`agos_runtime`، و`discovery`، و`registry`، و`resolvers`، و`interfaces`، و`shared`، و`mission_engine`.
+
 ### 0011 — واجهة النواة AGOSKernel — 2026-10-21 — R-F-008
 **أُضيف**
 - `agos/agos-kernel/core/kernel.py`:
