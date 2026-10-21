@@ -14,6 +14,17 @@ import pytest
 from pathlib import Path
 import re
 
+# R-Q-009: the checks below use AST scanners (see security_scan.py and the canaries in
+# tests/test_security_scanners.py) instead of raw text matching.
+try:
+    from .security_scan import (find_dynamic_code_calls, find_hardcoded_secrets,
+                                find_sql_string_building, find_unsafe_dynamic_imports,
+                                iter_sources)
+except ImportError:  # executed outside the package (e.g. core/tests on sys.path)
+    from security_scan import (find_dynamic_code_calls, find_hardcoded_secrets,
+                               find_sql_string_building, find_unsafe_dynamic_imports,
+                               iter_sources)
+
 
 class TestKernelSecurity:
     """Golden tests for kernel security."""
@@ -25,92 +36,38 @@ class TestKernelSecurity:
     
     def test_no_hardcoded_secrets(self, kernel_dir):
         """Kernel must not contain hardcoded secrets."""
-        secret_patterns = [
-            r'password\s*=\s*["\'][^"\']+["\']',
-            r'api_key\s*=\s*["\'][^"\']+["\']',
-            r'secret\s*=\s*["\'][^"\']+["\']',
-            r'token\s*=\s*["\'][^"\']+["\']',
-            r'private_key\s*=\s*["\'][^"\']+["\']',
-        ]
-        
-        violations = []
-        
-        for py_file in kernel_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
-                continue
-            
-            with open(py_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            for pattern in secret_patterns:
-                matches = re.findall(pattern, content, re.IGNORECASE)
-                for match in matches:
-                    # Filter out example/placeholder values
-                    if not any(p in match.lower() for p in ['example', 'placeholder', 'your_', 'changeme']):
-                        violations.append(f"{py_file}: {match[:50]}...")
+        # Credential-like names bound to string literals (assignments, attributes,
+        # keyword arguments, dict entries); placeholders/test values and enum labels such
+        # as ``API_KEY = "api_key"`` are not secrets. Sample vulnerable code held *as data*
+        # (e.g. by the security-scan skill) is not executed and is not a secret.
+        violations = [str(f) for path, tree in iter_sources(kernel_dir)
+                      for f in find_hardcoded_secrets(path, tree)]
         
         assert len(violations) == 0, \
             f"Hardcoded secrets found:\n" + "\n".join(violations[:5])
     
     def test_no_eval_usage(self, kernel_dir):
         """Kernel must not use eval()."""
-        violations = []
-        
-        for py_file in kernel_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
-                continue
-            
-            with open(py_file, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-            
-            for i, line in enumerate(lines, 1):
-                if 'eval(' in line and not line.strip().startswith('#'):
-                    violations.append(f"{py_file}:{i}: {line.strip()}")
+        violations = [str(f) for path, tree in iter_sources(kernel_dir)
+                      for f in find_dynamic_code_calls(path, tree, ["eval"])]
         
         assert len(violations) == 0, \
             f"eval() usage found:\n" + "\n".join(violations[:5])
     
     def test_no_exec_usage(self, kernel_dir):
         """Kernel must not use exec()."""
-        violations = []
-        
-        for py_file in kernel_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
-                continue
-            
-            with open(py_file, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-            
-            for i, line in enumerate(lines, 1):
-                if 'exec(' in line and not line.strip().startswith('#'):
-                    violations.append(f"{py_file}:{i}: {line.strip()}")
+        violations = [str(f) for path, tree in iter_sources(kernel_dir)
+                      for f in find_dynamic_code_calls(path, tree, ["exec"])]
         
         assert len(violations) == 0, \
             f"exec() usage found:\n" + "\n".join(violations[:5])
     
     def test_no_sql_injection_patterns(self, kernel_dir):
         """Kernel should avoid SQL injection vulnerabilities."""
-        sql_patterns = [
-            r'f["\'].*SELECT.*{',
-            r'f["\'].*INSERT.*{',
-            r'f["\'].*UPDATE.*{',
-            r'f["\'].*DELETE.*{',
-        ]
+        # SQL statements assembled from runtime values (f-string, %, .format, +).
+        violations = [str(f) for path, tree in iter_sources(kernel_dir)
+                      for f in find_sql_string_building(path, tree)]
         
-        violations = []
-        
-        for py_file in kernel_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
-                continue
-            
-            with open(py_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            for pattern in sql_patterns:
-                if re.search(pattern, content, re.IGNORECASE):
-                    violations.append(f"{py_file}: contains SQL injection pattern")
-        
-        # Warning level check
         if len(violations) > 0:
             pytest.fail(f"SQL injection patterns found:\n" + "\n".join(violations[:3]))
 
@@ -120,21 +77,11 @@ class TestSecurityBestPractices:
     
     def test_imports_are_safe(self):
         """Kernel should use safe import patterns."""
+        # Dynamic imports are allowed only when the module name is fixed in the source or
+        # confined to a fixed package prefix (plugin discovery: f"capabilities.{name}").
         kernel_dir = Path(str(_AGOS_KERNEL))
-        
-        unsafe_patterns = ['__import__', 'importlib.import_module(']
-        violations = []
-        
-        for py_file in kernel_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
-                continue
-            
-            with open(py_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            for pattern in unsafe_patterns:
-                if pattern in content:
-                    violations.append(f"{py_file}: uses {pattern}")
+        violations = [str(f) for path, tree in iter_sources(kernel_dir)
+                      for f in find_unsafe_dynamic_imports(path, tree)]
         
         assert len(violations) == 0, \
             f"Unsafe import patterns:\n" + "\n".join(violations[:5])

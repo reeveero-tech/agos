@@ -1,12 +1,3 @@
 {
- "known_failures": [],
- "revealed": {
-  "agos.agos-kernel.core.tests.test_golden_compatibility.TestDependencyCompatibility::test_kernel_uses_only_standard_library_or_declared": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): تبعيات خارجية غير معلنة — الإصلاح في R-Q-009",
-  "agos.agos-kernel.core.tests.test_golden_registry.TestRegistryIntegrity::test_registry_has_version": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): مدخلات السجل registry/ بلا حقل version — الإصلاح في R-Q-009",
-  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_eval_usage": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): استخدامات eval() حقيقية في النواة — الإصلاح في R-Q-009",
-  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_exec_usage": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): استخدامات exec() حقيقية في النواة — الإصلاح في R-Q-009",
-  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_hardcoded_secrets": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): كلمات مرور/مفاتيح وهمية في ملفات الاختبار تطابق نمط الأسرار — الإصلاح في R-Q-009",
-  "agos.agos-kernel.core.tests.test_golden_security.TestKernelSecurity::test_no_sql_injection_patterns": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): أنماط بناء SQL بالنصوص — الإصلاح في R-Q-009",
-  "agos.agos-kernel.core.tests.test_golden_security.TestSecurityBestPractices::test_imports_are_safe": "كُشف بواسطة R-F-002 (كان الاختبار يفحص مساراً غير موجود فينجح فارغاً): استيرادات غير آمنة (pickle/subprocess…) — الإصلاح في R-Q-009"
- }
+ "known_failures": []
 }

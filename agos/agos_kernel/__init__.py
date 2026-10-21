@@ -42,6 +42,19 @@ def _find_kernel_dir() -> Path:
     return here
 
 
+def _read_literal_metadata(path: Path) -> dict:
+    """``__doc__`` and literal top-level ``NAME = <constant>`` assignments of ``path``."""
+    import ast
+    tree = ast.parse(path.read_text(encoding="utf-8"), str(path))
+    meta: dict = {"__doc__": ast.get_docstring(tree, clean=False)}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    meta[target.id] = node.value.value
+    return meta
+
+
 KERNEL_DIR = _find_kernel_dir()
 _PREFIX = __name__ + "."
 
@@ -50,8 +63,9 @@ __version__ = "0.0.0"
 __phase__ = None
 _kernel_init = KERNEL_DIR / "__init__.py"
 if _kernel_init.is_file():
-    _meta: dict = {}
-    exec(compile(_kernel_init.read_text(encoding="utf-8"), str(_kernel_init), "exec"), _meta)  # noqa: S102 - trusted repo file
+    # R-Q-009: read the metadata statically (literal assignments + docstring) instead of
+    # executing the file — same values, no code execution.
+    _meta = _read_literal_metadata(_kernel_init)
     __version__ = _meta.get("__version__", __version__)
     __phase__ = _meta.get("__phase__", __phase__)
     __doc__ = (__doc__ or "") + "\nKernel: " + (_meta.get("__doc__") or "").strip()

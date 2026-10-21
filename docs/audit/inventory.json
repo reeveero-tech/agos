@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 522,
-  "lines": 87497,
-  "functions": 5663,
+  "files": 523,
+  "lines": 87800,
+  "functions": 5684,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 255,
-  "import_ok": 520,
+  "not_imported_by_others": 254,
+  "import_ok": 521,
   "import_fail": 0
  },
  "packages": {
@@ -57,7 +57,7 @@
   },
   "agos-kernel/agos_kernel": {
    "files": 1,
-   "lines": 11,
+   "lines": 14,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -68,8 +68,8 @@
   },
   "agos-kernel/agos_runtime": {
    "files": 1,
-   "lines": 133,
-   "functions": 15,
+   "lines": 139,
+   "functions": 16,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -287,14 +287,14 @@
    "import_fail": 0
   },
   "agos-kernel/core": {
-   "files": 23,
-   "lines": 3459,
-   "functions": 163,
+   "files": 24,
+   "lines": 3675,
+   "functions": 180,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 15,
-   "import_ok": 23,
+   "import_ok": 24,
    "import_fail": 0
   },
   "agos-kernel/crossdomain": {
@@ -332,7 +332,7 @@
   },
   "agos-kernel/decision_pipeline": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -420,7 +420,7 @@
   },
   "agos-kernel/event_engine": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -475,7 +475,7 @@
   },
   "agos-kernel/execution_context": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -706,7 +706,7 @@
   },
   "agos-kernel/mission_engine": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -871,12 +871,12 @@
   },
   "agos-kernel/registry": {
    "files": 3,
-   "lines": 80,
-   "functions": 13,
+   "lines": 123,
+   "functions": 15,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 3,
    "import_fail": 0
   },
@@ -915,7 +915,7 @@
   },
   "agos-kernel/resource_manager": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1014,7 +1014,7 @@
   },
   "agos-kernel/skill_engine": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1047,7 +1047,7 @@
   },
   "agos-kernel/state_store": {
    "files": 1,
-   "lines": 15,
+   "lines": 18,
    "functions": 0,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1135,8 +1135,8 @@
   },
   "agos_kernel": {
    "files": 1,
-   "lines": 158,
-   "functions": 9,
+   "lines": 172,
+   "functions": 10,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1832,14 +1832,16 @@
    "path": "agos/agos-kernel/agos_kernel/__init__.py",
    "module": "agos_kernel",
    "root": "kernel",
-   "lines": 11,
+   "lines": 14,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -1857,10 +1859,10 @@
    "path": "agos/agos-kernel/agos_runtime/__init__.py",
    "module": "agos_runtime",
    "root": "kernel",
-   "lines": 133,
+   "lines": 139,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 15,
+   "functions": 16,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -1869,13 +1871,15 @@
     "io",
     "dataclasses",
     "typing",
-    "bootstrapper"
+    "bootstrapper",
+    "registry"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:agos_runtime",
    "resolved_imports": [
-    "K:bootstrapper"
+    "K:bootstrapper",
+    "K:registry"
    ],
    "imported_by": [
     "K:core.kernel",
@@ -1883,7 +1887,8 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
-    "tests/test_kernel_facade.py"
+    "tests/test_kernel_facade.py",
+    "tests/test_registry_manifest.py"
    ],
    "import_status": "OK"
   },
@@ -6010,10 +6015,40 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/core/tests/security_scan.py",
+   "module": "core.tests.security_scan",
+   "root": "kernel",
+   "lines": 288,
+   "syntax_ok": true,
+   "classes": 1,
+   "functions": 17,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "ast",
+    "re",
+    "sys",
+    "tomllib",
+    "dataclasses",
+    "pathlib",
+    "typing"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:core.tests.security_scan",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:core.tests.test_golden_compatibility",
+    "K:core.tests.test_golden_security"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/core/tests/test_golden_compatibility.py",
    "module": "core.tests.test_golden_compatibility",
    "root": "kernel",
-   "lines": 113,
+   "lines": 94,
    "syntax_ok": true,
    "classes": 3,
    "functions": 4,
@@ -6024,12 +6059,16 @@
     "pathlib",
     "pytest",
     "sys",
-    "pathlib"
+    "pathlib",
+    "core.tests.security_scan",
+    "security_scan"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.tests.test_golden_compatibility",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:core.tests.security_scan"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -6194,7 +6233,7 @@
    "path": "agos/agos-kernel/core/tests/test_golden_security.py",
    "module": "core.tests.test_golden_security",
    "root": "kernel",
-   "lines": 161,
+   "lines": 108,
    "syntax_ok": true,
    "classes": 2,
    "functions": 7,
@@ -6205,12 +6244,16 @@
     "pathlib",
     "pytest",
     "pathlib",
-    "re"
+    "re",
+    "core.tests.security_scan",
+    "security_scan"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.tests.test_golden_security",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:core.tests.security_scan"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -6398,14 +6441,16 @@
    "path": "agos/agos-kernel/decision_pipeline/__init__.py",
    "module": "decision_pipeline",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -6939,14 +6984,16 @@
    "path": "agos/agos-kernel/event_engine/__init__.py",
    "module": "event_engine",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -7250,14 +7297,16 @@
    "path": "agos/agos-kernel/execution_context/__init__.py",
    "module": "execution_context",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -8728,14 +8777,16 @@
    "path": "agos/agos-kernel/mission_engine/__init__.py",
    "module": "mission_engine",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -9538,18 +9589,22 @@
    "path": "agos/agos-kernel/registry/__init__.py",
    "module": "registry",
    "root": "kernel",
-   "lines": 1,
+   "lines": 44,
    "syntax_ok": true,
    "classes": 0,
-   "functions": 0,
+   "functions": 2,
    "stub_functions": 0,
    "abstract_functions": 0,
-   "imports": [],
+   "imports": [
+    "typing"
+   ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:registry",
    "resolved_imports": [],
-   "imported_by": [],
+   "imported_by": [
+    "K:agos_runtime"
+   ],
    "import_status": "OK"
   },
   {
@@ -9733,14 +9788,16 @@
    "path": "agos/agos-kernel/resource_manager/__init__.py",
    "module": "resource_manager",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -10849,14 +10906,16 @@
    "path": "agos/agos-kernel/skill_engine/__init__.py",
    "module": "skill_engine",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -11146,14 +11205,16 @@
    "path": "agos/agos-kernel/state_store/__init__.py",
    "module": "state_store",
    "root": "kernel",
-   "lines": 15,
+   "lines": 18,
    "syntax_ok": true,
    "classes": 0,
    "functions": 0,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
-    "pathlib"
+    "pathlib",
+    "importlib.machinery",
+    "sys"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -12039,10 +12100,10 @@
    "path": "agos/agos_kernel/__init__.py",
    "module": "agos_kernel",
    "root": "src",
-   "lines": 158,
+   "lines": 172,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 9,
+   "functions": 10,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -12053,7 +12114,8 @@
     "importlib.util",
     "os",
     "sys",
-    "pathlib"
+    "pathlib",
+    "ast"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -15599,6 +15661,20 @@
    ]
   },
   {
+   "path": "tests/test_registry_manifest.py",
+   "imports": [
+    "agos_runtime",
+    "json",
+    "pathlib",
+    "subprocess",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime"
+   ]
+  },
+  {
    "path": "tests/test_rie_pipeline.py",
    "imports": [
     "agos.rie.adapters",
@@ -15612,6 +15688,24 @@
     "S:rie.adapters",
     "S:rie.application"
    ]
+  },
+  {
+   "path": "tests/test_security_scanners.py",
+   "imports": [
+    "ast",
+    "builtins",
+    "importlib",
+    "importlib.util",
+    "inspect",
+    "io",
+    "leftpad_unknown",
+    "pathlib",
+    "pytest",
+    "requests",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": []
   }
  ]
 }

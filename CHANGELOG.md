@@ -5,6 +5,25 @@
 
 ## [غير مُصدَر]
 
+### 0014 — إغلاق الإخفاقات المكشوفة وفحوص أمنية بـAST — 2026-10-21 — R-Q-009
+**أُصلح**
+- أُزيل `exec(compile(...))` من 9 حزم مستعارة. صارت تحمّل الكود بـ`importlib.machinery.SourceFileLoader(...).exec_module(...)`. الحزم هي:
+  - `event_engine` و`mission_engine` و`skill_engine` و`decision_pipeline` و`execution_context` و`resource_manager` و`state_store`؛
+  - `agos-kernel/agos_kernel`؛
+  - `tools/packaging/agos_kernel_installed.py`.
+- `agos/agos_kernel/__init__.py`: الدالة `_read_literal_metadata()` تقرأ `__version__` و`__phase__` و`__doc__` بتحليل AST بدلاً من `exec`.
+
+**أُضيف**
+- `agos/agos-kernel/core/tests/security_scan.py`: فاحصات AST للكود الديناميكي، والأسرار الثابتة، وبناء SQL بالسلاسل، والاستيراد الديناميكي غير الآمن، والاستيرادات غير المعلنة.
+- `tests/test_security_scanners.py`: 54 كناري تثبت أن الفاحصات تلتقط الأنماط الحقيقية ولا تخطئ في الإيجابيات الكاذبة المعروفة.
+- `registry.build_manifest()` و`KernelRuntime.manifest()` و`tools/audit/registry_manifest.py` (فيه الخيار `--check`) والملف `registry/manifest.json`: بيان مُرقَّم وحتمي للسجلات.
+- `tests/test_registry_manifest.py`: يتحقق أن البيان المُلتزَم يطابق إقلاعاً جديداً، فلا يمكن أن يتقادم.
+
+**تغيّر**
+- `test_golden_security.py` و`test_golden_compatibility.py`: الاختبارات بأسمائها نفسها، لكنها تستخدم الفاحصات الجديدة. اختبار التبعيات صار أشد: يفشل عند أي استيراد غير معلن، وكان يقبل حتى 5.
+
+**النتيجة:** الاختبارات 244 ناجحاً و0 فاشلة. خط الأساس: 0 إخفاقات معروفة و0 مكشوفة.
+
 ### 0013 — خط الأساس بلا إخفاقات معروفة — 2026-10-21 — R-F-010
 **أُضيف**
 - `agos/agos-kernel/conftest.py`:

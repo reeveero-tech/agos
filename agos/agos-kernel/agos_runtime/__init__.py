@@ -104,6 +104,12 @@ class KernelRuntime:
             "parameters": {"url": url, "branch": branch},
         })
 
+    def manifest(self) -> Dict[str, Any]:
+        """Versioned snapshot of the registries (``registry.build_manifest``, R-Q-009)."""
+        from registry import build_manifest
+        return build_manifest(self.capability_registry, self.provider_registry,
+                              self.result.kernel_version)
+
     def summary(self) -> Dict[str, Any]:
         return {
             "ready": self.ready,

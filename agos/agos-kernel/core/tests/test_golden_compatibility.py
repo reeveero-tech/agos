@@ -76,37 +76,18 @@ class TestDependencyCompatibility:
     
     def test_kernel_uses_only_standard_library_or_declared(self):
         """Kernel should use only standard library or declared dependencies."""
+        # R-Q-009: the full stdlib (sys.stdlib_module_names), first-party names and the
+        # dependencies declared in pyproject.toml; both ``import x`` and ``from x import``.
+        # Imports guarded by ``try/except ImportError`` are optional. Stricter than before:
+        # any undeclared third-party import fails (the old check tolerated up to 5).
+        try:
+            from .security_scan import allowed_import_roots, find_undeclared_imports, iter_sources
+        except ImportError:
+            from security_scan import allowed_import_roots, find_undeclared_imports, iter_sources
         kernel_dir = Path(str(_AGOS_KERNEL))
+        allowed = allowed_import_roots(_AGOS_ROOT.parent)
+        violations = [str(f) for path, tree in iter_sources(kernel_dir)
+                      for f in find_undeclared_imports(path, tree, allowed)]
         
-        # List of standard library modules
-        stdlib = {
-            'os', 'sys', 'time', 'datetime', 'json', 're', 'math',
-            'random', 'hashlib', 'pathlib', 'typing', 'collections',
-            'contextlib', 'functools', 'itertools', 'abc', 'copy',
-            'dataclasses', 'enum', 'uuid', 'base64', 'binascii',
-        }
-        
-        violations = []
-        
-        for py_file in kernel_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
-                continue
-            
-            with open(py_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            # Check for imports
-            for line in content.split('\n'):
-                if line.strip().startswith('import '):
-                    module = line.strip().split()[1].split('.')[0]
-                    if module not in stdlib and not module.startswith('agos_'):
-                        violations.append(f"{py_file}: imports {module}")
-        
-        # Allow third-party imports that are reasonable
-        allowed_third_party = {'pytest', 'numpy', 'pandas'}
-        violations = [v for v in violations if not any(a in v for a in allowed_third_party)]
-        
-        # This is a warning-level check, not a hard failure
-        # Some third-party deps might be necessary
-        if len(violations) > 5:
-            pytest.fail(f"Too many third-party imports: {violations[:5]}...")
+        if violations:
+            pytest.fail(f"Undeclared third-party imports: {violations[:5]}")

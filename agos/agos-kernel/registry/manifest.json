@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "version": "0.2.0",
+  "generated_by": "tools/audit/registry_manifest.py",
+  "capabilities": [
+    {
+      "name": "RepositoryAnalysis",
+      "version": "1.0.0",
+      "class": "capabilities.RepositoryAnalysisCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository",
+        "GenerateDNA"
+      ]
+    }
+  ],
+  "providers": [
+    {
+      "name": "LocalRepositoryProvider",
+      "version": "1.0.0",
+      "class": "providers.LocalRepositoryProvider",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    }
+  ]
+}
