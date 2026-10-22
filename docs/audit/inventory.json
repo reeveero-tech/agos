@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 529,
-  "lines": 92899,
-  "functions": 5859,
+  "files": 530,
+  "lines": 93226,
+  "functions": 5871,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 253,
-  "import_ok": 527,
+  "import_ok": 528,
   "import_fail": 0
  },
  "packages": {
@@ -167,8 +167,8 @@
   },
   "agos-kernel/capabilities": {
    "files": 10,
-   "lines": 2717,
-   "functions": 159,
+   "lines": 2736,
+   "functions": 160,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -188,14 +188,14 @@
    "import_fail": 0
   },
   "agos-kernel/civilization": {
-   "files": 99,
-   "lines": 23757,
-   "functions": 1292,
+   "files": 100,
+   "lines": 24065,
+   "functions": 1303,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 35,
-   "import_ok": 99,
+   "import_ok": 100,
    "import_fail": 0
   },
   "agos-kernel/civilization_packs": {
@@ -2289,10 +2289,10 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 307,
+   "lines": 326,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 12,
+   "functions": 13,
    "stub_functions": 3,
    "abstract_functions": 0,
    "imports": [
@@ -2307,6 +2307,7 @@
     "interfaces",
     "capabilities.foundation_extra",
     "providers",
+    "agos_kernel.civilization.knowledge_graph.analysis_loader",
     "stack_detection",
     "stack_detection",
     "stack_detection",
@@ -2321,6 +2322,7 @@
    "id": "K:capabilities",
    "resolved_imports": [
     "K:capabilities.foundation_extra",
+    "K:civilization.knowledge_graph.analysis_loader",
     "K:contracts",
     "K:interfaces",
     "K:providers",
@@ -2335,6 +2337,7 @@
     "tests/test_clone_safety.py",
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
+    "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
     "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
@@ -4160,7 +4163,42 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_namespace_identity.py"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/civilization/knowledge_graph/analysis_loader.py",
+   "module": "civilization.knowledge_graph.analysis_loader",
+   "root": "kernel",
+   "lines": 306,
+   "syntax_ok": true,
+   "classes": 1,
+   "functions": 11,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "typing",
+    "agos_kernel.civilization.knowledge_graph.knowledge_graph",
+    "agos_kernel.civilization.knowledge_graph.nodes.base",
+    "agos_kernel.civilization.knowledge_graph.relationships"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:civilization.knowledge_graph.analysis_loader",
+   "resolved_imports": [
+    "K:civilization.knowledge_graph.knowledge_graph",
+    "K:civilization.knowledge_graph.nodes.base",
+    "K:civilization.knowledge_graph.relationships"
+   ],
+   "imported_by": [
+    "K:capabilities"
+   ],
+   "tested_by_external": [
+    "tests/test_knowledge_graph_from_analysis.py"
    ],
    "import_status": "OK"
   },
@@ -4168,7 +4206,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
    "module": "civilization.knowledge_graph.builder",
    "root": "kernel",
-   "lines": 480,
+   "lines": 482,
    "syntax_ok": true,
    "classes": 2,
    "functions": 15,
@@ -4229,6 +4267,7 @@
    ],
    "imported_by": [
     "K:civilization.knowledge_graph",
+    "K:civilization.knowledge_graph.analysis_loader",
     "K:civilization.knowledge_graph.builder",
     "K:civilization.knowledge_graph.query",
     "K:civilization.knowledge_graph.versioning"
@@ -4285,6 +4324,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:civilization.knowledge_graph",
+    "K:civilization.knowledge_graph.analysis_loader",
     "K:civilization.knowledge_graph.builder",
     "K:civilization.knowledge_graph.knowledge_graph",
     "K:civilization.knowledge_graph.nodes",
@@ -4373,6 +4413,9 @@
     "K:civilization.knowledge_graph.relationships"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_knowledge_graph_from_analysis.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -4398,6 +4441,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:civilization.knowledge_graph",
+    "K:civilization.knowledge_graph.analysis_loader",
     "K:civilization.knowledge_graph.builder",
     "K:civilization.knowledge_graph.knowledge_graph",
     "K:civilization.knowledge_graph.query"
@@ -8766,6 +8810,7 @@
    "tested_by_external": [
     "tests/test_bootstrap.py",
     "tests/test_clone_safety.py",
+    "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
     "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
@@ -15485,6 +15530,7 @@
     "tests/test_clone_safety.py",
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
+    "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
     "tests/test_rie_pipeline.py",
     "tests/test_structure_fields.py"
@@ -16166,6 +16212,33 @@
     "K:registry.capability",
     "K:registry.provider",
     "K:test_validation"
+   ]
+  },
+  {
+   "path": "tests/test_knowledge_graph_from_analysis.py",
+   "imports": [
+    "agos.kernel.capabilities",
+    "agos.kernel.civilization.knowledge_graph",
+    "agos.kernel.civilization.knowledge_graph.analysis_loader",
+    "agos.kernel.civilization.knowledge_graph.query",
+    "agos.rie.application",
+    "json",
+    "os",
+    "pytest",
+    "re",
+    "shutil",
+    "subprocess"
+   ],
+   "scripts": [
+    "main"
+   ],
+   "resolved": [
+    "K:capabilities",
+    "K:civilization.knowledge_graph",
+    "K:civilization.knowledge_graph.analysis_loader",
+    "K:civilization.knowledge_graph.query",
+    "K:main",
+    "S:rie.application"
    ]
   },
   {

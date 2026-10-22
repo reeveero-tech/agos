@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 561,
+  "files_scanned": 563,
   "external_imports": [
     {
       "import": "a",
@@ -76,6 +76,7 @@
           "tests/test_dependency_extraction.py",
           "tests/test_framework_detection.py",
           "tests/test_kernel_facade.py",
+          "tests/test_knowledge_graph_from_analysis.py",
           "tests/test_language_weights.py",
           "tests/test_namespace_identity.py",
           "tests/test_rie_pipeline.py",
@@ -186,6 +187,7 @@
       "tests/test_clone_safety.py",
       "tests/test_dependency_extraction.py",
       "tests/test_framework_detection.py",
+      "tests/test_knowledge_graph_from_analysis.py",
       "tests/test_language_weights.py",
       "tests/test_rie_pipeline.py",
       "tests/test_structure_fields.py",

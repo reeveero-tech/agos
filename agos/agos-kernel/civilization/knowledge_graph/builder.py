@@ -48,7 +48,9 @@ class GraphBuilder:
     """
     
     def __init__(self, graph: Optional[KnowledgeGraph] = None):
-        self.graph = graph or KnowledgeGraph()
+        # R-W2-008: `graph or KnowledgeGraph()` يستدعي __len__ فيبدّل رسماً فارغاً مُمرَّراً
+        # برسم جديد صامتاً — الفحص الصريح يحفظ النسخة المُمرَّرة (حتى الفارغة).
+        self.graph = graph if graph is not None else KnowledgeGraph()
         self._node_cache: Dict[str, str] = {}  # path -> node_id
         self._module_cache: Dict[str, Set[str]] = {}  # repo -> set of modules
     

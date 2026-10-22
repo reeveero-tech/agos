@@ -82,7 +82,7 @@ class RepositoryAnalysisCapability(ICapability):
         cache = self.__dict__.setdefault("_dna_cache", {})
         if revision and cache_key in cache:
             print(f"[CAPABILITY] Reusing DNA of {url}@{revision[:12]} (same commit)")
-            return copy.deepcopy(cache[cache_key])
+            return self._with_optional_graph(copy.deepcopy(cache[cache_key]), input_data)
         
         # Import provider here to avoid circular imports
         from providers import LocalRepositoryProvider
@@ -116,7 +116,7 @@ class RepositoryAnalysisCapability(ICapability):
             if revision:
                 cache[cache_key] = copy.deepcopy(dna)
             
-            return dna
+            return self._with_optional_graph(dna, input_data)
             
         finally:
             # Cleanup
@@ -125,6 +125,25 @@ class RepositoryAnalysisCapability(ICapability):
                 parent = os.path.dirname(repo_path)
                 if os.path.exists(parent):
                     shutil.rmtree(parent, ignore_errors=True)
+    
+    @staticmethod
+    def _with_optional_graph(dna: RepositoryDNA, input_data: Any) -> RepositoryDNA:
+        """R-W2-008: when the caller asks for a knowledge graph, fill it from this
+        analysis and save it — same behavior on a fresh analysis and a cache hit.
+
+        ``knowledge_graph_path`` in the input dict is the save path; without it the
+        capability is unchanged for every existing caller.
+        """
+        if not (isinstance(input_data, dict)
+                and input_data.get("knowledge_graph_path")):
+            return dna
+        from agos_kernel.civilization.knowledge_graph.analysis_loader import fill_and_save
+        path = input_data["knowledge_graph_path"]
+        report = fill_and_save(dna, path)
+        print(f"[CAPABILITY] Knowledge graph of {dna.name} saved to: {path} "
+              f"({report.nodes_added} nodes, {report.relationships_added} "
+              f"relationships, {len(report.gaps)} named gaps)")
+        return dna
     
     @staticmethod
     def _remote_revision(url: str, branch: str) -> Optional[str]:

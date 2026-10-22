@@ -1,0 +1,286 @@
+"""R-W2-008 — الرسم المعرفي يُملأ من التحليل ويُحفظ، والاستعلامات على رسم حقيقي.
+
+معيار القبول (ROADMAP): «استعلامات على رسم حقيقي» — الرسم يُبنى من مخرج تحليل
+حقيقي (خط rie أو مسار قدرة النواة الإنتاجي) ويُحفظ إلى قرص، والاستعلامات
+تُجاب على الرسم المحمَّل من الملف لا على كائنات مُعدّة يدوياً.
+
+كل غياب دليل يظل فجوة مسمّاة في ``FillReport.gaps`` — لا دليل مُختلق ولا مصدر
+مُفترى (المادة 6: لا تنفيذ صامت؛ وADR-0002).
+"""
+import json
+import os
+import re
+import shutil
+import subprocess
+
+import pytest
+
+from agos.kernel.capabilities import RepositoryAnalysisCapability
+from agos.rie.application import create_rie_pipeline
+from agos.kernel.civilization.knowledge_graph import (
+    KnowledgeGraph,
+    GraphBuilder,
+    NodeType,
+    RelationshipType,
+)
+from agos.kernel.civilization.knowledge_graph.analysis_loader import (
+    FillReport,
+    fill_and_save,
+    fill_graph_from_dna,
+)
+from agos.kernel.civilization.knowledge_graph.query import QueryEngine
+
+pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
+
+_GIT_ENV = {
+    "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+    "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",
+    "PATH": os.environ["PATH"],
+}
+
+
+def _git_repo(path, files, remote="https://github.com/t/ref.git"):
+    """مستودع git محلي حقيقي — تحليل حقيقي لا كائنات مُعدّة يدوياً."""
+    path.mkdir(parents=True, exist_ok=True)
+    for rel, text in files.items():
+        p = path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+    for cmd in (["git", "init", "-q", "-b", "main"],
+                ["git", "remote", "add", "origin", remote],
+                ["git", "add", "-A", "-f"], ["git", "commit", "-qm", "init"]):
+        subprocess.run(cmd, cwd=path, check=True, env=_GIT_ENV, capture_output=True)
+    return path
+
+
+SAMPLE_FILES = {
+    "main.py": "def main():\n    print('hello')\n\n\nif __name__ == '__main__':\n    main()\n",
+    "requirements.txt": "flask\nrequests\n",
+}
+
+PYPROJECT_SCRIPTS = """[project]
+name = "sample"
+version = "0.1.0"
+dependencies = ["flask", "requests"]
+
+[project.scripts]
+sample-cli = "sample.cli:main"
+"""
+
+
+def _rie_dna(repo):
+    return create_rie_pipeline().execute(f"file://{repo}")
+
+
+def _repo_node(graph):
+    nodes = graph.get_nodes_by_type(NodeType.REPOSITORY)
+    assert len(nodes) == 1
+    return nodes[0]
+
+
+# ---------------------------------------------------------------------------
+# الملء من التحليل — الأدلة والفجوات المسمّاة
+# ---------------------------------------------------------------------------
+
+def test_graph_filled_from_rie_analysis_with_evidence(tmp_path):
+    repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
+    dna = _rie_dna(repo)
+
+    report = fill_graph_from_dna(dna)
+    assert isinstance(report, FillReport)
+    assert report.source_kind == "rie"
+
+    repo_node = _repo_node(report.graph)
+    assert repo_node.name == "sample"
+    # دليل الالتزام موجود فعلاً في DNA‏ rie — لا يُفترى
+    assert any(e.startswith("commit:") and len(e.split(":", 1)[1]) == 40
+               for e in repo_node.metadata.evidence)
+
+    # الحزم: pypi:flask وpypi:requests — والهوية بالنظام البيئي
+    deps = sorted(n.name for n in report.graph.get_nodes_by_type(NodeType.PACKAGE))
+    assert deps == ["pypi:flask", "pypi:requests"]
+    flask = report.graph.get_nodes_by_name("pypi:flask")[0]
+    assert "manifest:requirements.txt" in flask.metadata.evidence
+
+    # الاتجاه: المستودع يعتمد على الحزمة (لا العكس)
+    assert {r.target_id for r in report.graph.get_relationships_by_node(repo_node.id)
+            if r.type == RelationshipType.DEPENDS_ON} >= {flask.id}
+
+    # نقطة الدخول: ملف (main.py) لا نقطة API — الدور موثق
+    entries = report.graph.get_nodes_by_type(NodeType.FILE)
+    assert [n.path for n in entries if n.metadata.properties.get("role") == "entry_point"] \
+        == ["main.py"]
+
+    # الفجوة المسمّاة: DNA‏ rie لا يحمل أدلة الأطر — تُعلن ولا تُقنَّع
+    assert any("framework_evidence not carried by rie DNA" in g for g in report.gaps)
+
+
+def test_saved_graph_answers_queries_from_disk(tmp_path):
+    """«ويُحفظ»: الرسم المحفوظ على القرص يجيب الاستعلامات نفسها بعد إعادة التحميل."""
+    repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
+    dna = _rie_dna(repo)
+
+    graph_path = tmp_path / "graphs" / "sample.json"
+    report = fill_and_save(dna, str(graph_path))
+    assert graph_path.exists()
+    persisted = json.loads(graph_path.read_text())
+    assert persisted["name"] == "sample"
+    assert len(persisted["nodes"]) == len(report.graph._nodes)  # الحفظ كامل لا ناقص
+
+    loaded = KnowledgeGraph.load(str(graph_path))
+    # الاستعلامات تُجاب على الرسم المحمَّل من القرص
+    loaded_repo = _repo_node(loaded)
+    loaded_flask = loaded.get_nodes_by_name("pypi:flask")
+    assert loaded_flask, "the saved graph must answer dependency queries after reload"
+    assert "manifest:requirements.txt" in loaded_flask[0].metadata.evidence
+
+    query = QueryEngine(loaded)
+    found = query.find_nodes(node_type=NodeType.REPOSITORY, repository="sample")
+    assert [n.name for n in found] == ["sample"]
+    assert query.find_node(name="pypi:requests", node_type=NodeType.PACKAGE) is not None
+
+    # علاقة الاعتماد نجت من الحفظ والتحميل
+    deps = loaded.get_dependencies(loaded_repo.id)
+    assert sorted(n.name for n in deps) == ["pypi:flask", "pypi:requests"]
+
+    # كل عُقد الرسم المحفوظ موجودة بعد التحميل (لا فقد صامت في الحفظ)
+    assert len(loaded) == len(report.graph)
+    assert (loaded.get_statistics().total_relationships
+            == report.graph.get_statistics().total_relationships)
+
+
+def test_refill_same_dna_is_idempotent(tmp_path):
+    repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
+    dna = _rie_dna(repo)
+
+    first = fill_graph_from_dna(dna)
+    node_count = len(first.graph)
+    rel_count = first.graph.get_statistics().total_relationships
+    again = fill_graph_from_dna(dna, graph=first.graph)
+    assert (again.nodes_added, again.relationships_added) == (0, 0)
+    assert len(first.graph) == node_count
+    assert first.graph.get_statistics().total_relationships == rel_count
+
+
+def test_changed_analysis_fresh_graph_exactly_reflects_it(tmp_path):
+    """تحليل متغيّر = رسم جديد بمقاييسه بدقة — لا بقايا من تحليل سابق ولا فقد."""
+    repo_v1 = _git_repo(tmp_path / "sample", {"main.py": SAMPLE_FILES["main.py"],
+                                              "requirements.txt": "flask\n"})
+    repo_v2 = _git_repo(tmp_path / "sample2", {"main.py": SAMPLE_FILES["main.py"],
+                                               "requirements.txt": "flask\nrequests\n"})
+    dna_v1, dna_v2 = _rie_dna(repo_v1), _rie_dna(repo_v2)
+
+    g1 = fill_graph_from_dna(dna_v1).graph
+    g2 = fill_graph_from_dna(dna_v2).graph
+    deps1 = {n.name for n in g1.get_nodes_by_type(NodeType.PACKAGE)}
+    deps2 = {n.name for n in g2.get_nodes_by_type(NodeType.PACKAGE)}
+    assert deps1 == {"pypi:flask"}
+    assert deps2 == {"pypi:flask", "pypi:requests"}
+    assert g1.get_statistics().total_relationships + 1 \
+        == g2.get_statistics().total_relationships
+
+
+def test_same_name_repos_and_cross_ecosystem_packages_stay_distinct(tmp_path):
+    """الاسم وحده لا يعرّف: مستودعان بنفس الاسم وحزمة واحدة عبر نظامين بيئيين."""
+    a = _git_repo(tmp_path / "a" / "sample", SAMPLE_FILES,
+                  remote="https://github.com/two/sample.git")
+    b = _git_repo(tmp_path / "b" / "sample", SAMPLE_FILES,
+                  remote="https://github.com/other/sample.git")
+    ga = fill_graph_from_dna(_rie_dna(a)).graph
+    gb = fill_graph_from_dna(_rie_dna(b)).graph
+    assert ga is not gb
+    id_a = _repo_node(ga).id
+    id_b = _repo_node(gb).id
+    assert id_a != id_b  # الهوية بالرابط لا بالاسم المشترك
+
+    py_repo = _git_repo(tmp_path / "py" / "sample", SAMPLE_FILES)
+    js_repo = _git_repo(tmp_path / "js" / "sample", {
+        "main.js": "console.log('hi')\n",
+        "package.json": json.dumps({
+            "name": "sample", "main": "main.js",
+            "dependencies": {"requests": "^2.0.0"},
+        }),
+    })
+    gpy = fill_graph_from_dna(_rie_dna(py_repo)).graph
+    gjs = fill_graph_from_dna(_rie_dna(js_repo)).graph
+    py_pkgs = {n.name for n in gpy.get_nodes_by_type(NodeType.PACKAGE)}
+    js_pkgs = {n.name for n in gjs.get_nodes_by_type(NodeType.PACKAGE)}
+    assert "pypi:requests" in py_pkgs
+    assert "npm:requests" in js_pkgs
+    assert {n.id for n in gpy.get_nodes_by_type(NodeType.PACKAGE)}.isdisjoint(
+        {n.id for n in gjs.get_nodes_by_type(NodeType.PACKAGE)})
+
+
+def test_unsupported_dna_shape_is_rejected_by_name():
+    class NotADna:
+        pass
+    with pytest.raises(ValueError, match="Unsupported DNA shape"):
+        fill_graph_from_dna(NotADna())
+
+
+# ---------------------------------------------------------------------------
+# المسار الإنتاجي: قدرة تحليل المستودع تحفظ الرسم عند طلبه (طازجاً ومن الكاش)
+# ---------------------------------------------------------------------------
+
+def _capability_dna(repo, graph_path, cache=True):
+    cap = RepositoryAnalysisCapability()
+    dna = cap.execute({"url": f"file://{repo}", "branch": "main",
+                       "knowledge_graph_path": str(graph_path), "cache": cache})
+    return dna
+
+
+def test_kernel_capability_saves_graph_on_analysis_path(tmp_path):
+    repo = _git_repo(tmp_path / "sample", dict(SAMPLE_FILES, **{"pyproject.toml": PYPROJECT_SCRIPTS}))
+    out = tmp_path / "out"
+    dna = _capability_dna(repo, out / "sample.json")
+
+    assert dna.framework_evidence, "kernel DNA carries framework evidence"
+    saved = out / "sample.json"
+    assert saved.exists()
+    loaded = KnowledgeGraph.load(str(saved))
+
+    repo_node = _repo_node(loaded)
+    assert repo_node.name == "sample"
+    # أطر بأدلة صريحة من مسار النواة (لا فجوة هنا)
+    uses = [r for r in loaded.get_relationships_by_node(repo_node.id)
+            if r.type == RelationshipType.USES]
+    assert uses, "the production path must fill framework relationships"
+    assert all(r.metadata.evidence for r in uses)
+
+    # نقطة الدخول المعلنة في pyproject تصل الرسم بوصفها تصريحاً لا ملف API
+    entries = [n for n in loaded.get_nodes_by_type(NodeType.FILE)
+               if n.metadata.properties.get("role") == "entry_point"]
+    assert any("pyproject.toml" in n.path for n in entries)
+
+    # استعلام من الرسم المحفوظ من المسار الإنتاجي
+    query = QueryEngine(loaded)
+    assert query.find_node(node_type=NodeType.PACKAGE, name="pypi:flask") is not None
+
+
+def test_kernel_capability_saves_graph_on_cache_hit(tmp_path):
+    repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
+    out = tmp_path / "out"
+    cap = RepositoryAnalysisCapability()
+    args = {"url": f"file://{repo}", "branch": "main", "cache": True}
+
+    cap.execute(dict(args, knowledge_graph_path=str(out / "fresh.json")))
+    cap.execute(dict(args, knowledge_graph_path=str(out / "cached.json")))
+    assert (out / "fresh.json").exists() and (out / "cached.json").exists()
+    fresh = KnowledgeGraph.load(str(out / "fresh.json"))
+    cached = KnowledgeGraph.load(str(out / "cached.json"))
+    # إعادة الاستخدام من الكاش تُنتج الرسم نفسه — لا مساراً موازياً ضعيفاً
+    assert (len(fresh), fresh.get_statistics().total_relationships) == \
+        (len(cached), cached.get_statistics().total_relationships)
+    assert {n.name for n in fresh.get_nodes_by_type(NodeType.PACKAGE)} == \
+        {n.name for n in cached.get_nodes_by_type(NodeType.PACKAGE)}
+
+
+# ---------------------------------------------------------------------------
+# إصلاح مُصاحب (R-W2-008): باني الرسم يحفظ الرسم الفارغ المُمرَّر
+# ---------------------------------------------------------------------------
+
+def test_graph_builder_keeps_supplied_empty_graph():
+    empty = KnowledgeGraph(name="kept")
+    builder = GraphBuilder(graph=empty)
+    assert builder.graph is empty, "an empty supplied graph must not be silently replaced"
+    assert len(builder.graph) == 0
