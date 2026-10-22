@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 530,
-  "lines": 93226,
+  "lines": 93307,
   "functions": 5871,
   "stub_functions": 789,
   "hardcoded_paths": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24065,
+   "lines": 24146,
    "functions": 1303,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -4172,7 +4172,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/analysis_loader.py",
    "module": "civilization.knowledge_graph.analysis_loader",
    "root": "kernel",
-   "lines": 306,
+   "lines": 367,
    "syntax_ok": true,
    "classes": 1,
    "functions": 11,
@@ -4240,7 +4240,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py",
    "module": "civilization.knowledge_graph.knowledge_graph",
    "root": "kernel",
-   "lines": 458,
+   "lines": 478,
    "syntax_ok": true,
    "classes": 3,
    "functions": 26,
@@ -4331,6 +4331,9 @@
     "K:civilization.knowledge_graph.nodes.code",
     "K:civilization.knowledge_graph.nodes.engineering",
     "K:civilization.knowledge_graph.query"
+   ],
+   "tested_by_external": [
+    "tests/test_knowledge_graph_from_analysis.py"
    ],
    "import_status": "OK"
   },
@@ -5789,6 +5792,9 @@
    "imported_by": [
     "K:capabilities",
     "K:providers"
+   ],
+   "tested_by_external": [
+    "tests/test_knowledge_graph_from_analysis.py"
    ],
    "import_status": "OK"
   },
@@ -16220,7 +16226,9 @@
     "agos.kernel.capabilities",
     "agos.kernel.civilization.knowledge_graph",
     "agos.kernel.civilization.knowledge_graph.analysis_loader",
+    "agos.kernel.civilization.knowledge_graph.nodes.base",
     "agos.kernel.civilization.knowledge_graph.query",
+    "agos.kernel.contracts",
     "agos.rie.application",
     "json",
     "os",
@@ -16236,7 +16244,9 @@
     "K:capabilities",
     "K:civilization.knowledge_graph",
     "K:civilization.knowledge_graph.analysis_loader",
+    "K:civilization.knowledge_graph.nodes.base",
     "K:civilization.knowledge_graph.query",
+    "K:contracts",
     "K:main",
     "S:rie.application"
    ]

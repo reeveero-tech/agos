@@ -82,20 +82,38 @@ def _add_once(graph: KnowledgeGraph, node: GraphNode, result: "FillReport") -> s
 
     ``GraphNode`` يولّد uuid عشوائياً افتراضياً؛ المعرف الحتمي (بصمة النوع/المسار/
     المستودع) هو ما يجعل الملء متكرر الآمن والهوية ثابتة عبر الحفظ والتحميل.
+
+    التصحيح 0028: الحزمة نفسها قد تُصرَّح في أكثر من ملف اعتماديات — الدليل
+    المتكرر لا يُستبدل بل يُجمَّع: كل الأدلة والظهورات (manifest/scope/specifier)
+    تبقى على العقدة، فلا يفوز آخر ملف على أوله (المادة 6: لا فقد صامت).
     """
     node.id = node.generate_id()
-    existed = node.id in graph._nodes
+    existing = graph._nodes.get(node.id)
+    if existing is not None:
+        for ev in node.metadata.evidence:
+            if ev not in existing.metadata.evidence:
+                existing.metadata.evidence.append(ev)
+        for key, value in node.metadata.properties.items():
+            if key == "occurrences":
+                existing.metadata.properties.setdefault("occurrences", []).extend(value)
+            else:
+                existing.metadata.properties[key] = value
+        return existing.id
     graph.add_node(node)
-    if not existed:
-        result.nodes_added += 1
+    result.nodes_added += 1
     return node.id
 
 
 def _add_rel_once(graph: KnowledgeGraph, rel: Relationship,
                   result: "FillReport") -> None:
-    """إضافة علاقة مرة واحدة لكل (مصدر/هدف/نوع)."""
-    if _rel_exists(graph, rel.source_id, rel.target_id, rel.type):
-        return
+    """إضافة علاقة مرة واحدة لكل (مصدر/هدف/نوع) — والدليل المتكرر يُجمَّع لا يُستبدل."""
+    for rid in graph._rel_source_index.get(rel.source_id, set()):
+        existing = graph._relationships.get(rid)
+        if existing and existing.target_id == rel.target_id and existing.type == rel.type:
+            for ev in rel.metadata.evidence:
+                if ev not in existing.metadata.evidence:
+                    existing.metadata.evidence.append(ev)
+            return
     graph.add_relationship(rel)
     result.relationships_added += 1
 
@@ -138,8 +156,15 @@ def _repo_node(dna: Any, kind: str, report: FillReport) -> GraphNode:
     return node
 
 
-def _dependency_nodes(dna: Any, report: FillReport) -> List[GraphNode]:
-    """عُقد الحزم: الهوية بالنظام البيئي (اسم واحد قد يتكرر عبر الأنظمة)."""
+def _dependency_nodes(dna: Any, identity: str,
+                     report: FillReport) -> List[GraphNode]:
+    """عُقد الحزم: الهوية بالنظام البيئي (اسم واحد قد يتكرر عبر الأنظمة).
+
+    التصحيح 0028: الحزمة نفسها قد تُصرَّح في أكثر من ملف — كل ظهور يُحفظ
+    (occurrences) فلا يستبدل آخر ملف أوله، والأدلة تُجمَّع في العقدة والعلاقة.
+    مسار العقدة مُسبَّق بهوية المستودع الكاملة (رابطه) — مستودعان بنفس الاسم
+    في رسم واحد لا يتصادمان (الاسم وحده لا يعرّف).
+    """
     nodes: List[GraphNode] = []
     details = list(getattr(dna, "dependency_details", None) or [])
     if details:
@@ -152,15 +177,19 @@ def _dependency_nodes(dna: Any, report: FillReport) -> List[GraphNode]:
             node = GraphNode(
                 type=NodeType.PACKAGE,
                 name=f"{ecosystem}:{name}" if ecosystem else name,
-                path=f"{ecosystem}:{name}" if ecosystem else f"pkg:{name}",
+                path=f"{identity}/{ecosystem}:{name}" if ecosystem
+                     else f"{identity}/pkg:{name}",
                 repository=dna.name,
             )
             manifest = str(d.get("manifest", "") or "")
             specifier = str(d.get("specifier", "") or "")
             node.metadata.properties.update({
                 "ecosystem": ecosystem,
-                "scope": str(d.get("scope", "") or ""),
-                "specifier": specifier,
+                "occurrences": [{
+                    "manifest": manifest,
+                    "scope": str(d.get("scope", "") or ""),
+                    "specifier": specifier,
+                }],
             })
             if manifest:
                 node.metadata.evidence.append(f"manifest:{manifest}")
@@ -183,8 +212,16 @@ def _dependency_nodes(dna: Any, report: FillReport) -> List[GraphNode]:
     return nodes
 
 
-def _framework_nodes(dna: Any, kind: str, report: FillReport) -> List[GraphNode]:
-    """عُقد الأطر: دليل النواة صريح؛ وrie لا يحمل أدلة الأطر فتُسجَّل الفجوة باسمها."""
+def _framework_nodes(dna: Any, kind: str, identity: str,
+                     report: FillReport) -> List[GraphNode]:
+    """عُقد الأطر: دليل النواة صريح؛ وrie لا يحمل أدلة الأطر فتُسجَّل الفجوة باسمها.
+
+    التصحيح 0028: دليل النواة قد يكون **استبعاداً** (counted=False — إطار مذكور
+    في ملف اعتماديات لكنه لا يُعَدّ جزءاً من المشروع، مثل اعتمادية تطوير).
+    الاستبعاد يُوثَّق على العقدة (excluded) ولا يُنشأ USES — إظهار المستبعد
+    استعمالاً إيجابية كاذبة (المادة 6: لا ادعاء بلا دليل). العقدة تبقى شاهدة
+    الاستبعاد ولا تُحذف (G2).
+    """
     nodes: List[GraphNode] = []
     if kind == "kernel":
         for ev in list(getattr(dna, "framework_evidence", None) or []):
@@ -192,23 +229,26 @@ def _framework_nodes(dna: Any, kind: str, report: FillReport) -> List[GraphNode]
             if not framework:
                 report.gaps.append("framework: evidence entry without a framework name")
                 continue
+            counted = bool(ev.get("counted", False))
             node = GraphNode(
                 type=NodeType.COMPONENT,
                 name=framework,
-                path=f"framework:{framework}",
+                path=f"{identity}/framework:{framework}",
                 repository=dna.name,
             )
             node.metadata.properties.update({
                 "dependency": str(ev.get("dependency", "") or ""),
                 "ecosystem": str(ev.get("ecosystem", "") or ""),
                 "scope": str(ev.get("scope", "") or ""),
-                "counted": bool(ev.get("counted", False)),
+                "counted": counted,
             })
             manifest = str(ev.get("manifest", "") or "")
             if manifest:
                 node.metadata.evidence.append(f"manifest:{manifest}")
             else:
                 report.gaps.append(f"framework {framework}: manifest absent in evidence")
+            if not counted:
+                node.metadata.evidence.append("excluded:not counted as part of the project")
             nodes.append(node)
         return nodes
     for framework in list(getattr(dna, "frameworks", None) or []):
@@ -217,15 +257,19 @@ def _framework_nodes(dna: Any, kind: str, report: FillReport) -> List[GraphNode]
         nodes.append(GraphNode(
             type=NodeType.COMPONENT,
             name=framework,
-            path=f"framework:{framework}",
+            path=f"{identity}/framework:{framework}",
             repository=dna.name,
         ))
     return nodes
 
 
-def _file_nodes(dna: Any, attr: str, role: str,
+def _file_nodes(dna: Any, attr: str, role: str, identity: str,
                 report: FillReport) -> List[GraphNode]:
-    """عُقد الملفات (نقاط الدخول بوصفها ملفات لا نقاط API — ليست API مُثبتة)."""
+    """عُقد الملفات (نقاط الدخول بوصفها ملفات لا نقاط API — ليست API مُثبتة).
+
+    التصحيح 0028: المسار مُسبَّق بهوية المستودع — مستودعان بنفس الاسم في رسم
+    واحد لا يتصادمان على ملف بنفس الاسم.
+    """
     nodes: List[GraphNode] = []
     for path in list(getattr(dna, attr, None) or []):
         if not path:
@@ -233,10 +277,11 @@ def _file_nodes(dna: Any, attr: str, role: str,
         node = GraphNode(
             type=NodeType.FILE,
             name=str(path).rstrip("/").split("/")[-1] or str(path),
-            path=str(path),
+            path=f"{identity}/{path}",
             repository=dna.name,
         )
         node.metadata.properties["role"] = role
+        node.metadata.properties["raw_path"] = str(path)
         node.metadata.evidence.append(f"{role}:{path}")
         nodes.append(node)
     if not nodes:
@@ -250,8 +295,14 @@ def fill_graph_from_dna(dna: Any,
 
     الملء تشغيلي متكرر: نفس التحليل لا يضاعف العُقد أو العلاقات (معرفات العُقد
     حتمية، والعلاقة تُضاف مرة لكل مصدر/هدف/نوع).
+
+    التصحيح 0028: (1) الدليل المستبعد (counted=False) لا يُنشأ له USES —
+    الاستبعاد يُوثَّق ولا يُدّعى استعمال. (2) الفجوات المسمّاة تُخزَّن في
+    عقدة المستودع (analysis_gaps) فتنجو من الحفظ/التحميل ولا تضيع بين
+    الذاكرة والقرص (المادة 6: لا فقد صامت).
     """
     kind = _dna_source_kind(dna)
+    identity = _repo_identity(dna)
     graph = graph if graph is not None else KnowledgeGraph(name=dna.name or "analysis")
     report = FillReport(graph=graph, source_kind=kind)
 
@@ -260,7 +311,7 @@ def fill_graph_from_dna(dna: Any,
 
     # العلاقات: المستودع يعتمد على الحزم ويستخدم الأطر ويحيل لملفات الدخول
     # ويحتوي ملفات الإعداد — والأدلة على العلاقة نفسها لا على الطرفين فقط.
-    for dep in _dependency_nodes(dna, report):
+    for dep in _dependency_nodes(dna, identity, report):
         dep_id = _add_once(graph, dep, report)
         rel = create_relationship(
             RelationshipType.DEPENDS_ON, repo_id, dep_id,
@@ -269,8 +320,11 @@ def fill_graph_from_dna(dna: Any,
         rel.metadata.evidence.extend(manifest_ev or ["dependency listed in the DNA"])
         _add_rel_once(graph, rel, report)
 
-    for fw in _framework_nodes(dna, kind, report):
+    for fw in _framework_nodes(dna, kind, identity, report):
         fw_id = _add_once(graph, fw, report)
+        if fw.metadata.properties.get("counted") is False:
+            # استبعاد مُوثّق — لا USES للمستبعد (التصحيح 0028)
+            continue
         rel = create_relationship(
             RelationshipType.USES, repo_id, fw_id,
             source_name=repo.name, target_name=fw.name)
@@ -278,21 +332,28 @@ def fill_graph_from_dna(dna: Any,
                                      ["framework listed without evidence"])
         _add_rel_once(graph, rel, report)
 
-    for entry in _file_nodes(dna, "entry_points", "entry_point", report):
+    for entry in _file_nodes(dna, "entry_points", "entry_point", identity, report):
         entry_id = _add_once(graph, entry, report)
         rel = create_relationship(
             RelationshipType.REFERENCES, repo_id, entry_id,
             source_name=repo.name, target_name=entry.name)
-        rel.metadata.evidence.append(f"entry_point:{entry.path}")
+        rel.metadata.evidence.append(
+            f"entry_point:{entry.metadata.properties.get('raw_path', entry.path)}")
         _add_rel_once(graph, rel, report)
 
-    for cfg in _file_nodes(dna, "config_files", "config_file", report):
+    for cfg in _file_nodes(dna, "config_files", "config_file", identity, report):
         cfg_id = _add_once(graph, cfg, report)
         rel = create_relationship(
             RelationshipType.CONTAINS, repo_id, cfg_id,
             source_name=repo.name, target_name=cfg.name)
-        rel.metadata.evidence.append(f"config_file:{cfg.path}")
+        rel.metadata.evidence.append(
+            f"config_file:{cfg.metadata.properties.get('raw_path', cfg.path)}")
         _add_rel_once(graph, rel, report)
+
+    # الفجوات المسمّاة تنجو من الحفظ/التحميل (التصحيح 0028)
+    stored_repo = graph._nodes.get(repo_id)
+    if stored_repo is not None:
+        stored_repo.metadata.properties["analysis_gaps"] = list(report.gaps)
 
     return report
 

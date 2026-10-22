@@ -106,10 +106,12 @@ def test_graph_filled_from_rie_analysis_with_evidence(tmp_path):
     assert {r.target_id for r in report.graph.get_relationships_by_node(repo_node.id)
             if r.type == RelationshipType.DEPENDS_ON} >= {flask.id}
 
-    # نقطة الدخول: ملف (main.py) لا نقطة API — الدور موثق
+    # نقطة الدخول: ملف (main.py) لا نقطة API — الدور موثق والمسار بهوية المستودع
     entries = report.graph.get_nodes_by_type(NodeType.FILE)
-    assert [n.path for n in entries if n.metadata.properties.get("role") == "entry_point"] \
-        == ["main.py"]
+    entry = [n for n in entries if n.metadata.properties.get("role") == "entry_point"]
+    assert len(entry) == 1
+    assert entry[0].metadata.properties["raw_path"] == "main.py"
+    assert entry[0].path.startswith(f"file://{repo}")
 
     # الفجوة المسمّاة: DNA‏ rie لا يحمل أدلة الأطر — تُعلن ولا تُقنَّع
     assert any("framework_evidence not carried by rie DNA" in g for g in report.gaps)
@@ -211,6 +213,116 @@ def test_same_name_repos_and_cross_ecosystem_packages_stay_distinct(tmp_path):
         {n.id for n in gjs.get_nodes_by_type(NodeType.PACKAGE)})
 
 
+def test_same_name_repos_in_one_shared_graph_do_not_collide(tmp_path):
+    """التصحيح 0028: رسمان لمستودعين بنفس الاسم في رسم واحد — لا تصادم أبناء.
+
+    لو كانت هوية الأبناء بالاسم المشترك لتصادما (آخر ملف يكسب) — الهوية الكاملة
+    (الرابط) تفصل حقائق كل مستودع عن الآخر.
+    """
+    a = _git_repo(tmp_path / "a" / "sample", {"requirements.txt": "flask>=2.0\n"},
+                  remote="https://github.com/two/sample.git")
+    b = _git_repo(tmp_path / "b" / "sample", {"requirements.txt": "flask<3\n"},
+                  remote="https://github.com/other/sample.git")
+    shared = KnowledgeGraph(name="shared")
+    fill_graph_from_dna(_rie_dna(a), graph=shared)
+    fill_graph_from_dna(_rie_dna(b), graph=shared)
+
+    assert len(shared.get_nodes_by_type(NodeType.REPOSITORY)) == 2
+    flasks = shared.get_nodes_by_name("pypi:flask")
+    assert len(flasks) == 2, "each same-named repository keeps its own package node"
+    # حقائق كل مستودع على عقدته — لا استبدال صامت (القيد في ظهوراته)
+    specs = {f.metadata.properties["occurrences"][0]["specifier"]
+             for f in flasks}
+    assert specs == {">=2.0", "<3"}
+
+
+def test_repeated_dependency_declarations_aggregate_not_replace(tmp_path):
+    """التصحيح 0028: الحزمة المصرَّح بها في ملفين — كل الظهورات تبقى لا آخرها فقط."""
+    repo = _git_repo(tmp_path / "sample", {
+        "requirements.txt": "flask\n",
+        "pyproject.toml": '[project]\nname = "sample"\ndependencies = ["flask"]\n',
+    })
+    dna = _rie_dna(repo)
+    manifests = [d.get("manifest") for d in dna.dependency_details
+                 if d.get("name") == "flask"]
+    assert len(manifests) >= 2, "stack detection must see both declarations"
+
+    report = fill_graph_from_dna(dna)
+    flasks = report.graph.get_nodes_by_name("pypi:flask")
+    assert len(flasks) == 1  # عقدة واحدة — لا تكرار
+    flask = flasks[0]
+    # كل الملفات شاهدة — لا يفوز آخرها على أوله
+    assert {f"manifest:{m}" for m in manifests if m} <= set(flask.metadata.evidence)
+    occurrences = flask.metadata.properties["occurrences"]
+    assert {o["manifest"] for o in occurrences} == {m for m in manifests if m}
+    # وعلى العلاقة نفسها
+    rel = [r for r in report.graph.get_relationships_by_node(_repo_node(report.graph).id)
+           if r.type == RelationshipType.DEPENDS_ON
+           and report.graph.get_node(r.target_id).name == "pypi:flask"][0]
+    assert {f"manifest:{m}" for m in manifests if m} <= set(rel.metadata.evidence)
+
+
+def test_excluded_framework_evidence_is_not_a_use():
+    """التصحيح 0028: دليل النواة المستبعد (counted=False) لا يُدّعى استعمالاً.
+
+    العقدة تبقى شاهدة الاستبعاد (لا حذف — G2) لكن لا USES للمستبعد.
+    """
+    from agos.kernel.contracts import RepositoryDNA as KernelDNA
+    dna = KernelDNA(name="sample", url="https://github.com/t/sample")
+    dna.framework_evidence = [{
+        "framework": "Flask", "dependency": "flask",
+        "manifest": "requirements-dev.txt", "ecosystem": "pypi",
+        "scope": "dev", "counted": False,
+    }, {
+        "framework": "Django", "dependency": "django",
+        "manifest": "requirements.txt", "ecosystem": "pypi",
+        "scope": "runtime", "counted": True,
+    }]
+    report = fill_graph_from_dna(dna)
+    repo_node = _repo_node(report.graph)
+    uses = {report.graph.get_node(r.target_id).name
+            for r in report.graph.get_relationships_by_node(repo_node.id)
+            if r.type == RelationshipType.USES}
+    assert "Django" in uses
+    assert "Flask" not in uses, "an excluded framework must not appear as a use"
+    flask = report.graph.get_nodes_by_name("Flask")[0]
+    assert flask.metadata.properties["counted"] is False
+    assert "excluded:not counted as part of the project" in flask.metadata.evidence
+
+
+def test_named_gaps_survive_save_and_load(tmp_path):
+    """التصحيح 0028: الفجوات المسمّاة لا تضيع بين الذاكرة والقرص."""
+    repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
+    dna = _rie_dna(repo)
+    expected_gap = [g for g in fill_graph_from_dna(dna).gaps]
+    assert any("framework_evidence not carried by rie DNA" in g for g in expected_gap)
+
+    graph_path = tmp_path / "gaps.json"
+    fill_and_save(dna, str(graph_path))
+    loaded = KnowledgeGraph.load(str(graph_path))
+    stored = _repo_node(loaded).metadata.properties.get("analysis_gaps")
+    assert stored == expected_gap, "named gaps must survive save and load verbatim"
+
+
+def test_update_node_refreshes_indexes():
+    """التصحيح 0028: تعديل العقدة كان لا ينعش الفهارس — البحث بالقيمة الجديدة
+    كان يعجز والقديمة تكذب. الآن الفهارس تتبع القيم الجديدة."""
+    graph = KnowledgeGraph(name="idx")
+    from agos.kernel.civilization.knowledge_graph.nodes.base import create_node
+    n = create_node(NodeType.PACKAGE, "old-name", path="pkg:old", repository="r")
+    graph.add_node(n)
+    assert graph.get_nodes_by_name("old-name")
+    assert not graph.get_nodes_by_name("new-name")
+
+    assert graph.update_node(n.id, {"name": "new-name", "path": "pkg:new"}) is True
+    assert graph.get_nodes_by_name("new-name"), "new value must be findable"
+    assert not graph.get_nodes_by_name("old-name"), "old value must not be found"
+    assert n.id in graph._node_path_index["pkg:new"]
+    assert n.id not in graph._node_path_index.get("pkg:old", set())
+    # والفهرس الحالي للعقدة صحيح: العقدة الواحدة لا تُدَعّل مرتين
+    assert len(graph._node_name_index["new-name"]) == 1
+
+
 def test_unsupported_dna_shape_is_rejected_by_name():
     class NotADna:
         pass
@@ -257,14 +369,19 @@ def test_kernel_capability_saves_graph_on_analysis_path(tmp_path):
     assert query.find_node(node_type=NodeType.PACKAGE, name="pypi:flask") is not None
 
 
-def test_kernel_capability_saves_graph_on_cache_hit(tmp_path):
+def test_kernel_capability_saves_graph_on_cache_hit(tmp_path, capsys):
     repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
     out = tmp_path / "out"
     cap = RepositoryAnalysisCapability()
     args = {"url": f"file://{repo}", "branch": "main", "cache": True}
 
     cap.execute(dict(args, knowledge_graph_path=str(out / "fresh.json")))
+    capsys.readouterr()  # نرمي مخرجات التحليل الأول
     cap.execute(dict(args, knowledge_graph_path=str(out / "cached.json")))
+    second_out = capsys.readouterr().out
+    # إثبات أن الثانية استخدمت الكاش فعلاً لا أنها أعادت الاستنساخ
+    assert "Reusing DNA" in second_out, "the second call must be a cache hit"
+    assert "Fetching" not in second_out
     assert (out / "fresh.json").exists() and (out / "cached.json").exists()
     fresh = KnowledgeGraph.load(str(out / "fresh.json"))
     cached = KnowledgeGraph.load(str(out / "cached.json"))

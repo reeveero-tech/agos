@@ -153,10 +153,22 @@ class KnowledgeGraph:
         return [self._nodes[nid] for nid in node_ids if nid in self._nodes]
     
     def update_node(self, node_id: str, updates: Dict) -> bool:
-        """Update a node."""
+        """Update a node and refresh its indexes (R-W2-008 تصحيح 0028).
+
+        التعديل كان لا ينعش الفهارس (النوع/الاسم/المستودع/المسار) فيبقى
+        البحث بالقيم القديمة يجد العقدة وبالجديدة لا يجدها — دليل كاذب صامت.
+        الآن تُزال مدخلات الفهارس القديمة وتُعاد بمدخلات القيم الجديدة.
+        """
         node = self._nodes.get(node_id)
         if not node:
             return False
+        
+        # Remove old index entries before mutation
+        self._node_type_index[node.type.value].discard(node_id)
+        self._node_name_index[node.name.lower()].discard(node_id)
+        self._node_repo_index[node.repository].discard(node_id)
+        if node.path:
+            self._node_path_index[node.path].discard(node_id)
         
         # Apply updates
         for key, value in updates.items():
@@ -165,6 +177,14 @@ class KnowledgeGraph:
         
         node.metadata.updated_at = datetime.now(timezone.utc).isoformat()
         node.metadata.version += 1
+        
+        # Re-index with the new values
+        self._node_type_index[node.type.value].add(node_id)
+        self._node_name_index[node.name.lower()].add(node_id)
+        if node.repository:
+            self._node_repo_index[node.repository].add(node_id)
+        if node.path:
+            self._node_path_index[node.path].add(node_id)
         
         # Track change
         self._current_version.changes.append({

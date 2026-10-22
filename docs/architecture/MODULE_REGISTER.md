@@ -8,9 +8,9 @@
 
 - **L0**: 0 حزمة
 - **L1**: 111 حزمة
-- **L2**: 8 حزمة
+- **L2**: 7 حزمة
 - **L3**: 3 حزمة
-- **L4**: 12 حزمة
+- **L4**: 13 حزمة
 
 ## الطبقات
 
@@ -34,7 +34,7 @@
 | L1 | `agos-kernel/container` | boot | 1 | 165 | 0 | yes | yes | no | L2 | R-W3-001 |
 | L1 | `agos-kernel/context` | execution | 1 | 61 | 0 | yes | yes | no | L2 | R-W3-003 |
 | L1 | `agos-kernel/contract_engine` | contracts | 1 | 360 | 0 | yes | yes | yes | L4 | R-W1-019 |
-| L1 | `agos-kernel/contracts` | contracts | 1 | 124 | 0 | yes | yes | no | L2 | R-W1-019 |
+| L1 | `agos-kernel/contracts` | contracts | 1 | 124 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos-kernel/core` | core-brain | 24 | 3695 | 0 | yes | no | yes | L1 | R-F-002, R-F-008, R-W3-003, R-W1-022 |
 | L1 | `agos-kernel/decision` | decision | 1 | 86 | 0 | yes | no | yes | L1 | R-F-007, R-W3-004 |
 | L1 | `agos-kernel/decision-pipeline` | decision | 1 | 305 | 0 | yes | no | no | L1 | R-F-004, R-W3-004 |
@@ -132,7 +132,7 @@
 | L4 | `cognitive` | cognition | 11 | 609 | 6 | yes | no | no | L1 | R-W1-010, R-W3-016 |
 | L4 | `intelligence` | intelligence | 6 | 410 | 8 | yes | no | no | L1 | R-F-005, R-W1-006, R-W3-019 |
 | L4 | `research` | evolution | 6 | 337 | 5 | yes | no | no | L1 | R-W5-007 |
-| L5 | `agos-kernel/civilization` | civilization | 100 | 24065 | 120 | yes | yes | yes | L3 | R-F-003, R-W1-009, R-W3-014 |
+| L5 | `agos-kernel/civilization` | civilization | 100 | 24146 | 120 | yes | yes | yes | L3 | R-F-003, R-W1-009, R-W3-014 |
 | L5 | `civilization` | civilization | 5 | 529 | 16 | yes | no | yes | L1 | R-F-005, R-W1-009, R-W3-014 |
 | L5 | `consolidation` | governance | 1 | 66 | 1 | yes | no | no | L1 | R-W1-001 |
 | L5 | `constitution` | governance | 2 | 264 | 1 | yes | no | no | L1 | R-W1-022 |
