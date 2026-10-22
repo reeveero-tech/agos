@@ -164,7 +164,16 @@ class RepositoryAnalyzer:
         )
     
     def analyze(self) -> RepositoryGenome:
-        """Run complete analysis."""
+        """Run complete analysis.
+
+        R-W2-006 (ADR-0005): الخط الواحد — مسح واحد عبر الخدمة المشتركة،
+        وكل الاكتشافات إسقاطات فوق الفهرس والمحتوى المقروء (لا ``os.walk``
+        مستقلاً لكل مرحلة). اللقطة تُصفّر في بداية كل ``analyze()`` فالتعديلات
+        على القرص تظهر — لا تخزين مؤقت دائم.
+        """
+        # لقطة جديدة لكل تحليل — لا كاش دائم (التعديلات تظهر)
+        self.__dict__.pop("_shared_analysis", None)
+
         self._analyze_structure()
         self._detect_languages()
         self._detect_frameworks()
@@ -180,39 +189,55 @@ class RepositoryAnalyzer:
         self._calculate_metrics()
         return self.genome
     
+    @property
+    def _shared(self):
+        """حقائق الخدمة المشتركة — لقطة تحليل واحد لا تخزين مؤقت دائم:
+        كل ``analyze()`` يبدأ لقطة جديدة (التعديلات على القرص تظهر)، والمقارنة
+        بالمسار المحلول فلا يعيد مسار نسبي المسح مرتين.
+        """
+        resolved = str(Path(self.root_path).resolve())
+        cached = self.__dict__.get("_shared_analysis")
+        if cached is None or cached.source_path != resolved:
+            from agos_kernel.capabilities.analysis_service import (
+                ScanPolicy, get_analysis_service)
+            self.__dict__["_shared_analysis"] = get_analysis_service().analyze_path(
+                resolved,
+                policy=ScanPolicy(exclude=lambda name: name in self.IGNORE_DIRS,
+                                   classify_big=True))
+        return self.__dict__["_shared_analysis"]
+    
     def _analyze_structure(self) -> None:
-        """Analyze directory structure."""
+        """Analyze directory structure — إسقاط من فهرس الخدمة (لا مسح ثانٍ).
+
+        نفس دلالات القديم: عقدة جذر (المسار ".")، عقدة لكل مجلد بعمقها،
+        وModule لكل ملف بياني بالاسم أيا كان موقعه، و``metrics.depth`` أقصى عمق.
+        """
         directories = []
         modules = []
         max_depth = 0
         
-        for root, dirs, files in os.walk(self.root_path):
-            # Filter ignored directories
-            dirs[:] = [d for d in dirs if d not in self.IGNORE_DIRS]
-            
-            rel_root = Path(root).relative_to(self.root_path)
-            depth = len(rel_root.parts)
-            max_depth = max(max_depth, depth)
-            
-            # Create directory node
-            dir_node = DirectoryNode(
-                path=str(rel_root),
-                name=Path(root).name,
-                is_dir=True,
-                depth=depth
-            )
-            directories.append(dir_node)
-            
-            # Classify files
-            for f in files:
-                file_path = Path(root) / f
-                rel_path = str(file_path.relative_to(self.root_path))
-                
-                if f in ['package.json', 'setup.py', 'pyproject.toml', 
-                         'Cargo.toml', 'go.mod', 'pom.xml']:
+        # عقدة الجذر — كما في القديم (المسار النسبي ".")
+        directories.append(DirectoryNode(
+            path=".", name=self.root_path.name, is_dir=True, depth=0))
+        
+        for entry in self._shared.files:
+            rel_path = entry.path
+            if entry.is_dir:
+                depth = len(Path(rel_path).parts)
+                max_depth = max(max_depth, depth)
+                directories.append(DirectoryNode(
+                    path=rel_path,
+                    name=Path(rel_path).name,
+                    is_dir=True,
+                    depth=depth
+                ))
+            else:
+                # Classify files — بالاسم أيا كان موقعه (كما في القديم)
+                if Path(rel_path).name in ['package.json', 'setup.py', 'pyproject.toml',
+                                            'Cargo.toml', 'go.mod', 'pom.xml']:
                     modules.append(Module(
                         path=rel_path,
-                        name=f,
+                        name=Path(rel_path).name,
                         type='root',
                         files=[rel_path]
                     ))
@@ -224,37 +249,27 @@ class RepositoryAnalyzer:
     def _detect_languages(self) -> None:
         """Detect programming languages, weighted by lines (R-W2-003).
 
-        ``metrics.languages`` keeps the file count per language (existing consumers);
-        ``metrics.language_lines`` carries the line count — the weight that decides the
-        primary language in the DNA (most lines, then most files, then name).
+        R-W2-006: إسقاط من فهرس الخدمة — تصنيف ``EXTENSION_MAP`` نفسه، والأسطر
+        من إحصاء المسح الواحد (لا قراءة ثانية). ``metrics.languages`` keeps the
+        file count per language (existing consumers); ``metrics.language_lines``
+        carries the line count — the weight that decides the primary language in
+        the DNA (most lines, then most files, then name).
         """
         languages: Dict[str, int] = {}
         language_lines: Dict[str, int] = {}
         
-        for dirpath, _, files in os.walk(self.root_path):
-            if any(ignored in dirpath for ignored in self.IGNORE_DIRS):
+        for entry in self._shared.files:
+            if entry.is_dir:
                 continue
-                
-            for f in files:
-                ext = os.path.splitext(f)[1]
-                lang = self.EXTENSION_MAP.get(ext)
-                if lang:
-                    lang_key = lang.value
-                    languages[lang_key] = languages.get(lang_key, 0) + 1
-                    # Use os.path for path operations
-                    full_path = os.path.join(dirpath, f)
-                    rel_path = os.path.relpath(full_path, self.root_path)
-                    self.genome.source_files.append(rel_path)
-                    # R-W2-003: count lines of small text files; never break the walk.
-                    try:
-                        if os.path.getsize(full_path) <= 1_000_000:
-                            with open(full_path, 'r', encoding='utf-8', errors='replace') as fh:
-                                text = fh.read()
-                            if "\x00" not in text:
-                                lines = text.count("\n") + (0 if text.endswith("\n") else 1) if text else 0
-                                language_lines[lang_key] = language_lines.get(lang_key, 0) + lines
-                    except (OSError, ValueError):
-                        pass
+            lang = self.EXTENSION_MAP.get(entry.extension)
+            if lang:
+                lang_key = lang.value
+                languages[lang_key] = languages.get(lang_key, 0) + 1
+                self.genome.source_files.append(entry.path)
+                # R-W2-003: أسطر المحتوى المقروء (replace — دلالة القراءة
+                # القديمة للغات) — ليس مقاييس التصنيف (ignore)
+                if entry.lines >= 0:
+                    language_lines[lang_key] = language_lines.get(lang_key, 0) + entry.lines
         
         self.genome.languages = {Language(l) for l in languages.keys()}
         self.genome.metrics.languages = languages
@@ -263,15 +278,12 @@ class RepositoryAnalyzer:
     def _detect_frameworks(self) -> None:
         """Detect frameworks from dependency manifests only (R-W2-001).
 
-        Delegates to the kernel's ``stack_detection``; names are mapped onto the
-        ``Framework`` enum, frameworks the enum does not model are kept in
-        ``self.framework_evidence`` only.
+        R-W2-006: تقرير المكدس من الخدمة المشتركة نفسها (المصدر الواحد) —
+        لا ``read_manifests`` مستقل. Delegates to the kernel's ``stack_detection``;
+        names are mapped onto the ``Framework`` enum, frameworks the enum does
+        not model are kept in ``self.framework_evidence`` only.
         """
-        try:
-            from agos.kernel import stack_detection
-        except ImportError:
-            import stack_detection
-        stack = stack_detection.detect_stack(stack_detection.read_manifests(self.root_path))
+        stack = self._shared.stack
         detected = set()
         for name in stack.frameworks:
             key = name.lower().replace(".", "").replace(" ", "")
@@ -312,24 +324,34 @@ class RepositoryAnalyzer:
         self.genome.frameworks = detected
     
     def _detect_build_systems(self) -> None:
-        """Detect build systems."""
+        """Detect build systems — من فهرس الخدمة (ملفات الجذر بالاسم)."""
         detected = set()
+        root_names = {Path(f.path).name for f in self._shared.files
+                      if not f.is_dir and '/' not in f.path}
         
         for build_file, (system, _) in self.BUILD_FILES.items():
-            if (self.root_path / build_file).exists():
+            if build_file in root_names:
                 detected.add(system)
         
         self.genome.build_systems = detected
     
     def _detect_package_managers(self) -> None:
-        """Detect package managers from manifests and lock files (R-W2-002)."""
+        """Detect package managers from manifests and lock files (R-W2-002).
+        
+        R-W2-006: فوق فهرس الخدمة — المصدر الواحد نفسه (لا مسح قرص مستقل).
+        """
         stack_detection = self._stack_detection()
-        self.genome.package_managers = set(stack_detection.detect_package_managers_at(self.root_path))
+        file_paths = [f.path for f in self._shared.files if not f.is_dir]
+        self.genome.package_managers = set(
+            stack_detection.detect_package_managers(file_paths, self._shared.manifests))
     
     def _detect_dependencies(self) -> None:
-        """Direct runtime/peer dependencies + full records from manifests (R-W2-002)."""
+        """Direct runtime/peer dependencies + full records from manifests (R-W2-002).
+        
+        R-W2-006: من تقرير المكدس المشترك نفسه (لا ``read_manifests`` مستقل).
+        """
         stack_detection = self._stack_detection()
-        report = stack_detection.detect_stack(stack_detection.read_manifests(self.root_path))
+        report = self._shared.stack
         self.genome.dependencies = stack_detection.project_dependencies(report)
         self.genome.dependency_details = stack_detection.dependency_records(report)
     
@@ -365,91 +387,118 @@ class RepositoryAnalyzer:
         self.genome.package_managers = managers
     
     def _detect_test_frameworks(self) -> None:
-        """Detect test frameworks."""
+        """Detect test frameworks — من أسماء ملفات الفهرس (لا مسح ثانٍ)."""
         detected = set()
         
-        for root, _, files in os.walk(self.root_path):
-            for f in files:
-                for framework, patterns in self.TEST_PATTERNS.items():
-                    if any(p in f or p in f for p in patterns):
-                        detected.add(framework)
+        for entry in self._shared.files:
+            if entry.is_dir:
+                continue
+            name = Path(entry.path).name
+            for framework, patterns in self.TEST_PATTERNS.items():
+                if any(p in name for p in patterns):
+                    detected.add(framework)
         
         self.genome.test_frameworks = detected
     
     def _detect_ci_cd(self) -> None:
-        """Detect CI/CD systems."""
+        """Detect CI/CD systems — من فهرس الخدمة."""
         detected = set()
+        index_paths = {f.path for f in self._shared.files}
         
         for path, system in self.CI_FILES.items():
-            if (self.root_path / path).exists():
+            if path in index_paths:
                 detected.add(system)
         
         self.genome.ci_cd_systems = detected
     
     def _detect_containers(self) -> None:
-        """Detect container technologies."""
+        """Detect container technologies — من فهرس الخدمة. فرع ``rglob``
+        القديم (المسار فيه ``/``): مطابقة الاسم في أي عمق؛ وفرع الجذر
+        (بلا ``/``): وجود المسار عند الجذر فقط — كما في القديم بالضبط."""
         detected = set()
+        all_names = {Path(f.path).name for f in self._shared.files}
+        root_paths = {f.path for f in self._shared.files if '/' not in f.path}
         
         for path, tech in self.CONTAINER_FILES.items():
             if '/' in path:
-                if any(p.exists() for p in self.root_path.rglob(path.split('/')[0])):
+                if path.split('/')[0] in all_names:
                     detected.add(tech)
             else:
-                if (self.root_path / path).exists():
+                if path in root_paths:
                     detected.add(tech)
         
         self.genome.container_tech = detected
     
     def _detect_cloud_providers(self) -> None:
-        """Detect cloud providers."""
+        """Detect cloud providers — من فهرس الخدمة (فرع الجذر عند الجذر فقط)."""
         detected = set()
+        all_names = {Path(f.path).name for f in self._shared.files}
+        root_paths = {f.path for f in self._shared.files if '/' not in f.path}
         
         for path, provider in self.CLOUD_FILES.items():
             if '/' in path:
-                if any(p.exists() for p in self.root_path.rglob(path.split('/')[0])):
+                if path.split('/')[0] in all_names:
                     detected.add(provider)
             else:
-                if (self.root_path / path).exists():
+                if path in root_paths:
                     detected.add(provider)
         
         self.genome.cloud_providers = detected
     
+    def _search_patterns(self, entry, patterns: dict) -> set:
+        """بحث الكلمات المفتاحية عبر الخدمة (بحث تدفقي بدفعات ثابتة الذاكرة
+        عبر حدود الدفعات — لا سقف قراءة ولا فتح روابط رمزية R-W2-005)."""
+        from agos_kernel.capabilities.analysis_service import search_keywords
+        if self._shared.unread.get(entry.path) == "symlink":
+            return set()   # لا قراءة عبر رابط رمزي — حتى للكشف
+        return search_keywords(str(self.root_path / entry.path), patterns)
+
     def _detect_databases(self) -> None:
-        """Detect databases."""
+        """Detect databases — من محتوى المسح المقروء، والكبير ذو الامتدادات
+        المعنية ببحث تدفقي محدود من القرص (المسار محلي دائم — القديم قرأه
+        بلا حد؛ هنا قراءة محدودة موثقة)."""
         detected = set()
-        
-        for root, _, files in os.walk(self.root_path):
-            for f in files:
-                if f.endswith(('.py', '.js', '.ts', '.json')):
-                    try:
-                        content = (Path(root) / f).read_text(errors='ignore')
-                        for db, keywords in self.DB_PATTERNS.items():
-                            if any(k in content.lower() for k in keywords):
-                                detected.add(Database(db))
-                    except:
-                        pass
-        
+
+        for entry in self._shared.files:
+            if entry.is_dir or not entry.path.endswith(('.py', '.js', '.ts', '.json')):
+                continue
+            content = self._shared.contents.get(entry.path)
+            if content is None:
+                for name in self._search_patterns(entry, self.DB_PATTERNS):
+                    detected.add(Database(name))
+                continue
+            for db, keywords in self.DB_PATTERNS.items():
+                if any(k in content.lower() for k in keywords):
+                    detected.add(Database(db))
+
         self.genome.databases = detected
-    
+
     def _detect_queues(self) -> None:
-        """Detect message queues."""
+        """Detect message queues — من محتوى المسح المقروء، والكبير ببحث
+        تدفقي محدود من القرص."""
         detected = set()
-        
-        for root, _, files in os.walk(self.root_path):
-            for f in files:
-                if f.endswith(('.py', '.js', '.ts', '.json')):
-                    try:
-                        content = (Path(root) / f).read_text(errors='ignore')
-                        for queue, keywords in self.QUEUE_PATTERNS.items():
-                            if any(k in content.lower() for k in keywords):
-                                detected.add(Queue(queue))
-                    except:
-                        pass
-        
+
+        for entry in self._shared.files:
+            if entry.is_dir or not entry.path.endswith(('.py', '.js', '.ts', '.json')):
+                continue
+            content = self._shared.contents.get(entry.path)
+            if content is None:
+                for name in self._search_patterns(entry, self.QUEUE_PATTERNS):
+                    detected.add(Queue(name))
+                continue
+            for queue, keywords in self.QUEUE_PATTERNS.items():
+                if any(k in content.lower() for k in keywords):
+                    detected.add(Queue(queue))
+
         self.genome.queues = detected
     
     def _calculate_metrics(self) -> None:
-        """Calculate repository metrics."""
+        """Calculate repository metrics — من تصنيف المسح الواحد نفسه.
+
+        R-W2-006: أسطر الشيفرة/التعليق/الفراغ من تصنيف الماسح التدفقي
+        (إحصاءة واحدة أثناء المسح — الكبير بلا تحميل كامل)، لا قراءة ثانية.
+        الملفات غير المصنّفة (فشل قراءة) تُتخطى كما في القديم.
+        """
         total_files = 0
         total_lines = 0
         code_lines = 0
@@ -457,43 +506,19 @@ class RepositoryAnalyzer:
         blank_lines = 0
         largest_files = []
         
-        for dirpath, _, files in os.walk(self.root_path):
-            if any(ignored in dirpath for ignored in self.IGNORE_DIRS):
+        for entry in self._shared.files:
+            if entry.is_dir:
                 continue
-                
-            for f in files:
-                full_path = os.path.join(dirpath, f)
-                total_files += 1
-                
-                try:
-                    with open(full_path, 'r', errors='ignore') as file:
-                        lines = file.readlines()
-                        lines_count = len(lines)
-                        total_lines += lines_count
-                        
-                        # Find largest files
-                        rel_path = os.path.relpath(full_path, self.root_path)
-                        largest_files.append((rel_path, lines_count))
-                        
-                        # Count code, comments, blanks
-                        in_block_comment = False
-                        for line in lines:
-                            stripped = line.strip()
-                            if not stripped:
-                                blank_lines += 1
-                            elif stripped.startswith('#') or stripped.startswith('//'):
-                                comment_lines += 1
-                            elif stripped.startswith('/*') or stripped.startswith('"""'):
-                                comment_lines += 1
-                                in_block_comment = True
-                            elif in_block_comment:
-                                comment_lines += 1
-                                if '"""' in stripped or '*/' in stripped:
-                                    in_block_comment = False
-                            else:
-                                code_lines += 1
-                except:
-                    pass
+            total_files += 1
+            if entry.metric_lines < 0:
+                continue
+
+            total_lines += entry.metric_lines
+            comment_lines += max(entry.comment_lines, 0)
+            blank_lines += max(entry.blank_lines, 0)
+            largest_files.append((entry.path, entry.metric_lines))
+        
+        code_lines = max(total_lines - comment_lines - blank_lines, 0)
         
         # Get top 10 largest files
         largest_files.sort(key=lambda x: x[1], reverse=True)

@@ -84,47 +84,27 @@ class RepositoryAnalysisCapability(ICapability):
             print(f"[CAPABILITY] Reusing DNA of {url}@{revision[:12]} (same commit)")
             return self._with_optional_graph(copy.deepcopy(cache[cache_key]), input_data)
         
-        # Import provider here to avoid circular imports
-        from providers import LocalRepositoryProvider
-        provider = LocalRepositoryProvider()
+        # R-W2-006 (ADR-0005): الخط الواحد — التحليل عبر الخدمة المشتركة،
+        # و``execute`` إسقاط فوق حقائقها. الحقائق تكتمل في الخدمة قبل تنظيف المستنسخ.
+        from capabilities.analysis_service import get_analysis_service
+        shared = get_analysis_service().analyze_url(url, branch)
+        print(f"[CAPABILITY] Generating DNA")
+        dna = self._build_dna(
+            meta=shared.meta,
+            file_paths=[f.path for f in shared.files if not f.is_dir],
+            dir_paths=[f.path for f in shared.files if f.is_dir],
+            contents=shared.contents,
+            languages=[stat.language for stat in shared.code_languages.values()],
+            stack=shared.stack,
+            language_stats=self._language_breakdown_of(shared),
+            tree_depth=tree_depth,
+        )
+        dna.framework_evidence = [e.to_dict() for e in shared.stack.evidence]
+        dna.runtimes = list(shared.stack.runtimes)
+        if revision:
+            cache[cache_key] = copy.deepcopy(dna)
         
-        # Step 1: Clone
-        print(f"[CAPABILITY] Cloning {url}")
-        clone_result = provider._clone(RepositoryAnalysisInput(url, branch))
-        repo_path = clone_result.path
-        
-        try:
-            # Step 2: Read
-            print(f"[CAPABILITY] Reading repository")
-            from providers import ReadRepositoryInput
-            read_result = provider._read(ReadRepositoryInput(repo_path))
-            snapshot = read_result.snapshot
-            
-            # Step 3 & 4: Detect (inline for now)
-            print(f"[CAPABILITY] Detecting languages")
-            languages = self._detect_languages(snapshot)
-            print(f"[CAPABILITY] Detecting frameworks")
-            stack = self._detect_stack(snapshot)
-            frameworks = stack.frameworks
-            
-            # Step 5: Generate DNA
-            print(f"[CAPABILITY] Generating DNA")
-            dna = self._generate_dna(snapshot, languages, frameworks, stack=stack,
-                                      tree_depth=tree_depth)
-            dna.framework_evidence = [e.to_dict() for e in stack.evidence]
-            dna.runtimes = list(stack.runtimes)
-            if revision:
-                cache[cache_key] = copy.deepcopy(dna)
-            
-            return self._with_optional_graph(dna, input_data)
-            
-        finally:
-            # Cleanup
-            if os.path.exists(repo_path):
-                import shutil
-                parent = os.path.dirname(repo_path)
-                if os.path.exists(parent):
-                    shutil.rmtree(parent, ignore_errors=True)
+        return self._with_optional_graph(dna, input_data)
     
     @staticmethod
     def _with_optional_graph(dna: RepositoryDNA, input_data: Any) -> RepositoryDNA:
@@ -242,6 +222,14 @@ class RepositoryAnalysisCapability(ICapability):
         
         return sorted(list(frameworks))
     
+    def _language_breakdown_of(self, shared) -> Dict[str, Dict[str, int]]:
+        """``stack_detection.language_breakdown`` فوق حقائق الخدمة المشتركة —
+        غير المقروء يدخل بقيمة None كما في المسار القديم تماماً."""
+        from stack_detection import language_breakdown
+        return language_breakdown(
+            {f.path: shared.contents.get(f.path)
+             for f in shared.files if not f.is_dir})
+    
     def _generate_dna(
         self,
         snapshot: RepositorySnapshot,
@@ -251,7 +239,7 @@ class RepositoryAnalysisCapability(ICapability):
         language_stats: Optional[Dict[str, Dict[str, int]]] = None,
         tree_depth: int = 3,
     ) -> RepositoryDNA:
-        """Generate Repository DNA.
+        """Generate Repository DNA (غلاف توافق فوق الحقائق — G2).
         
         ``stack`` is the ``stack_detection.StackReport`` of the snapshot (computed here when
         omitted); dependencies and package managers come from it (R-W2-002).
@@ -261,56 +249,87 @@ class RepositoryAnalysisCapability(ICapability):
         Entry points, the directory tree (depth adjustable via ``tree_depth``, R-W2-004) and
         config files all come from ``stack_detection`` too — one source for the DNA.
         """
-        metadata = snapshot.metadata
         if stack is None:
             stack = self._detect_stack(snapshot)
         if language_stats is None:
             from stack_detection import language_breakdown
             language_stats = language_breakdown(
                 {f.path: f.content for f in snapshot.files if not f.is_dir})
+        return self._build_dna(
+            meta={"name": snapshot.metadata.name, "url": snapshot.metadata.url,
+                  "owner": snapshot.metadata.owner},
+            file_paths=[f.path for f in snapshot.files if not f.is_dir],
+            dir_paths=[f.path for f in snapshot.files if f.is_dir],
+            contents={f.path: f.content for f in snapshot.files
+                      if not f.is_dir and f.content is not None},
+            languages=languages,
+            stack=stack,
+            language_stats=language_stats,
+            tree_depth=tree_depth,
+            frameworks=frameworks,
+        )
+    
+    def _build_dna(
+        self,
+        *,
+        meta: Dict[str, str],
+        file_paths: List[str],
+        dir_paths: List[str],
+        contents: Dict[str, str],
+        languages: List[str],
+        stack,
+        language_stats: Dict[str, Dict[str, int]],
+        tree_depth: int = 3,
+        frameworks: Optional[List[str]] = None,
+    ) -> RepositoryDNA:
+        """الإسقاط: DNA النواة من الحقائق المشتركة (R-W2-006 — ADR-0005).
+        
+        دخول صرف فوق الحقائق — لا يفتح مساراً حُذف ولا يعيد مسحاً: readme/license
+        من المسارات والمحتوى، وentry points/الشجرة/المديرين/الاعتماديات من
+        ``stack_detection`` فوق الفهرس والملفات البيانية. ``frameworks`` تُمرّر
+        صراحةً إن مررها المستدعي (سلوك _generate_dna القديم)، وإلا فهي من تقرير
+        المكدس نفسه (المصدر الواحد).
+        """
         
         # Find README
         readme_summary = ""
-        for file_node in snapshot.files:
-            if not file_node.is_dir:
-                path_lower = file_node.path.lower()
-                if "readme" in path_lower and file_node.content:
-                    readme_summary = file_node.content[:500]
-                    break
+        for file_path in file_paths:
+            path_lower = file_path.lower()
+            if "readme" in path_lower and contents.get(file_path):
+                readme_summary = contents[file_path][:500]
+                break
         
         # Find license
         license_name = ""
-        for file_node in snapshot.files:
-            if not file_node.is_dir:
-                path_lower = file_node.path.lower()
-                if "license" in path_lower or path_lower == "license":
-                    license_name = os.path.basename(file_node.path)
-                    break
+        for file_path in file_paths:
+            path_lower = file_path.lower()
+            if "license" in path_lower or path_lower == "license":
+                license_name = os.path.basename(file_path)
+                break
         
         # R-W2-004: config files by suffix or exact name (no substring matching),
         # entry points (conventional + manifest-declared) and the directory tree at an
         # adjustable depth — all from the kernel's single source.
         from stack_detection import detect_config_files, detect_entry_points, directory_tree
-        file_paths = [f.path for f in snapshot.files if not f.is_dir]
         config_files = detect_config_files(file_paths)
         
         # Package managers (R-W2-002): from manifests and lock files, never from substrings
         # of arbitrary paths (``node_modules/x/package.json`` is not the project's npm, and
         # Gradle is not Maven).
         from stack_detection import detect_package_managers, dependency_records, project_dependencies
-        package_managers = detect_package_managers(file_paths, self._manifest_files(snapshot))
+        manifests = {p: contents.get(p) for p in file_paths if self._is_manifest_path(p)}
+        package_managers = detect_package_managers(file_paths, manifests)
         
-        entry_points = detect_entry_points(file_paths, self._manifest_files(snapshot))
-        tree = directory_tree([f.path for f in snapshot.files], max_depth=tree_depth,
-                              dir_paths=[f.path for f in snapshot.files if f.is_dir])
+        entry_points = detect_entry_points(file_paths, manifests)
+        tree = directory_tree(file_paths, max_depth=tree_depth, dir_paths=dir_paths)
         
         return RepositoryDNA(
-            name=metadata.name,
-            url=metadata.url,
-            owner=metadata.owner,
+            name=meta.get("name", ""),
+            url=meta.get("url", ""),
+            owner=meta.get("owner", ""),
             primary_language=languages[0] if languages else "",
             languages=languages,
-            frameworks=frameworks,
+            frameworks=list(frameworks) if frameworks is not None else list(stack.frameworks),
             package_managers=sorted(list(package_managers)),
             dependencies=project_dependencies(stack),
             dependency_details=dependency_records(stack),
@@ -323,3 +342,9 @@ class RepositoryAnalysisCapability(ICapability):
             snapshot_path="",
             language_stats=language_stats,
         )
+    
+    @staticmethod
+    def _is_manifest_path(path: str) -> bool:
+        """Is this file path a dependency manifest? (stack_detection — المصدر الواحد)."""
+        from stack_detection import is_manifest
+        return is_manifest(path)

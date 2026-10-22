@@ -152,43 +152,50 @@ class RepositoryNormalizer:
         the caller owns its cleanup. Without it the normalizer fetches its own copy and
         cleans it up in a ``finally`` — the previous body leaked that temp dir on every
         call (the pipeline fetched one copy and never removed the normalizer's second).
+
+        R-W2-006 (ADR-0005): الخط الواحد — القراءة والفهرسة عبر الخدمة
+        المشتركة نفسها (سياسة القارئ القديمة R-W2-004 هي سياسة النواة)،
+        و``normalized`` يُبنى من حقائقها؛ البنية (جلب/تنظيف) كما هي.
         """
-        # Fetch (unless the caller already did)
+        from agos_kernel.capabilities.analysis_service import (
+            KERNEL_SCAN_POLICY, get_analysis_service)
+
+        # Fetch (unless the caller already did) — الملكية: ما جلبه المنظّم
+        # بنفسه يُنظّفه؛ والمسار المحقون ملك مستدعيه لا يُمس
         own_path = repo_path is None
         if repo_path is None:
             repo_path = self.fetcher.fetch(url, branch)
         
         try:
-            # Get metadata
+            # Get metadata — من المستودع المجلوب كما في القديم
             metadata = self.fetcher.get_metadata(repo_path)
             
-            # Read files
-            files = self.reader.read_repository(repo_path)
+            # القراءة والفهرسة — الخط الواحد (الخدمة المشتركة)
+            shared = get_analysis_service().analyze_path(
+                repo_path, policy=KERNEL_SCAN_POLICY)
             
-            # Normalize
-            directories = list(set(f.path for f in files if f.is_dir))
+            directories = sorted(f.path for f in shared.files if f.is_dir)
             file_data = {
                 f.path: {
-                    "size": f.size,
+                    "size": f.size_bytes,
                     "extension": f.extension,
-                    "has_content": f.content is not None
+                    "has_content": f.path in shared.contents
                 }
-                for f in files if not f.is_dir
+                for f in shared.files if not f.is_dir
             }
             # R-W2-001: keep the contents of dependency manifests (only those — small and
             # few) so detectors can read them via DetectorContext.get_file_content, which
-            # reads metadata["_content"]. Before this, contents were read and discarded.
-            # R-W2-003: code files are kept too — the reader has already read them (see
-            # ``read_repository``), so the LanguageDetector can weigh languages by lines
-            # instead of falling back to file counts. No extra disk reads.
+            # reads metadata["_content"]. R-W2-003: code files are kept too — the
+            # LanguageDetector can weigh languages by lines instead of falling back to
+            # file counts. No extra disk reads (من محتوى المسح الواحد).
             from ..detectors import _stack_detection
             sd = _stack_detection()
             is_manifest = sd.is_manifest
             is_code_ext = {ext for exts in sd.LANGUAGE_EXTENSIONS.values() for ext in exts}
             manifest_content = {
-                f.path: f.content
-                for f in files
-                if not f.is_dir and f.content is not None
+                f.path: shared.contents[f.path]
+                for f in shared.files
+                if not f.is_dir and f.path in shared.contents
                 and (is_manifest(f.path) or f.extension in is_code_ext)
             }
             
@@ -199,10 +206,12 @@ class RepositoryNormalizer:
                 "owner": metadata["owner"],
                 "branch": metadata["branch"],
                 "commit": metadata["commit"],
-                "directories": sorted(directories),
+                "directories": directories,
                 "files": file_data,
-                "total_files": len([f for f in files if not f.is_dir]),
+                "total_files": len([f for f in shared.files if not f.is_dir]),
                 "total_directories": len(directories)
             }
         finally:
-            self.fetcher.cleanup(repo_path)
+            # التنظيف لما جلبه المنظّم فقط — المسار المحقون ملك مستدعيه
+            if own_path:
+                self.fetcher.cleanup(repo_path)

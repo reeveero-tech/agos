@@ -153,58 +153,96 @@ class RepositoryIntelligencePipeline:
         self.aggregator = FeatureAggregator()
     
     def execute(self, url: str, branch: str = "main") -> RepositoryDNA:
-        """Execute the complete pipeline."""
+        """Execute the complete pipeline.
+
+        R-W2-006 (ADR-0005): الخط الواحد — الجلب والقراءة عبر الخدمة
+        المشتركة (مصدر URL بسياسة النواة R-W2-004/005 نفسها)، و``normalized``
+        يُبنى من حقائقها، والكاشفون يعملون فوقها في الذاكرة — الحقائق تكتمل
+        قبل تنظيف المستنسخ داخل الخدمة. توثيق توحيد سلوكي: فهرس مصدر URL
+        الآن بسياسة النواة (لا يستثني node_modules مثلاً) — نفس حقائق DNA
+        النواة للـURL نفسه.
+        """
         start_time = datetime.now(timezone.utc)
         
-        # Step 1: Fetch
+        # Step 1-2: الخط الواحد — Fetch + Normalize عبر الخدمة المشتركة
         print(f"[RIE] Fetching repository: {url}")
-        repo_path = self.fetcher.fetch(url, branch)
+        from agos_kernel.capabilities.analysis_service import get_analysis_service
+        shared = get_analysis_service().analyze_url(url, branch)
+        normalized = self._normalized_from_shared(shared, url, branch)
         
-        try:
-            # Step 2: Normalize — reuse the fetched copy (R-W2-005: one clone per run,
-            # the normalizer cleans it up itself; the finally below is a harmless no-op).
-            print("[RIE] Normalizing repository")
-            normalized = self.normalizer.normalize(url, branch, repo_path=repo_path)
-            
-            # Create detector context
-            files_with_content = {}
-            for path, data in normalized.get("files", {}).items():
-                files_with_content[path] = {
-                    "size": data.get("size", 0),
-                    "extension": data.get("extension", ""),
-                    "has_content": data.get("has_content", False)
-                }
-            
-            context = DetectorContext(
-                repository_url=url,
-                files=files_with_content,
-                directories=normalized.get("directories", []),
-                metadata=normalized
-            )
-            
-            # Step 3-6: Detect
-            print("[RIE] Running detectors")
-            detector_results = self.detector_registry.detect_all(context)
-            
-            # Step 7: Aggregate
-            print("[RIE] Aggregating features")
-            feature_set = self.aggregator.aggregate(url, detector_results)
-            
-            # Step 8: Generate DNA
-            print("[RIE] Generating DNA")
-            dna = self._generate_dna(normalized, feature_set, detector_results)
-            
-            end_time = datetime.now(timezone.utc)
-            dna.metadata = {
-                "pipeline_duration_ms": int((end_time - start_time).total_seconds() * 1000),
-                "detectors_run": len(detector_results)
+        # Create detector context
+        files_with_content = {}
+        for path, data in normalized.get("files", {}).items():
+            files_with_content[path] = {
+                "size": data.get("size", 0),
+                "extension": data.get("extension", ""),
+                "has_content": data.get("has_content", False)
             }
-            
-            return dna
-            
-        finally:
-            # Cleanup
-            self.fetcher.cleanup(repo_path)
+        
+        context = DetectorContext(
+            repository_url=url,
+            files=files_with_content,
+            directories=normalized.get("directories", []),
+            metadata=normalized
+        )
+        
+        # Step 3-6: Detect
+        print("[RIE] Running detectors")
+        detector_results = self.detector_registry.detect_all(context)
+        
+        # Step 7: Aggregate
+        print("[RIE] Aggregating features")
+        feature_set = self.aggregator.aggregate(url, detector_results)
+        
+        # Step 8: Generate DNA
+        print("[RIE] Generating DNA")
+        dna = self._generate_dna(normalized, feature_set, detector_results)
+        
+        end_time = datetime.now(timezone.utc)
+        dna.metadata = {
+            "pipeline_duration_ms": int((end_time - start_time).total_seconds() * 1000),
+            "detectors_run": len(detector_results)
+        }
+        
+        return dna
+    
+    @staticmethod
+    def _normalized_from_shared(shared, url: str, branch: str) -> Dict[str, Any]:
+        """إسقاط ``normalized`` القديم من حقائق الخدمة المشتركة — نفس الشكل
+        الذي كان ينتجه ``RepositoryNormalizer.normalize`` (المصدر واحد الآن)."""
+        from ..detectors import _stack_detection
+        sd = _stack_detection()
+        is_manifest = sd.is_manifest
+        is_code_ext = {ext for exts in sd.LANGUAGE_EXTENSIONS.values() for ext in exts}
+        
+        non_dir = [f for f in shared.files if not f.is_dir]
+        # محتوى الملفات البيانية وملفات الشيفرة المقروءة — للكاشفين
+        manifest_content = {
+            f.path: shared.contents[f.path]
+            for f in non_dir
+            if f.path in shared.contents
+            and (is_manifest(f.path) or f.extension in is_code_ext)
+        }
+        return {
+            "_content": manifest_content,
+            "url": url,
+            "name": shared.meta.get("name", ""),
+            "owner": shared.meta.get("owner", ""),
+            # الفرع الفعلي من الحقائق (بعد تراجع clone_safety) لا المعامل
+            "branch": shared.source_branch or branch,
+            "commit": shared.source_commit,
+            "directories": sorted(f.path for f in shared.files if f.is_dir),
+            "files": {
+                f.path: {
+                    "size": f.size_bytes,
+                    "extension": f.extension,
+                    "has_content": f.path in shared.contents,
+                }
+                for f in non_dir
+            },
+            "total_files": len(non_dir),
+            "total_directories": sum(1 for f in shared.files if f.is_dir),
+        }
     
     def _generate_dna(
         self,

@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 530
-- **functions**: 5875
+- **files**: 531
+- **functions**: 5915
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 528
-- **lines**: 93475
+- **import_ok**: 529
+- **lines**: 94430
 - **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -32,9 +32,9 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 10 | 2736 | 160 | 26 | 0 | 10 | 0 | 0 |
+| `agos-kernel/capabilities` | 11 | 3459 | 189 | 26 | 0 | 11 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24237 | 1304 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization` | 100 | 24397 | 1312 | 120 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -70,7 +70,7 @@
 | `agos-kernel/governance` | 2 | 535 | 32 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
-| `agos-kernel/intelligence` | 16 | 4305 | 139 | 0 | 0 | 16 | 0 | 4 |
+| `agos-kernel/intelligence` | 16 | 4330 | 141 | 0 | 0 | 16 | 0 | 4 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/knowledge` | 6 | 1051 | 39 | 0 | 0 | 6 | 0 | 0 |
 | `agos-kernel/laboratory` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
@@ -149,7 +149,7 @@
 | `products` | 5 | 556 | 78 | 15 | 0 | 5 | 0 | 4 |
 | `research` | 6 | 337 | 41 | 5 | 0 | 6 | 0 | 5 |
 | `resource` | 1 | 153 | 19 | 2 | 0 | 1 | 0 | 1 |
-| `rie` | 12 | 2559 | 96 | 20 | 0 | 12 | 0 | 11 |
+| `rie` | 12 | 2606 | 97 | 20 | 0 | 12 | 0 | 11 |
 | `sdk` | 1 | 132 | 14 | 3 | 0 | 1 | 0 | 1 |
 | `seos` | 5 | 1212 | 68 | 2 | 0 | 5 | 0 | 4 |
 

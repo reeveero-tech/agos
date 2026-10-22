@@ -90,32 +90,92 @@ class RepositoryAnalyzer:
     def analyze(self, repo_path: str) -> Dict[str, Any]:
         """
         Analyze a repository.
-        
+
         Returns comprehensive repository information.
+
+        R-W2-006 (ADR-0005): التفويض إلى الخدمة المشتركة — الخط الواحد. المسح
+        والفهرس وإحصاء الأسطر مرة واحدة في الخدمة؛ هذا الإسقاط يحافظ على
+        التصنيف القديم بالضبط (خريطة الامتدادات هنا تجعل JSON/YAML/Markdown
+        لغاتٍ — إسقاط صريح لا يُسقط صمتاً، ومقياس مختلف عن لغات ملفات الشيفرة
+        في DNA النواة). المجلدات المستثناة لم تعد تنفّط الحجم (توثيق في
+        ADR-0005 — توحيد سلوكي).
         """
-        repo_path = Path(repo_path).resolve()
-        
-        if not repo_path.exists():
-            raise ValueError(f"Repository path does not exist: {repo_path}")
-        
-        info = RepositoryInfo(
-            name=repo_path.name,
-            path=str(repo_path),
-        )
-        
-        # Scan repository
-        self._scan_directory(repo_path, info)
-        
+        from agos_kernel.capabilities.analysis_service import (
+            CIV_SCAN_POLICY, get_analysis_service)
+
+        root = Path(repo_path).resolve()
+        shared = get_analysis_service().analyze_path(repo_path, policy=CIV_SCAN_POLICY)
+
+        info = RepositoryInfo(name=root.name, path=str(root))
+        for entry in shared.files:
+            if entry.is_dir:
+                info.directory_count += 1
+                continue
+            info.file_count += 1
+            # التصنيف القديم: الامتداد مصغّراً (suffix.lower()) والامتدادات
+            # المعروفة لغات والبقية Unknown — إسقاط صريح لا يُسقط صمتاً.
+            # وأسطر اللغات من **أسطر المحتوى المقروء** (دلالة القراءة القديمة
+            # للحضارة: replace) — لا مقاييس التصنيف
+            ext = entry.extension.lower()
+            lang = self.language_extensions.get(ext)
+            if entry.lines >= 0 and lang is not None:
+                info.language_lines[lang] = info.language_lines.get(lang, 0) + entry.lines
+            if lang is not None:
+                info.languages[lang] = info.languages.get(lang, 0) + 1
+            info.files.append({
+                'path': entry.path,
+                'name': Path(entry.path).name,
+                'extension': entry.extension,
+                'size': entry.size_bytes,
+                'language': self.language_extensions.get(ext, 'Unknown'),
+            })
+
         # Detect primary language — by lines first, then file count (R-W2-003)
         info.language = self._detect_primary_language(info.languages, info.language_lines)
-        
-        # Generate structure
-        info.structure = self._generate_structure(repo_path)
-        
-        # Calculate hash
-        info.size_bytes = self._calculate_size(repo_path)
-        
+
+        # Generate structure — إسقاط الشكل القديم من الفهرس (لا مسح ثانٍ)
+        info.structure = self._structure_from_index(shared.files, root.name)
+
+        # Calculate size — مجموع أحجام ملفات الفهرس (المستثنى لا ينفّط الحجم)
+        info.size_bytes = sum(f.size_bytes for f in shared.files if not f.is_dir)
+
         return self._to_dict(info)
+
+    def _structure_from_index(self, files, root_name: str) -> Dict:
+        """شجرة البنية بالشكل القديم من فهرس الخدمة — لا مسح ثانٍ للقرص.
+
+        نفس دلالات ``_generate_structure`` القديمة: الجذر باسم المستودع،
+        مجلدات متفرعة، ملفات أوراق، و``{'truncated': True}`` عند العمق 3،
+        والأبناء مرتبون بالاسم.
+        """
+        # بناء شجرة المسارات من الفهرس
+        tree: Dict = {'children': {}}
+        for entry in files:
+            parts = Path(entry.path).parts
+            node = tree
+            for part in parts[:-1]:
+                node = node['children'].setdefault(part, {'children': {}})
+            node['children'].setdefault(parts[-1],
+                                        {'entry': entry, 'children': {}})
+
+        def build(name: str, node: Dict, depth: int) -> Dict:
+            if depth >= 3:
+                return {'truncated': True}
+            children = []
+            for child_name in sorted(node['children']):
+                child = node['children'][child_name]
+                entry = child.get('entry')
+                if entry is not None and not entry.is_dir:
+                    children.append({
+                        'name': child_name,
+                        'type': 'file',
+                        'extension': entry.extension,
+                    })
+                else:
+                    children.append(build(child_name, child, depth + 1))
+            return {'name': name, 'type': 'directory', 'children': children}
+
+        return build(root_name, tree, 0)
     
     def _scan_directory(self, path: Path, info: RepositoryInfo) -> None:
         """Scan directory and collect file information."""

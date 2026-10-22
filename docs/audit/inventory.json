@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 530,
-  "lines": 93475,
-  "functions": 5875,
+  "files": 531,
+  "lines": 94430,
+  "functions": 5915,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 253,
-  "import_ok": 528,
+  "import_ok": 529,
   "import_fail": 0
  },
  "packages": {
@@ -166,14 +166,14 @@
    "import_fail": 0
   },
   "agos-kernel/capabilities": {
-   "files": 10,
-   "lines": 2736,
-   "functions": 160,
+   "files": 11,
+   "lines": 3459,
+   "functions": 189,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 10,
+   "import_ok": 11,
    "import_fail": 0
   },
   "agos-kernel/certification": {
@@ -189,8 +189,8 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24237,
-   "functions": 1304,
+   "lines": 24397,
+   "functions": 1312,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 16,
-   "lines": 4305,
-   "functions": 139,
+   "lines": 4330,
+   "functions": 141,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1454,8 +1454,8 @@
   },
   "rie": {
    "files": 12,
-   "lines": 2559,
-   "functions": 96,
+   "lines": 2606,
+   "functions": 97,
    "stub_functions": 20,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -2289,10 +2289,10 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 326,
+   "lines": 351,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 13,
+   "functions": 16,
    "stub_functions": 3,
    "abstract_functions": 0,
    "imports": [
@@ -2306,29 +2306,30 @@
     "contracts",
     "interfaces",
     "capabilities.foundation_extra",
-    "providers",
+    "capabilities.analysis_service",
     "agos_kernel.civilization.knowledge_graph.analysis_loader",
     "stack_detection",
     "stack_detection",
     "stack_detection",
     "stack_detection",
     "stack_detection",
-    "providers",
     "stack_detection",
-    "shutil"
+    "stack_detection",
+    "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:capabilities",
    "resolved_imports": [
+    "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
     "K:civilization.knowledge_graph.analysis_loader",
     "K:contracts",
     "K:interfaces",
-    "K:providers",
     "K:stack_detection"
    ],
    "imported_by": [
+    "K:capabilities.analysis_service",
     "K:main",
     "K:test_validation"
    ],
@@ -2339,6 +2340,7 @@
     "tests/test_framework_detection.py",
     "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
+    "tests/test_repository_intelligence_unification.py",
     "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
@@ -2431,6 +2433,55 @@
    "resolved_imports": [],
    "imported_by": [
     "K:test_expansion"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/capabilities/analysis_service.py",
+   "module": "capabilities.analysis_service",
+   "root": "kernel",
+   "lines": 698,
+   "syntax_ok": true,
+   "classes": 6,
+   "functions": 26,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "hashlib",
+    "os",
+    "shutil",
+    "dataclasses",
+    "pathlib",
+    "typing",
+    "codecs",
+    "codecs",
+    "stack_detection",
+    "providers",
+    "capabilities",
+    "stack_detection",
+    "subprocess",
+    "subprocess",
+    "warnings"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:capabilities.analysis_service",
+   "resolved_imports": [
+    "K:capabilities",
+    "K:providers",
+    "K:stack_detection"
+   ],
+   "imported_by": [
+    "K:capabilities",
+    "K:civilization.capabilities.repository_analysis",
+    "K:civilization.capabilities.repository_dna",
+    "K:intelligence.repository.analyzer",
+    "S:rie.application",
+    "S:rie.infrastructure"
+   ],
+   "tested_by_external": [
+    "tests/test_repository_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -3240,10 +3291,10 @@
    "path": "agos/agos-kernel/civilization/capabilities/repository_analysis.py",
    "module": "civilization.capabilities.repository_analysis",
    "root": "kernel",
-   "lines": 247,
+   "lines": 307,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 8,
+   "functions": 10,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -3253,18 +3304,22 @@
     "pathlib",
     "typing",
     "dataclasses",
-    "datetime"
+    "datetime",
+    "agos_kernel.capabilities.analysis_service"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.capabilities.repository_analysis",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:capabilities.analysis_service"
+   ],
    "imported_by": [
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
    ],
    "tested_by_external": [
-    "tests/test_language_weights.py"
+    "tests/test_language_weights.py",
+    "tests/test_repository_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -3272,10 +3327,10 @@
    "path": "agos/agos-kernel/civilization/capabilities/repository_dna.py",
    "module": "civilization.capabilities.repository_dna",
    "root": "kernel",
-   "lines": 194,
+   "lines": 294,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 8,
+   "functions": 14,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -3284,15 +3339,21 @@
     "pathlib",
     "typing",
     "dataclasses",
-    "datetime"
+    "datetime",
+    "agos_kernel.capabilities.analysis_service"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.capabilities.repository_dna",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:capabilities.analysis_service"
+   ],
    "imported_by": [
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
+   ],
+   "tested_by_external": [
+    "tests/test_repository_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -8372,10 +8433,10 @@
    "path": "agos/agos-kernel/intelligence/repository/analyzer.py",
    "module": "intelligence.repository.analyzer",
    "root": "kernel",
-   "lines": 512,
+   "lines": 537,
    "syntax_ok": true,
    "classes": 1,
-   "functions": 18,
+   "functions": 20,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8384,15 +8445,16 @@
     "pathlib",
     "typing",
     "intelligence.repository.models",
+    "agos_kernel.capabilities.analysis_service",
+    "agos_kernel.capabilities.analysis_service",
     "agos.kernel",
-    "agos.kernel",
-    "stack_detection",
     "stack_detection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:intelligence.repository.analyzer",
    "resolved_imports": [
+    "K:capabilities.analysis_service",
     "K:intelligence.repository.models",
     "K:stack_detection"
    ],
@@ -8403,7 +8465,8 @@
    "tested_by_external": [
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
-    "tests/test_language_weights.py"
+    "tests/test_language_weights.py",
+    "tests/test_repository_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -8832,6 +8895,7 @@
     "tests/test_clone_safety.py",
     "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
+    "tests/test_repository_intelligence_unification.py",
     "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
@@ -9614,7 +9678,7 @@
     "K:stack_detection"
    ],
    "imported_by": [
-    "K:capabilities",
+    "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
     "K:test_integration",
     "K:test_validation"
@@ -9623,6 +9687,7 @@
     "tests/test_bootstrap.py",
     "tests/test_clone_safety.py",
     "tests/test_knowledge_graph_from_analysis.py",
+    "tests/test_repository_intelligence_unification.py",
     "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
@@ -11521,6 +11586,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:capabilities",
+    "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
     "K:capabilities.technology.detection",
     "K:civilization.capabilities.dependency_analysis",
@@ -15543,10 +15609,10 @@
    "path": "agos/rie/application/__init__.py",
    "module": "rie.application",
    "root": "src",
-   "lines": 254,
+   "lines": 292,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 7,
+   "functions": 8,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -15555,12 +15621,15 @@
     "typing",
     "rie.contracts",
     "rie.detectors",
-    "rie.infrastructure"
+    "rie.infrastructure",
+    "agos_kernel.capabilities.analysis_service",
+    "rie.detectors"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:rie.application",
    "resolved_imports": [
+    "K:capabilities.analysis_service",
     "S:rie"
    ],
    "imported_by": [],
@@ -15570,6 +15639,7 @@
     "tests/test_framework_detection.py",
     "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
+    "tests/test_repository_intelligence_unification.py",
     "tests/test_rie_pipeline.py",
     "tests/test_structure_fields.py"
    ],
@@ -15789,7 +15859,7 @@
    "path": "agos/rie/infrastructure/__init__.py",
    "module": "rie.infrastructure",
    "root": "src",
-   "lines": 209,
+   "lines": 218,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -15804,6 +15874,7 @@
     "typing",
     "rie.domain",
     "rie.detectors",
+    "agos_kernel.capabilities.analysis_service",
     "agos.kernel",
     "rie.detectors",
     "clone_safety"
@@ -15812,12 +15883,14 @@
    "importable_package_path": true,
    "id": "S:rie.infrastructure",
    "resolved_imports": [
+    "K:capabilities.analysis_service",
     "S:rie"
    ],
    "imported_by": [],
    "tested_by_external": [
     "tests/test_clone_safety.py",
-    "tests/test_framework_detection.py"
+    "tests/test_framework_detection.py",
+    "tests/test_repository_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -16426,6 +16499,47 @@
    "scripts": [],
    "resolved": [
     "K:agos_runtime"
+   ]
+  },
+  {
+   "path": "tests/test_repository_intelligence_unification.py",
+   "imports": [
+    "agos.kernel",
+    "agos.kernel.capabilities",
+    "agos.kernel.capabilities.analysis_service",
+    "agos.kernel.civilization.capabilities.repository_analysis",
+    "agos.kernel.civilization.capabilities.repository_dna",
+    "agos.kernel.intelligence.repository.analyzer",
+    "agos.rie.application",
+    "agos.rie.infrastructure",
+    "agos_kernel.capabilities.analysis_service",
+    "flask",
+    "hashlib",
+    "os",
+    "pathlib",
+    "providers",
+    "psycopg2",
+    "pytest",
+    "shutil",
+    "subprocess",
+    "sys",
+    "textwrap",
+    "warnings"
+   ],
+   "scripts": [
+    "__init__",
+    "main"
+   ],
+   "resolved": [
+    "K:capabilities",
+    "K:capabilities.analysis_service",
+    "K:civilization.capabilities.repository_analysis",
+    "K:civilization.capabilities.repository_dna",
+    "K:intelligence.repository.analyzer",
+    "K:main",
+    "K:providers",
+    "S:rie.application",
+    "S:rie.infrastructure"
    ]
   },
   {

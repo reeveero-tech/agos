@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 564,
+  "files_scanned": 566,
   "external_imports": [
     {
       "import": "a",
@@ -80,6 +80,7 @@
           "tests/test_knowledge_graph_from_analysis.py",
           "tests/test_language_weights.py",
           "tests/test_namespace_identity.py",
+          "tests/test_repository_intelligence_unification.py",
           "tests/test_rie_pipeline.py",
           "tests/test_security_scanners.py",
           "tests/test_seven_capabilities.py",
@@ -177,6 +178,7 @@
     "git": [
       "agos/agos-kernel/adapters/implementation.py",
       "agos/agos-kernel/capabilities/__init__.py",
+      "agos/agos-kernel/capabilities/analysis_service.py",
       "agos/agos-kernel/civilization/core/civilization_engine.py",
       "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
       "agos/agos-kernel/civilization/knowledge_graph/builder.py",
