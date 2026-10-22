@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 530,
-  "lines": 93324,
+  "lines": 93351,
   "functions": 5871,
   "stub_functions": 789,
   "hardcoded_paths": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24163,
+   "lines": 24190,
    "functions": 1303,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -4172,7 +4172,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/analysis_loader.py",
    "module": "civilization.knowledge_graph.analysis_loader",
    "root": "kernel",
-   "lines": 384,
+   "lines": 411,
    "syntax_ok": true,
    "classes": 1,
    "functions": 11,

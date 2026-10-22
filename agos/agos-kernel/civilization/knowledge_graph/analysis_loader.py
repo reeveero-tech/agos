@@ -99,6 +99,12 @@ def _add_once(graph: KnowledgeGraph, node: GraphNode, result: "FillReport") -> s
                 for occ in value:
                     if occ not in kept:  # إعادة الملء لا تكرر الظهور نفسه
                         kept.append(occ)
+            elif key == "counted" and "occurrences" in existing.metadata.properties:
+                # التصحيح 0030: مشتق من السجلات المجمّعة المتاحة لا من آخر
+                # تعبئة — تعبئة لاحقة باستبعاد لا تمحو استعمالا موثَقًا سابقا
+                existing.metadata.properties["counted"] = any(
+                    occ.get("counted") for occ in
+                    existing.metadata.properties["occurrences"])
             else:
                 existing.metadata.properties[key] = value
         return existing.id
@@ -239,6 +245,7 @@ def _framework_nodes(dna: Any, kind: str, identity: str,
                 report.gaps.append("framework: evidence entry without a framework name")
                 continue
             by_framework.setdefault(framework, []).append({
+                "source": "kernel",
                 "dependency": str(ev.get("dependency", "") or ""),
                 "ecosystem": str(ev.get("ecosystem", "") or ""),
                 "scope": str(ev.get("scope", "") or ""),
@@ -271,12 +278,23 @@ def _framework_nodes(dna: Any, kind: str, identity: str,
     for framework in list(getattr(dna, "frameworks", None) or []):
         report.gaps.append(
             f"framework {framework}: framework_evidence not carried by rie DNA")
-        nodes.append(GraphNode(
+        node = GraphNode(
             type=NodeType.COMPONENT,
             name=framework,
             path=f"{identity}/framework:{framework}",
             repository=dna.name,
-        ))
+        )
+        # التصحيح 0031: توكيد rie صريح كسجل — قائمة frameworks هي قائمة
+        # الاستعمال المصفاة، والدليل (manifest) غائب وهو الفجوة المسمّاة أعلاه.
+        # السجل الصريح يجعل التعبئة المختلطة (rie ثم kernel) متسقة: التوكيدان
+        # يُجمَعان ولا يُستبدل أحدهما بالآخر.
+        node.metadata.properties["occurrences"] = [{
+            "source": "rie", "counted": True, "manifest": "",
+            "scope": "", "dependency": "", "ecosystem": "",
+        }]
+        node.metadata.properties["counted"] = True
+        node.metadata.evidence.append("framework listed in the rie DNA (evidence gap named)")
+        nodes.append(node)
     return nodes
 
 
@@ -339,13 +357,16 @@ def fill_graph_from_dna(dna: Any,
 
     for fw in _framework_nodes(dna, kind, identity, report):
         fw_id = _add_once(graph, fw, report)
-        if fw.metadata.properties.get("counted") is False:
-            # استبعاد مُوثّق — لا USES للمستبعد (التصحيح 0028)
+        # التصحيح 0031: القرار من العقدة المخزنة بعد الدمج — لا من الكائن
+        # الوارد — فلا تناقض التعبئة المختلطة (rie/kernel) نفسها.
+        stored_fw = graph.get_node(fw_id) or fw
+        if stored_fw.metadata.properties.get("counted") is False:
+            # استبعاد مُوثّق — لا USES للمستبعد
             continue
         rel = create_relationship(
             RelationshipType.USES, repo_id, fw_id,
-            source_name=repo.name, target_name=fw.name)
-        rel.metadata.evidence.extend(fw.metadata.evidence or
+            source_name=repo.name, target_name=stored_fw.name)
+        rel.metadata.evidence.extend(stored_fw.metadata.evidence or
                                      ["framework listed without evidence"])
         _add_rel_once(graph, rel, report)
 
@@ -368,9 +389,15 @@ def fill_graph_from_dna(dna: Any,
         _add_rel_once(graph, rel, report)
 
     # الفجوات المسمّاة تنجو من الحفظ/التحميل (التصحيح 0028)
+    # التصحيح 0031: وتتراكم عبر التعبئات المتعاقبة بلا تكرار — لا يحل محلها
+    # آخر تحليل (لا فقد صامت لتشخيص سابق)
     stored_repo = graph._nodes.get(repo_id)
     if stored_repo is not None:
-        stored_repo.metadata.properties["analysis_gaps"] = list(report.gaps)
+        merged_gaps = list(stored_repo.metadata.properties.get("analysis_gaps") or [])
+        for g in report.gaps:
+            if g not in merged_gaps:
+                merged_gaps.append(g)
+        stored_repo.metadata.properties["analysis_gaps"] = merged_gaps
 
     return report
 

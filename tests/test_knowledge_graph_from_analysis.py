@@ -248,6 +248,127 @@ def test_framework_multiple_records_aggregate_in_both_orders():
         assert "manifest:requirements-dev.txt" in flask.metadata.evidence
 
 
+def test_mixed_source_fills_stay_consistent_both_directions():
+    """التصحيح 0031: تعبئة مختلطة المصادر (rie ثم kernel — وبالعكس) لنفس
+    المستودع والإطار: توكيدا كل مصدر سجلان صريحان يُجمَعان، وقرار الاستعمال
+    من العقدة المخزنة المدمجة، فلا تناقض التعبئةُ نفسَها ولا علاقتها،
+    والفجوات المسمّاة تتراكم لا يحل محلها آخر تحليل — وبعد الحفظ/التحميل."""
+    from agos.rie.contracts import RepositoryDNA as RieDNA
+    from agos.kernel.contracts import RepositoryDNA as KernelDNA
+    import tempfile, os
+
+    URL = "https://github.com/t/sample"
+    excluded = {"framework": "Flask", "dependency": "flask",
+                "manifest": "requirements-dev.txt", "ecosystem": "pypi",
+                "scope": "dev", "counted": False}
+
+    def rie_dna():
+        return RieDNA(name="sample", url=URL, frameworks=["Flask"])
+
+    def kernel_dna():
+        dna = KernelDNA(name="sample", url=URL)
+        dna.framework_evidence = [dict(excluded)]
+        return dna
+
+    for first, second in ((rie_dna, kernel_dna), (kernel_dna, rie_dna)):
+        graph = KnowledgeGraph(name="mixed")
+        fill_graph_from_dna(first(), graph=graph)
+        fill_graph_from_dna(second(), graph=graph)
+
+        flask = graph.get_nodes_by_name("Flask")[0]
+        # توكيدا المصدرين كلاهما — لا يستبدل أحدهما الآخر
+        assert len(flask.metadata.properties["occurrences"]) == 2
+        sources = {o["source"] for o in flask.metadata.properties["occurrences"]}
+        assert sources == {"rie", "kernel"}
+        # توكيد rie للاستعمال قائم → المشتق من المجمّع يقول مستعمل
+        assert flask.metadata.properties["counted"] is True
+        repo_node = _repo_node(graph)
+        uses = [r for r in graph.get_relationships_by_node(repo_node.id)
+                if r.type == RelationshipType.USES
+                and graph.get_node(r.target_id).name == "Flask"]
+        assert uses, "the rie usage assertion must survive the kernel exclusion"
+        # العقدة لا تناقض علاقتها
+        assert flask.metadata.properties["counted"] is True
+        # فجوة rie المسمّاة محفوظة — لا يحل محلها آخر تحليل — واستبعاد kernel
+        # موثق في أدلة العقدة نفسها
+        gaps = repo_node.metadata.properties["analysis_gaps"]
+        assert any("framework_evidence not carried by rie DNA" in g for g in gaps)
+        assert "excluded:not counted as part of the project" in flask.metadata.evidence
+        assert "manifest:requirements-dev.txt" in flask.metadata.evidence
+
+        # وبعد الحفظ/التحميل يبقى الاتساق
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "mixed.json")
+            graph.save(p)
+            reloaded = KnowledgeGraph.load(p)
+            flask = reloaded.get_nodes_by_name("Flask")[0]
+            assert len(flask.metadata.properties["occurrences"]) == 2
+            assert {o["source"] for o in flask.metadata.properties["occurrences"]} == {"rie", "kernel"}
+            assert flask.metadata.properties["counted"] is True
+            reloaded_repo = _repo_node(reloaded)
+            reloaded_gaps = reloaded_repo.metadata.properties["analysis_gaps"]
+            assert any("framework_evidence not carried by rie DNA" in g
+                      for g in reloaded_gaps)
+            assert "excluded:not counted as part of the project" in flask.metadata.evidence
+            uses = [r for r in reloaded.get_relationships_by_node(reloaded_repo.id)
+                    if r.type == RelationshipType.USES
+                    and reloaded.get_node(r.target_id).name == "Flask"]
+            assert uses
+
+
+def test_successive_fills_keep_usage_consistent_with_merged_records():
+    """التصحيح 0030: تعبئات متعاقبة في نفس الرسم — الاستعمال مشتق من السجلات
+    المجمّعة لا من آخر تعبئة، فلا يناقض الإطارُ علاقتَه الموثقة ولا سجلاته.
+
+    تعبئة أولى بسجل تشغيلي (counted=True) ثم ثانية بسجل استبعاد (counted=False)
+    للإطار نفسه — وبالعكس — فيبقى counted=True والاستعمال قائما لأن السجلات
+    المجمّعة تقوله، ويُختبر ذلك بعد الحفظ/التحميل أيضاً.
+    """
+    from agos.kernel.contracts import RepositoryDNA as KernelDNA
+    import tempfile, os
+
+    def make(evidence):
+        dna = KernelDNA(name="sample", url="https://github.com/t/sample")
+        dna.framework_evidence = [evidence]
+        return dna
+
+    runtime = {"framework": "Flask", "dependency": "flask", "manifest": "requirements.txt",
+              "ecosystem": "pypi", "scope": "runtime", "counted": True}
+    dev_excluded = {"framework": "Flask", "dependency": "flask",
+                    "manifest": "requirements-dev.txt", "ecosystem": "pypi",
+                    "scope": "dev", "counted": False}
+
+    for first_ev, second_ev in ((runtime, dev_excluded), (dev_excluded, runtime)):
+        graph = KnowledgeGraph(name="successive")
+        fill_graph_from_dna(make(first_ev), graph=graph)
+        fill_graph_from_dna(make(second_ev), graph=graph)
+
+        flask = graph.get_nodes_by_name("Flask")[0]
+        assert len(flask.metadata.properties["occurrences"]) == 2
+        # الاستعمال مشتق من السجلات المجمّعة — لا من آخر تعبئة
+        assert flask.metadata.properties["counted"] is True
+        repo_node = _repo_node(graph)
+        uses = [r for r in graph.get_relationships_by_node(repo_node.id)
+                if r.type == RelationshipType.USES
+                and graph.get_node(r.target_id).name == "Flask"]
+        assert uses, "a documented use must survive a later exclusion fill"
+        assert flask.metadata.properties["counted"] is True  # العقدة لا تناقض علاقتها
+
+        # وبعد الحفظ/التحميل يبقى الاشتقاق متسقاً
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "s.json")
+            graph.save(p)
+            reloaded = KnowledgeGraph.load(p)
+            flask = reloaded.get_nodes_by_name("Flask")[0]
+            assert len(flask.metadata.properties["occurrences"]) == 2
+            assert flask.metadata.properties["counted"] is True
+            reloaded_repo = _repo_node(reloaded)
+            uses = [r for r in reloaded.get_relationships_by_node(reloaded_repo.id)
+                    if r.type == RelationshipType.USES
+                    and reloaded.get_node(r.target_id).name == "Flask"]
+            assert uses
+
+
 def test_changed_analysis_fresh_graph_exactly_reflects_it(tmp_path):
     """تحليل متغيّر = رسم جديد بمقاييسه بدقة — لا بقايا من تحليل سابق ولا فقد."""
     repo_v1 = _git_repo(tmp_path / "sample", {"main.py": SAMPLE_FILES["main.py"],
