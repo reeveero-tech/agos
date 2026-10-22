@@ -76,6 +76,15 @@
       ]
     },
     {
+      "name": "RepositoryProcessingPipeline",
+      "version": "1.0.0",
+      "class": "capabilities.rpp.RepositoryProcessingPipelineCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
       "name": "SecurityScan",
       "version": "1.0.0",
       "class": "capabilities.foundation_extra.SecurityScanCapability",

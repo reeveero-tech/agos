@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 568,
+  "files_scanned": 570,
   "external_imports": [
     {
       "import": "a",
@@ -83,6 +83,7 @@
           "tests/test_namespace_identity.py",
           "tests/test_repository_intelligence_unification.py",
           "tests/test_rie_pipeline.py",
+          "tests/test_rpp_pipeline.py",
           "tests/test_security_scanners.py",
           "tests/test_seven_capabilities.py",
           "tests/test_structure_fields.py"

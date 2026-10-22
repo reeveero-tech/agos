@@ -58,7 +58,9 @@ def test_lifecycle_and_registries():
                             "InfrastructureAnalysis", "RepositoryDNAGeneration",
                             "EngineeringKnowledgeExtraction",
                                 # R-W2-012: جينوم القدرات — قدرة حقيقية مسجلة
-                                "CapabilityGenome"])
+                                "CapabilityGenome",
+                                # R-W2-013: خط معالجة المستودعات RPP
+                                "RepositoryProcessingPipeline"])
     assert out["during"] == ["running", expected_caps, ["LocalRepositoryProvider"], True]
     assert out["after"] == "stopped"
 

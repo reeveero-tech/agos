@@ -23,6 +23,8 @@ from .foundation_extra import (  # noqa: F401 — public re-exports (G2)
 )
 # R-W2-012: the capability genome — mission-resolvable by name from the package root
 from .genome import CapabilityGenomeCapability  # noqa: F401 — public re-export (G2)
+# R-W2-013: RPP — the 8-stage repository processing pipeline over the unified line
+from .rpp import RepositoryProcessingPipelineCapability  # noqa: F401 — public re-export (G2)
 
 
 class RepositoryAnalysisInput:

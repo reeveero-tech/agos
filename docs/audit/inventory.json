@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 532,
-  "lines": 95221,
-  "functions": 5935,
-  "stub_functions": 789,
+  "files": 533,
+  "lines": 96382,
+  "functions": 6004,
+  "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 253,
-  "import_ok": 530,
+  "import_ok": 531,
   "import_fail": 0
  },
  "packages": {
@@ -166,14 +166,14 @@
    "import_fail": 0
   },
   "agos-kernel/capabilities": {
-   "files": 12,
-   "lines": 4250,
-   "functions": 209,
-   "stub_functions": 26,
+   "files": 13,
+   "lines": 5411,
+   "functions": 278,
+   "stub_functions": 27,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 12,
+   "import_ok": 13,
    "import_fail": 0
   },
   "agos-kernel/certification": {
@@ -2289,7 +2289,7 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 353,
+   "lines": 355,
    "syntax_ok": true,
    "classes": 2,
    "functions": 16,
@@ -2307,6 +2307,7 @@
     "interfaces",
     "capabilities.foundation_extra",
     "capabilities.genome",
+    "capabilities.rpp",
     "capabilities.analysis_service",
     "agos_kernel.civilization.knowledge_graph.analysis_loader",
     "stack_detection",
@@ -2325,6 +2326,7 @@
     "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
     "K:capabilities.genome",
+    "K:capabilities.rpp",
     "K:civilization.knowledge_graph.analysis_loader",
     "K:contracts",
     "K:interfaces",
@@ -2477,6 +2479,7 @@
    "imported_by": [
     "K:capabilities",
     "K:capabilities.genome",
+    "K:capabilities.rpp",
     "K:civilization.capabilities.repository_analysis",
     "K:civilization.capabilities.repository_dna",
     "K:intelligence.repository.analyzer",
@@ -2485,7 +2488,8 @@
    ],
    "tested_by_external": [
     "tests/test_capability_genome.py",
-    "tests/test_repository_intelligence_unification.py"
+    "tests/test_repository_intelligence_unification.py",
+    "tests/test_rpp_pipeline.py"
    ],
    "import_status": "OK"
   },
@@ -2593,7 +2597,8 @@
     "K:stack_detection"
    ],
    "imported_by": [
-    "K:capabilities"
+    "K:capabilities",
+    "K:capabilities.rpp"
    ],
    "tested_by_external": [
     "tests/test_capability_genome.py"
@@ -2686,6 +2691,46 @@
    "resolved_imports": [],
    "imported_by": [
     "K:test_capability_program"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/capabilities/rpp.py",
+   "module": "capabilities.rpp",
+   "root": "kernel",
+   "lines": 1159,
+   "syntax_ok": true,
+   "classes": 24,
+   "functions": 69,
+   "stub_functions": 1,
+   "abstract_functions": 5,
+   "imports": [
+    "__future__",
+    "hashlib",
+    "abc",
+    "dataclasses",
+    "datetime",
+    "typing",
+    "interfaces",
+    "capabilities.genome",
+    "stack_detection",
+    "stack_detection",
+    "capabilities.analysis_service"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:capabilities.rpp",
+   "resolved_imports": [
+    "K:capabilities.analysis_service",
+    "K:capabilities.genome",
+    "K:interfaces",
+    "K:stack_detection"
+   ],
+   "imported_by": [
+    "K:capabilities"
+   ],
+   "tested_by_external": [
+    "tests/test_rpp_pipeline.py"
    ],
    "import_status": "OK"
   },
@@ -8564,6 +8609,7 @@
     "K:capabilities",
     "K:capabilities.foundation_extra",
     "K:capabilities.genome",
+    "K:capabilities.rpp",
     "K:decision",
     "K:discovery",
     "K:providers",
@@ -11633,6 +11679,7 @@
     "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
     "K:capabilities.genome",
+    "K:capabilities.rpp",
     "K:capabilities.technology.detection",
     "K:civilization.capabilities.dependency_analysis",
     "K:civilization.intelligence_pipeline.stages",
@@ -16633,6 +16680,25 @@
    "resolved": [
     "S:rie.adapters",
     "S:rie.application"
+   ]
+  },
+  {
+   "path": "tests/test_rpp_pipeline.py",
+   "imports": [
+    "agos.kernel",
+    "capabilities.analysis_service",
+    "capabilities.rpp",
+    "datetime",
+    "flask",
+    "json",
+    "pathlib",
+    "pytest",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:capabilities.analysis_service",
+    "K:capabilities.rpp"
    ]
   },
   {
