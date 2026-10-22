@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 533
-- **functions**: 6018
+- **files**: 534
+- **functions**: 6041
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 531
-- **lines**: 97440
+- **import_ok**: 532
+- **lines**: 98184
 - **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
@@ -46,7 +46,7 @@
 | `agos-kernel/core` | 24 | 3695 | 181 | 0 | 0 | 24 | 0 | 15 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 119 | 2 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/decision-pipeline` | 1 | 1177 | 24 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/decision-pipeline` | 2 | 1921 | 47 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision_pipeline` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/diagnostics` | 3 | 159 | 8 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/discovery` | 1 | 442 | 22 | 0 | 0 | 1 | 0 | 0 |

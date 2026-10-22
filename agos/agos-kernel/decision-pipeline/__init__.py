@@ -22,6 +22,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from .explain import explain_decision
+
 
 class DecisionStatus(Enum):
     """Decision status."""
@@ -501,13 +503,25 @@ class DecisionRecord:
     status: str = "no_match"                   # selected | no_match | error
     timestamp: str = ""
 
+    def explain(self) -> Dict[str, Any]:
+        """الجواب على «لماذا X؟» من الدليل المسجل وحده (R-W2-010)."""
+        return explain_decision(self)
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "decision_id": self.decision_id, "kind": self.kind,
+            # المادة 12: التعليل متاح تلقائياً في التسلسل — من السجل وحده
+            "why": explain_decision(self),
             "requested": dict(self.requested),
-            # لقطة السياسة المستخدمة: الهوية والإصدار والأوزان والقواعد
-            "policy": self.policy_snapshot or {"policy_id": self.policy_id,
-                                               "version": self.policy_version},
+            # لقطة السياسة المستخدمة: الهوية والإصدار والأوزان والقواعد —
+            # ووجود اللقطة محفوظ صراحة (snapshot_present): فغيابها لا
+            # يضيع بالحفظ ولا يُستنتج من فراغ القواعد
+            "policy": {**({"policy_id": self.policy_id,
+                           "version": self.policy_version}),
+                       **(dict(self.policy_snapshot)
+                          if self.policy_snapshot is not None else {}),
+                       "snapshot_present":
+                           self.policy_snapshot is not None},
             "candidates": [c.to_dict() for c in self.candidates],
             "selected": self.selected,
             "ranked_alternatives": list(self.ranked_alternatives),

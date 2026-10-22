@@ -8,9 +8,9 @@
 
 - **L0**: 0 حزمة
 - **L1**: 109 حزمة
-- **L2**: 6 حزمة
+- **L2**: 5 حزمة
 - **L3**: 3 حزمة
-- **L4**: 16 حزمة
+- **L4**: 17 حزمة
 
 ## الطبقات
 
@@ -37,7 +37,7 @@
 | L1 | `agos-kernel/contracts` | contracts | 1 | 124 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos-kernel/core` | core-brain | 24 | 3695 | 0 | yes | no | yes | L1 | R-F-002, R-F-008, R-W3-003, R-W1-022 |
 | L1 | `agos-kernel/decision` | decision | 1 | 119 | 0 | yes | no | yes | L1 | R-F-007, R-W3-004 |
-| L1 | `agos-kernel/decision-pipeline` | decision | 1 | 1177 | 0 | yes | yes | no | L2 | R-F-004, R-W3-004 |
+| L1 | `agos-kernel/decision-pipeline` | decision | 2 | 1921 | 0 | yes | yes | yes | L4 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/decision_pipeline` | decision | 1 | 18 | 0 | yes | yes | yes | L4 | R-F-004, R-W3-004 |
 | L1 | `agos-kernel/diagnostics` | healing | 3 | 159 | 0 | yes | no | yes | L1 | R-F-007, R-W3-013 |
 | L1 | `agos-kernel/discovery` | registry | 1 | 442 | 0 | yes | yes | yes | L4 | R-W3-002 |

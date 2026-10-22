@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 533,
-  "lines": 97440,
-  "functions": 6018,
+  "files": 534,
+  "lines": 98184,
+  "functions": 6041,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 251,
-  "import_ok": 531,
+  "import_ok": 532,
   "import_fail": 0
  },
  "packages": {
@@ -320,14 +320,14 @@
    "import_fail": 0
   },
   "agos-kernel/decision-pipeline": {
-   "files": 1,
-   "lines": 1177,
-   "functions": 24,
+   "files": 2,
+   "lines": 1921,
+   "functions": 47,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 1,
+   "import_ok": 2,
    "import_fail": 0
   },
   "agos-kernel/decision_pipeline": {
@@ -1900,6 +1900,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py",
     "tests/test_registry_manifest.py"
@@ -6754,6 +6755,7 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_import_health.py"
    ],
@@ -6763,10 +6765,10 @@
    "path": "agos/agos-kernel/decision-pipeline/__init__.py",
    "module": "decision_pipeline",
    "root": "kernel",
-   "lines": 1177,
+   "lines": 1191,
    "syntax_ok": true,
    "classes": 16,
-   "functions": 24,
+   "functions": 25,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -6774,16 +6776,47 @@
     "datetime",
     "enum",
     "typing",
-    "uuid"
+    "uuid",
+    "decision_pipeline.explain"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "alias_of": "decision-pipeline",
    "id": "K:decision_pipeline",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:decision_pipeline.explain"
+   ],
    "imported_by": [
     "K:decision",
     "K:resolvers"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/decision-pipeline/explain.py",
+   "module": "decision_pipeline.explain",
+   "root": "kernel",
+   "lines": 730,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 22,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "typing",
+    "types"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "alias_of": "decision-pipeline.explain",
+   "id": "K:decision_pipeline.explain",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:decision_pipeline"
+   ],
+   "tested_by_external": [
+    "tests/test_decision_explanation.py"
    ],
    "import_status": "OK"
   },
@@ -6811,6 +6844,7 @@
     "K:resolvers"
    ],
    "tested_by_external": [
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
@@ -7387,6 +7421,7 @@
     "K:test_validation"
    ],
    "tested_by_external": [
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
@@ -9200,6 +9235,7 @@
     "K:test_validation"
    ],
    "tested_by_external": [
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py"
    ],
@@ -9581,6 +9617,7 @@
     "K:bootstrapper"
    ],
    "tested_by_external": [
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
@@ -10129,6 +10166,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py"
    ],
@@ -10161,6 +10199,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py"
    ],
@@ -10260,6 +10299,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
@@ -16363,6 +16403,39 @@
     "K:providers",
     "S:rie.application",
     "S:rie.infrastructure"
+   ]
+  },
+  {
+   "path": "tests/test_decision_explanation.py",
+   "imports": [
+    "agos_runtime",
+    "datetime",
+    "decision",
+    "decision_pipeline",
+    "decision_pipeline.explain",
+    "events",
+    "json",
+    "mission",
+    "pathlib",
+    "pipeline",
+    "pytest",
+    "registry.capability",
+    "registry.provider",
+    "resolvers",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:decision",
+    "K:decision_pipeline",
+    "K:decision_pipeline.explain",
+    "K:events",
+    "K:mission",
+    "K:pipeline",
+    "K:registry.capability",
+    "K:registry.provider",
+    "K:resolvers"
    ]
   },
   {
