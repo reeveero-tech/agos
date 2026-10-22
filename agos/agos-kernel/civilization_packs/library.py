@@ -31,6 +31,17 @@ class CivilizationPack:
         self.benchmarks: List[str] = []
 
 
+def get_pack_catalog() -> Dict[str, "CivilizationPack"]:
+    """كتالوج حزم الحضارة (R-W1-009 — ADR-0004).
+    
+    الحزم محتوى (قوائم معرفات قدرات/معرفة/سياسات) لا محركات تشغيل —
+    إتاحة الكتالوج هنا وإتاحته عبر نقطة الدخول الواحدة
+    (`agos_kernel.civilization.list_civilization_packs`) لا تعني تفعيل
+    قدراتها ولا إنفاذ سياساتها.
+    """
+    return dict(CIVILIZATION_PACKS)
+
+
 # Civilization Packs
 CIVILIZATION_PACKS = {
     "software": CivilizationPack(

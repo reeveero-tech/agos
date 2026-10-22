@@ -95,16 +95,30 @@ class CivilizationRuntime:
     # Started time
     started_at: datetime = field(default_factory=datetime.now)
     
+    # R-W1-009: ختم التهيئة — التهيئة المتكررة لا تعيد التشغيل ولا تمحو الحالة
+    _initialized: bool = field(default=False, init=False, repr=False)
+    
     def initialize(self) -> bool:
-        """Initialize the civilization runtime."""
+        """Initialize the civilization runtime.
+        
+        R-W1-009: idempotent — التهيئة المتكررة تعود فوراً بلا إعادة تشغيل ولا
+        مسح حالة (المادة 6: لا تنفيذ صامت يمحو أثراً سابقاً).
+        
+        فشل النواة فشل للحضارة: تُفحص نتيجة `core.initialize()` ولا يُختم الختم
+        إلا بنجاحها — لا تُنشر حضارة معطلة (ADR-0004 §2).
+        """
+        if self._initialized:
+            return True
         try:
-            # Initialize core
-            self.core.initialize()
+            # Initialize core — فشلها فشل لنا (لا يُتجاهل)
+            if not self.core.initialize():
+                return False
             
             # Initialize brain with subsystems
             self.brain.knowledge = self.knowledge
             self.brain.memory = self.memory
             
+            self._initialized = True
             return True
         except Exception as e:
             return False
@@ -275,9 +289,42 @@ _civilization: Optional[CivilizationRuntime] = None
 
 
 def get_civilization() -> CivilizationRuntime:
-    """Get the global civilization instance."""
+    """Get the global civilization instance.
+    
+    R-W1-009: نقطة الدخول الحضارية الواحدة (ADR-0004). جميع المسارات
+    (platform_runtime وv2 وagos.civilization) تفوّض إليها.
+    
+    دورة الحياة: لا تُنشر نسخة فاشلة — إن فشلت التهيئة يُرفع تشخيص باسم
+    الفشل ولا يُخزَّن شيء، والمحاولة التالية تعيد المحاولة (المادة 6: لا فشل
+    صامت يُقرَّر لاحقاً كنجاح).
+    """
     global _civilization
     if _civilization is None:
-        _civilization = CivilizationRuntime()
-        _civilization.initialize()
+        candidate = CivilizationRuntime()
+        if not candidate.initialize():
+            raise RuntimeError(
+                "CivilizationRuntime.initialize() failed — the broken instance "
+                "is NOT published; fix the failure and call get_civilization() "
+                "again to retry"
+            )
+        _civilization = candidate
     return _civilization
+
+
+def list_civilization_packs() -> List[Dict[str, Any]]:
+    """كتالوج حزم الحضارة عبر واجهة الدخول الواحدة (R-W1-009).
+    
+    الحزم محتوى (كتالوج بيانات وصفية) لا محركات تشغيل — لا يُدّعى تفعيل
+    قدراتها ولا إنفاذ سياساتها هنا؛ دورها مصدر محتوى موثق في ADR-0004.
+    """
+    from civilization_packs.library import CIVILIZATION_PACKS  # محتوى، لا اعتماد دائري
+    return [
+        {
+            "id": pack.metadata.id,
+            "name": pack.metadata.name,
+            "version": pack.metadata.version,
+            "description": pack.metadata.description,
+            "domains": list(pack.metadata.domains),
+        }
+        for pack in CIVILIZATION_PACKS.values()
+    ]

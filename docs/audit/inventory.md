@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 530
-- **functions**: 5871
+- **functions**: 5875
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 528
-- **lines**: 93351
+- **lines**: 93475
 - **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -34,8 +34,8 @@
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 10 | 2736 | 160 | 26 | 0 | 10 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24190 | 1303 | 120 | 0 | 100 | 0 | 35 |
-| `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/civilization` | 100 | 24237 | 1304 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/connectors` | 1 | 133 | 5 | 0 | 0 | 1 | 0 | 0 |
@@ -90,7 +90,7 @@
 | `agos-kernel/orchestrator` | 2 | 362 | 26 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/organization` | 2 | 183 | 10 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/pipeline` | 1 | 166 | 4 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/platform_runtime` | 2 | 232 | 7 | 0 | 0 | 2 | 0 | 0 |
+| `agos-kernel/platform_runtime` | 2 | 263 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/providers` | 7 | 1542 | 146 | 26 | 0 | 7 | 0 | 1 |
@@ -117,12 +117,12 @@
 | `agos-kernel/templates` | 1 | 101 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/tool_packs` | 1 | 144 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/trust` | 2 | 254 | 12 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/v2` | 2 | 228 | 7 | 0 | 0 | 2 | 0 | 0 |
+| `agos-kernel/v2` | 2 | 239 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/verification` | 2 | 224 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/vertical_slices` | 1 | 413 | 15 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos_kernel` | 1 | 172 | 10 | 0 | 0 | 1 | 0 | 1 |
-| `civilization` | 5 | 529 | 50 | 16 | 0 | 5 | 0 | 4 |
+| `civilization` | 5 | 553 | 52 | 16 | 0 | 5 | 0 | 4 |
 | `cli.py` | 1 | 29 | 1 | 0 | 0 | 1 | 0 | 1 |
 | `cloud` | 5 | 612 | 47 | 1 | 0 | 5 | 0 | 4 |
 | `cloud_collaboration` | 1 | 97 | 6 | 0 | 0 | 1 | 0 | 1 |

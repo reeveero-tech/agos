@@ -100,15 +100,29 @@ class CivilizationRuntime:
     CEO -> CTO -> Architecture -> Backend -> Frontend -> Mobile
     -> AI -> DevOps -> Security -> QA -> Documentation
     -> Research -> Operations -> Support
+    
+    R-W1-009 (ADR-0004): واجهة توافق تنظيمية (منظمات/مجالس) — ليست
+    محرك التشغيل المعتمد؛ المعتمد هو `agos_kernel.civilization` وتُنال
+    الحضارة من هنا عبر `get_civilization()` المفوّضة إليه، وخاصية
+    `canonical` على النسخة. لا يُدّعى تزامن حالة المنظمات هنا.
     """
-    def __init__(self):
+    def __init__(self, canonical: Any = None):
         self.version = "1.0.0"
+        self._canonical = canonical
         self.governance = GovernanceEngine()
         self.architecture_board = ArchitectureBoard()
         self.risk_board = RiskBoard()
         self.release_board = ReleaseBoard()
         self.incident_board = IncidentBoard()
         self._organizations: Dict[str, Organization] = {}
+    
+    @property
+    def canonical(self) -> Any:
+        """الحضارة المعتمدة (النواة) — مصدر حقيقة واحد عبر نقطة الدخول الواحدة."""
+        if self._canonical is None:
+            from agos_kernel.civilization import get_civilization
+            self._canonical = get_civilization()
+        return self._canonical
     
     def create_default_organization(self, org_id: str, name: str) -> Organization:
         org = Organization(
@@ -129,3 +143,13 @@ class CivilizationRuntime:
     
     def get_organization(self, org_id: str) -> Organization:
         return self._organizations.get(org_id)
+
+
+def get_civilization() -> Any:
+    """نقطة الدخول الحضارية الواحدة مفوّضة إلى المعتمد (R-W1-009 — ADR-0004).
+    
+    الوصول من هنا إلى `agos.civilization` يعيد الحضارة المعتمدة نفسها
+    (`agos_kernel.civilization.get_civilization()`) — لا حضارة موازية.
+    """
+    from agos_kernel.civilization import get_civilization as _kernel_get
+    return _kernel_get()

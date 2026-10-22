@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 # Import platform v1 subsystems
-from platform_runtime.runtime import CivilizationPlatform
+from platform_runtime.runtime import CivilizationPlatform, get_platform
 
 # Import v2 subsystems
 from distributed.runtime import DistributedRuntime, ClusterState
@@ -48,11 +48,22 @@ class CivilizationPlatformV2:
     version: str = "2.0.0"
     name: str = "AGOS Civilization Platform v2.0"
     
-    def __init__(self):
-        """Initialize the platform."""
-        # Platform v1 foundation
-        self.platform = CivilizationPlatform()
-        self.platform.initialize()
+    def __init__(self, platform: Optional[CivilizationPlatform] = None):
+        """Initialize the platform.
+        
+        R-W1-009 (ADR-0004): v2 غلاف فوق المنصة المعتمدة نفسها
+        (get_platform()) — لا منصة موازية. المعامل الاختياري يتيح تركيباً
+        معزولاً صريحاً في الاختبارات. المنشئ القديم بلا معامل يعمل كما هو.
+        """
+        # Platform v1 foundation — التجميع المعتمد نفسه (لا تهيئة إعادة:
+        # initialize() صار idempotent في R-W1-009 فلا تمحو حالة قائمة).
+        # ADR-0004 §2: فشل تهيئة المنصة ينتقل صراحة — لا يُبنى غلاف فوق منصة فاشلة.
+        self.platform = platform if platform is not None else get_platform()
+        if not self.platform.initialize():
+            raise RuntimeError(
+                "CivilizationPlatform.initialize() failed — the v2 wrapper is NOT "
+                "built over a broken platform"
+            )
         
         # Distributed runtime
         self.distributed = DistributedRuntime()

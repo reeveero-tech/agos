@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 563,
+  "files_scanned": 564,
   "external_imports": [
     {
       "import": "a",
@@ -72,6 +72,7 @@
           "agos/agos-kernel/core/tests/test_golden_security.py",
           "agos/agos-kernel/core/tests/test_golden_serialization.py",
           "tests/test_bootstrap.py",
+          "tests/test_civilization_unification.py",
           "tests/test_clone_safety.py",
           "tests/test_dependency_extraction.py",
           "tests/test_framework_detection.py",

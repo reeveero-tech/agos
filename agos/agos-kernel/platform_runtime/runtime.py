@@ -28,7 +28,7 @@ from collaboration.runtime import HumanRuntime
 from organization.runtime import OrganizationRuntime
 from agos_kernel.governance.runtime import GovernanceRuntime
 from trust.runtime import TrustRuntime
-from agos_kernel.civilization.runtime import CivilizationRuntime
+from agos_kernel.civilization.runtime import CivilizationRuntime, get_civilization
 
 # Import new subsystems
 from orchestrator.runtime import WorkspaceOrchestrator
@@ -66,33 +66,40 @@ class CivilizationPlatform:
     version: str = "1.0.0"
     name: str = "AGOS Civilization Platform"
     
-    def __init__(self):
-        """Initialize the platform."""
-        # Core subsystems
-        self.knowledge = KnowledgeRuntime()
-        self.memory = MemoryRuntime()
-        self.brain = EngineeringBrain()
-        self.core = AutonomousCore()
+    def __init__(self, civilization: Optional[CivilizationRuntime] = None):
+        """Initialize the platform.
+        
+        R-W1-009 (ADR-0004): المنصة تركيب فوق الحضارة المعتمدة لا موازٍ
+        لها — حقول الأنظمة المشتركة تفوّض إلى أنظمة الحضارة نفسها (مصدر
+        حقيقة واحد، لا حالة مزدوجة)، وcivilization هو التجميع المعتمد عبر
+        نقطة الدخول الواحدة ما لم يُمرَّر صراحة (للاستخدام المعزول في
+        الاختبارات). المنشئات القديمة تعمل كما هي بلا معامل.
+        """
+        # R-W1-009: الحضارة المعتمدة — نقطة الدخول الواحدة
+        self.civilization = civilization if civilization is not None else get_civilization()
+        
+        # Core subsystems — تفويض إلى الحضارة المعتمدة لا نسخ موازية
+        self.knowledge = self.civilization.knowledge
+        self.memory = self.civilization.memory
+        self.brain = self.civilization.brain
+        self.core = self.civilization.core
         
         # Execution subsystems
-        self.compiler = MissionCompiler()
-        self.graph_runtime = GraphRuntime()
-        self.parallel_executor = ParallelExecutor()
+        self.compiler = self.civilization.compiler
+        self.graph_runtime = self.civilization.graph_runtime
+        self.parallel_executor = self.civilization.parallel_executor
         
         # Quality subsystems
-        self.verification = VerificationRuntime()
-        self.approval = ApprovalRuntime()
-        self.governance = GovernanceRuntime()
+        self.verification = self.civilization.verification
+        self.approval = self.civilization.approval
+        self.governance = self.civilization.governance
         
         # Collaboration subsystems
-        self.collaboration = HumanRuntime()
-        self.organization = OrganizationRuntime()
-        self.trust = TrustRuntime()
+        self.collaboration = self.civilization.collaboration
+        self.organization = self.civilization.organization
+        self.trust = self.civilization.trust
         
-        # Civilization runtime
-        self.civilization = CivilizationRuntime()
-        
-        # Platform subsystems
+        # Platform subsystems (خاصة بالمنصة — ليست في الحضارة)
         self.orchestrator = WorkspaceOrchestrator()
         self.repository = MultiRepositoryRuntime()
         self.cross_domain = CrossDomainRuntime()
@@ -106,14 +113,27 @@ class CivilizationPlatform:
         # Platform state
         self.metrics = PlatformMetrics()
         self.started_at = datetime.now()
+        self._platform_initialized = False
     
     def initialize(self) -> bool:
-        """Initialize the platform."""
+        """Initialize the platform.
+        
+        R-W1-009: idempotent — التهيئة المتكررة (غلاف v2 مثلاً) لا تعيد
+        تشغيل الحضارة ولا تمحو حالتها.
+        
+        ADR-0004 §2: التهيئة عبر الحضارة نفسها (`self.civilization.initialize()`
+        مع فحص النجاح) لا استدعاءً مباشراً للنواة — ختم الحضارة يمنع تهيئة
+        النواة المشتركة مجدداً عند إنشاء غلاف جديد، والحضارة المحقونة صراحةً
+        تُهيأ عند الحاجة. فشل الحضارة فشل للمنصة ولا يُختم الختم إلا بنجاحها.
+        """
+        if getattr(self, "_platform_initialized", False):
+            return True
         try:
-            # Initialize core
-            self.core.initialize()
+            # Initialize through the civilization (فحص النجاح — لا يُتجاهل)
+            if not self.civilization.initialize():
+                return False
             
-            # Initialize brain
+            # Initialize brain (تعيينات idempotent — للحضارة المحقونة صراحةً)
             self.brain.knowledge = self.knowledge
             self.brain.memory = self.memory
             
@@ -128,6 +148,7 @@ class CivilizationPlatform:
             from simulation.runtime import setup_api
             setup_api(self.api)
             
+            self._platform_initialized = True
             return True
         except Exception as e:
             return False
@@ -217,9 +238,19 @@ _platform: Optional[CivilizationPlatform] = None
 
 
 def get_platform() -> CivilizationPlatform:
-    """Get the global platform instance."""
+    """Get the global platform instance.
+    
+    R-W1-009 (ADR-0004 §2): لا يُنشر غلاف فاشل — إن فشلت تهيئة المنصة
+    يُرفع تشخيص باسم الفشل ولا يُخزَّن شيء، والمحاولة التالية تعيد المحاولة.
+    """
     global _platform
     if _platform is None:
-        _platform = CivilizationPlatform()
-        _platform.initialize()
+        candidate = CivilizationPlatform()
+        if not candidate.initialize():
+            raise RuntimeError(
+                "CivilizationPlatform.initialize() failed — the broken instance "
+                "is NOT published; fix the failure and call get_platform() again "
+                "to retry"
+            )
+        _platform = candidate
     return _platform
