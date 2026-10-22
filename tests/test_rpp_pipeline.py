@@ -732,6 +732,24 @@ class TestBenchmarkQueue:
         out = _process(_kb(), repo)
         assert any(g.startswith("ari-delivery-unavailable") for g in out["gaps"])
 
+    def test_production_capability_evidence_excludes_test_findings(self, tmp_path):
+        # مهارة مستخدمة في الإنتاج وفي الاختبار معاً: دليل القدرة الإنتاجية
+        # من نتائج الإنتاج فقط — نتيجة اختبار لا تثبت قدرة إنتاجية
+        repo = _repo(tmp_path / "src", {
+            "app.py": "import json\nx = json.loads('{}')\n",
+            "tests/test_app.py": "import json\n"
+                                "def test_x():\n"
+                                "    assert json.loads('{}') == {}\n"})
+        kb = _kb()
+        out = _process(kb, repo)
+        usage = out["feature_set"]["features"]["production_capability_usage"]
+        assert usage["value"] == ["parse_json"]
+        # كل دليل منسي من ملف إنتاج — لا من ملف اختبار
+        assert usage["evidence"]
+        for ev in usage["evidence"]:
+            assert ev.startswith("code:parse_json:app.py:")
+        assert not any("test_app" in ev for ev in usage["evidence"])
+
     def test_non_python_repo_capability_gap_is_named(self, tmp_path):
         repo = _repo(tmp_path / "go", {"main.go": "package main\n"})
         out = _process(_kb(), repo)
