@@ -1,0 +1,2822 @@
+{
+ "analysis_snapshot": {
+  "base_commit": "783b67b4dd70cea332112b5631ecf2e23978df65",
+  "input_fingerprint": "sha256:ad3f3ffc6af3d8417dd8b3f52c1ddaab9fd17f02be2a57fce0eeca584761478c",
+  "note": "التقرير جزء من الالتزام فلا يحوي هاشه النهائي؛ الالتزام الأساس والبصمة الحتمية أعلاه تعرّف المدخلات تعريفاً قابلاً للإعادة: احسب بصمة الملفات المتتبعة عداه وتحقق",
+  "tree": "committed working tree (tracked files, this artifact excluded)"
+ },
+ "candidate_capability_count": 1,
+ "capabilities": {
+  "CommandLineTool": {
+   "composed_in": [
+    {
+     "file": "tools/audit/inventory.py",
+     "symbol": "main"
+    },
+    {
+     "file": "tools/governance/check_commit.py",
+     "symbol": "main"
+    },
+    {
+     "file": "tools/quality/run_tests.py",
+     "symbol": "main"
+    }
+   ],
+   "missing_skills": [],
+   "required_skills": [
+    "parse_cli_args"
+   ],
+   "status": "verified"
+  },
+  "FileTransform": {
+   "composed_in": [],
+   "missing_skills": [],
+   "required_skills": [
+    "file_read",
+    "file_write"
+   ],
+   "status": "candidate"
+  },
+  "GitAutomation": {
+   "composed_in": [
+    {
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "symbol": "GitAdapter.discover"
+    },
+    {
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "symbol": "GitAdapter.health_check"
+    },
+    {
+     "file": "agos/agos-kernel/capabilities/__init__.py",
+     "symbol": "RepositoryAnalysisCapability._remote_revision"
+    },
+    {
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "symbol": "RepositoryAnalysisService._actual_branch"
+    },
+    {
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "symbol": "RepositoryAnalysisService._local_revision"
+    },
+    {
+     "file": "agos/agos-kernel/civilization/core/civilization_engine.py",
+     "symbol": "CivilizationEngine.analyze_github_repository"
+    },
+    {
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "file": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+     "symbol": "GraphBuilder._create_repository_node"
+    },
+    {
+     "file": "agos/agos-kernel/conftest.py",
+     "symbol": "_reachable"
+    },
+    {
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "symbol": "GitProvider.health_check"
+    },
+    {
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "symbol": "GitProvider.pull"
+    },
+    {
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "symbol": "GitProvider.status"
+    },
+    {
+     "file": "agos/rie/infrastructure/__init__.py",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "file": "agos/seos/workspace/__init__.py",
+     "symbol": "GitOperations.branch"
+    },
+    {
+     "file": "agos/seos/workspace/__init__.py",
+     "symbol": "GitOperations.checkout"
+    },
+    {
+     "file": "agos/seos/workspace/__init__.py",
+     "symbol": "GitOperations.commit"
+    },
+    {
+     "file": "agos/seos/workspace/__init__.py",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "file": "tools/governance/check_commit.py",
+     "symbol": "blob"
+    },
+    {
+     "file": "tools/governance/check_commit.py",
+     "symbol": "check"
+    },
+    {
+     "file": "tools/governance/check_commit.py",
+     "symbol": "git"
+    },
+    {
+     "file": "tools/governance/check_commit.py",
+     "symbol": "is_pre_governance"
+    },
+    {
+     "file": "tools/governance/check_commit.py",
+     "symbol": "main"
+    }
+   ],
+   "missing_skills": [],
+   "required_skills": [
+    "git_operations"
+   ],
+   "status": "verified"
+  },
+  "HttpJsonClient": {
+   "composed_in": [
+    {
+     "file": "agos/agos-kernel/capabilities/foundation_extra.py",
+     "symbol": "osv_query_batch"
+    },
+    {
+     "file": "agos/agos-kernel/civilization/providers/github_provider.py",
+     "symbol": "GitHubProvider._request"
+    }
+   ],
+   "missing_skills": [],
+   "required_skills": [
+    "http_request",
+    "parse_json"
+   ],
+   "status": "verified"
+  },
+  "TestExecution": {
+   "composed_in": [],
+   "missing_skills": [],
+   "required_skills": [
+    "run_tests"
+   ],
+   "status": "declared"
+  }
+ },
+ "capability": "CapabilityGenome",
+ "catalog_capability_count": 5,
+ "catalog_skill_count": 10,
+ "coverage": {
+  "files_read": 855,
+  "files_total": 855,
+  "files_unread": 0,
+  "python_files": 568,
+  "python_files_analyzed": 568,
+  "python_files_unread": 0
+ },
+ "declared_skill_count": 1,
+ "gaps": [
+  "performance-metrics-unmeasured: accuracy/cost/duration/success-rate غير مقيسة — لا تُدّعى",
+  "absence-of-evidence: not_detected ليس إثبات غياب — النطاق بيثون AST ووثائق CI فقط",
+  "commit-unknown: تحليل مسار محلي بلا افتراضات git (ADR-0005)"
+ ],
+ "generated_at": "2026-10-22T15:00:00+00:00",
+ "genome_schema_version": "cgp-1.0",
+ "python_parse_errors": [],
+ "repository": {
+  "branch": "",
+  "commit": "",
+  "name": "agos",
+  "owner": "",
+  "path": "/home/user/workspace/agos",
+  "url": ""
+ },
+ "rules_version": "python-ast-2",
+ "skills": {
+  "file_read": {
+   "category": "file-operations",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 353,
+     "rule": "builtin:open(r)",
+     "symbol": "search_keywords"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 388,
+     "rule": "builtin:open(r)",
+     "symbol": "_scan_big_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 503,
+     "rule": "builtin:open(r)",
+     "symbol": "scan_tree"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 521,
+     "rule": "builtin:open(r)",
+     "symbol": "scan_tree"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/foundation_extra.py",
+     "line": 227,
+     "rule": "builtin:open(r)",
+     "symbol": "scan_secrets"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/artifact_system/artifact.py",
+     "line": 247,
+     "rule": "builtin:open(r)",
+     "symbol": "ArtifactStore.load"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/architecture_analysis.py",
+     "line": 66,
+     "rule": "builtin:open(r)",
+     "symbol": "ArchitectureAnalyzer.analyze"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/code_quality.py",
+     "line": 82,
+     "rule": "builtin:open(r)",
+     "symbol": "CodeQualityAnalyzer._analyze_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/dependency_analysis.py",
+     "line": 126,
+     "rule": "builtin:open(r)",
+     "symbol": "DependencyAnalyzer._find_internal_deps"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/dependency_analysis.py",
+     "line": 163,
+     "rule": "builtin:open(r)",
+     "symbol": "DependencyAnalyzer._parse_requirements"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/dependency_analysis.py",
+     "line": 191,
+     "rule": "builtin:open(r)",
+     "symbol": "DependencyAnalyzer._parse_package_json"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/dependency_analysis.py",
+     "line": 219,
+     "rule": "builtin:open(r)",
+     "symbol": "DependencyAnalyzer._parse_go_mod"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/documentation_analysis.py",
+     "line": 81,
+     "rule": "builtin:open(r)",
+     "symbol": "DocAnalyzer._analyze_readme"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/knowledge_extraction.py",
+     "line": 52,
+     "rule": "builtin:open(r)",
+     "symbol": "KnowledgeExtractor.extract"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/knowledge_extraction.py",
+     "line": 188,
+     "rule": "builtin:open(r)",
+     "symbol": "KnowledgeExtractor._detect_conventions"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/repository_analysis.py",
+     "line": 203,
+     "rule": "builtin:open(r)",
+     "symbol": "RepositoryAnalyzer._scan_directory"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/repository_dna.py",
+     "line": 185,
+     "rule": "builtin:open(r)",
+     "symbol": "RepositoryDNA._generate_code_dna"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/repository_dna.py",
+     "line": 210,
+     "rule": "builtin:open(r)",
+     "symbol": "RepositoryDNA._generate_config_dna"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/repository_dna.py",
+     "line": 236,
+     "rule": "builtin:open(r)",
+     "symbol": "RepositoryDNA._generate_dependency_dna"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/security_analysis.py",
+     "line": 116,
+     "rule": "builtin:open(r)",
+     "symbol": "SecurityAnalyzer._scan_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py",
+     "line": 346,
+     "rule": "builtin:open(r)",
+     "symbol": "EngineeringIntelligencePipeline.load_package"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py",
+     "line": 122,
+     "rule": "builtin:open(r)",
+     "symbol": "test_architecture_analysis"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py",
+     "line": 158,
+     "rule": "builtin:open(r)",
+     "symbol": "test_evidence_generation"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 360,
+     "rule": "builtin:open(r)",
+     "symbol": "ArchitectureAnalysisStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 429,
+     "rule": "builtin:open(r)",
+     "symbol": "CodeGraphConstructionStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 502,
+     "rule": "builtin:open(r)",
+     "symbol": "EvidenceGenerationStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+     "line": 203,
+     "rule": "builtin:open(r)",
+     "symbol": "GraphBuilder._analyze_python_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+     "line": 389,
+     "rule": "builtin:open(r)",
+     "symbol": "GraphBuilder._build_relationships"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+     "line": 478,
+     "rule": "builtin:open(r)",
+     "symbol": "GraphBuilder._count_lines"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py",
+     "line": 439,
+     "rule": "builtin:open(r)",
+     "symbol": "KnowledgeGraph.load"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/run_graph.py",
+     "line": 132,
+     "rule": "builtin:open(r)",
+     "symbol": "test_graph_builder"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py",
+     "line": 195,
+     "rule": "builtin:open(r)",
+     "symbol": "GraphVersioning.load_versions"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/providers/filesystem_provider.py",
+     "line": 78,
+     "rule": "builtin:open(r)",
+     "symbol": "FilesystemProvider.read_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/providers/filesystem_provider.py",
+     "line": 88,
+     "rule": "builtin:open(r)",
+     "symbol": "FilesystemProvider.read_file_bytes"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/evidence.py",
+     "line": 139,
+     "rule": "builtin:open(r)",
+     "symbol": "EvidenceGenerator._compute_kernel_hash"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/runtime.py",
+     "line": 107,
+     "rule": "builtin:open(r)",
+     "symbol": "InvariantRuntime._analyze_file_imports"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/runtime.py",
+     "line": 235,
+     "rule": "builtin:open(r)",
+     "symbol": "InvariantRuntime._check_business_logic_location"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/runtime.py",
+     "line": 271,
+     "rule": "builtin:open(r)",
+     "symbol": "InvariantRuntime._verify_contracts_immutable"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/runtime.py",
+     "line": 303,
+     "rule": "builtin:open(r)",
+     "symbol": "InvariantRuntime._verify_events_immutable"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 120,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelSealCertificate._compute_kernel_integrity_hash"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 247,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelSealCertificate.verify"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_compatibility.py",
+     "line": 36,
+     "rule": "builtin:open(r)",
+     "symbol": "TestPythonCompatibility.test_core_modules_python3_syntax"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_compatibility.py",
+     "line": 58,
+     "rule": "builtin:open(r)",
+     "symbol": "TestAPCompatibility.test_kernel_has_version"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_compatibility.py",
+     "line": 66,
+     "rule": "builtin:open(r)",
+     "symbol": "TestAPCompatibility.test_kernel_has_version"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_contracts.py",
+     "line": 52,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelContracts.test_contract_files_are_valid_json"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_contracts.py",
+     "line": 76,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelContracts.test_no_contract_mutation"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_contracts.py",
+     "line": 95,
+     "rule": "builtin:open(r)",
+     "symbol": "TestContractBackwardCompatibility.test_contract_version_exists"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_events.py",
+     "line": 56,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelEvents.test_event_files_are_valid_json"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_events.py",
+     "line": 76,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelEvents.test_events_are_immutable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_events.py",
+     "line": 100,
+     "rule": "builtin:open(r)",
+     "symbol": "TestEventCompleteness.test_all_events_have_required_fields"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_performance.py",
+     "line": 55,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelPerformance.test_contract_files_load_quickly"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_performance.py",
+     "line": 73,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelPerformance.test_event_files_load_quickly"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_recovery.py",
+     "line": 87,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelResilience.test_kernel_has_error_boundaries"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_recovery.py",
+     "line": 109,
+     "rule": "builtin:open(r)",
+     "symbol": "TestKernelResilience.test_kernel_logs_errors"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_registry.py",
+     "line": 53,
+     "rule": "builtin:open(r)",
+     "symbol": "TestRegistryIntegrity.test_registry_entries_are_valid"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_registry.py",
+     "line": 72,
+     "rule": "builtin:open(r)",
+     "symbol": "TestRegistryIntegrity.test_registry_has_version"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_runtime.py",
+     "line": 87,
+     "rule": "builtin:open(r)",
+     "symbol": "TestRuntimeIntegrity.test_runtime_starts_cleanly"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 30,
+     "rule": "builtin:open(r)",
+     "symbol": "TestSerialization.test_kernel_contracts_are_json_serializable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 48,
+     "rule": "builtin:open(r)",
+     "symbol": "TestSerialization.test_kernel_events_are_json_serializable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 66,
+     "rule": "builtin:open(r)",
+     "symbol": "TestSerialization.test_kernel_lock_file_is_valid"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 85,
+     "rule": "builtin:open(r)",
+     "symbol": "TestSerializationStability.test_contract_structure_is_stable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 101,
+     "rule": "builtin:open(r)",
+     "symbol": "TestSerializationStability.test_event_structure_is_stable"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 211,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelAnalyzer.extract_contracts"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 259,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelAnalyzer.extract_events"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 296,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelAnalyzer.analyze_dependencies"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 404,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelAnalyzer._verify_package_boundaries"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 459,
+     "rule": "builtin:open(r)",
+     "symbol": "KernelAnalyzer._verify_module_isolation"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 1033,
+     "rule": "builtin:open(r)",
+     "symbol": "ReportGenerator._hash_modules"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/intelligence/code/analyzer.py",
+     "line": 37,
+     "rule": "builtin:open(r)",
+     "symbol": "PythonCodeAnalyzer.analyze_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 170,
+     "rule": "builtin:open(r)",
+     "symbol": "LocalRepositoryProvider._walk_files"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 27,
+     "rule": "builtin:open(r)",
+     "symbol": "FilesystemProvider.read"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/runtime/artifact/runtime.py",
+     "line": 234,
+     "rule": "builtin:open(r)",
+     "symbol": "ArtifactRuntime._calculate_checksum"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/skills/file/operations.py",
+     "line": 22,
+     "rule": "builtin:open(r)",
+     "symbol": "ReadFileSkill.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
+     "line": 301,
+     "rule": "builtin:open(r)",
+     "symbol": "RepositoryDiscoveryMission._extract_knowledge"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
+     "line": 313,
+     "rule": "builtin:open(r)",
+     "symbol": "RepositoryDiscoveryMission._extract_knowledge"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 122,
+     "rule": "builtin:open(r)",
+     "symbol": "FileSystemReader.read_repository"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 481,
+     "rule": "builtin:open(r)",
+     "symbol": "test_big_file_hash_and_metrics_match_old_exactly"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 486,
+     "rule": "builtin:open(r)",
+     "symbol": "test_big_file_hash_and_metrics_match_old_exactly"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 509,
+     "rule": "builtin:open(r)",
+     "symbol": "test_big_file_invalid_byte_classification_matches_old"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 600,
+     "rule": "builtin:open(r)",
+     "symbol": "test_cr_only_big_file_metrics_parity"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 764,
+     "rule": "builtin:open(r)",
+     "symbol": "test_contents_newline_normalized_parity"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 157,
+     "rule": "attr:pathlib.Path.read_text",
+     "symbol": "main"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "file_write": {
+   "category": "file-operations",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/artifact_system/artifact.py",
+     "line": 231,
+     "rule": "builtin:open(w)",
+     "symbol": "ArtifactStore.save"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/artifact_system/run_artifact.py",
+     "line": 246,
+     "rule": "builtin:open(w)",
+     "symbol": "run_artifact_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/autonomous_engineering/run_autonomous.py",
+     "line": 244,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/autonomous_engineering/run_platform_batch.py",
+     "line": 248,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/engineering_report.py",
+     "line": 191,
+     "rule": "builtin:open(w)",
+     "symbol": "EngineeringReporter.export_report"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capability_runtime/run_capability.py",
+     "line": 252,
+     "rule": "builtin:open(w)",
+     "symbol": "run_capability_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/core/civilization_engine.py",
+     "line": 220,
+     "rule": "builtin:open(w)",
+     "symbol": "CivilizationEngine._save_results"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/engineering_brain/run_advanced_brain.py",
+     "line": 260,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/engineering_brain/run_brain.py",
+     "line": 205,
+     "rule": "builtin:open(w)",
+     "symbol": "run_brain_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/engineering_brain/run_brain_batch.py",
+     "line": 227,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/engineering_learning/run_learning.py",
+     "line": 239,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/engineering_learning/run_learning_batch_2.py",
+     "line": 238,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py",
+     "line": 339,
+     "rule": "builtin:open(w)",
+     "symbol": "EngineeringIntelligencePipeline.save_package"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py",
+     "line": 244,
+     "rule": "builtin:open(w)",
+     "symbol": "run_pipeline_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py",
+     "line": 431,
+     "rule": "builtin:open(w)",
+     "symbol": "KnowledgeGraph.save"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/run_graph.py",
+     "line": 226,
+     "rule": "builtin:open(w)",
+     "symbol": "run_graph_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py",
+     "line": 186,
+     "rule": "builtin:open(w)",
+     "symbol": "GraphVersioning.save_versions"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/mission_planner/run_planner.py",
+     "line": 246,
+     "rule": "builtin:open(w)",
+     "symbol": "run_planner_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/provider_runtime/run_provider.py",
+     "line": 211,
+     "rule": "builtin:open(w)",
+     "symbol": "run_provider_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/providers/filesystem_provider.py",
+     "line": 96,
+     "rule": "builtin:open(w)",
+     "symbol": "FilesystemProvider.write_file"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/reasoning_runtime/run_reasoning.py",
+     "line": 218,
+     "rule": "builtin:open(w)",
+     "symbol": "run_reasoning_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/run_batch.py",
+     "line": 188,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/run_final_batch.py",
+     "line": 186,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/run_foundation.py",
+     "line": 171,
+     "rule": "builtin:open(w)",
+     "symbol": "run_foundation_test"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/benchmark.py",
+     "line": 165,
+     "rule": "builtin:open(w)",
+     "symbol": "InvariantBenchmark.export_benchmark"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/evidence.py",
+     "line": 181,
+     "rule": "builtin:open(w)",
+     "symbol": "EvidenceGenerator.export_evidence_package"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/evidence.py",
+     "line": 187,
+     "rule": "builtin:open(w)",
+     "symbol": "EvidenceGenerator.export_evidence_package"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/evidence.py",
+     "line": 191,
+     "rule": "builtin:open(w)",
+     "symbol": "EvidenceGenerator.export_evidence_package"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/invariants/reporter.py",
+     "line": 182,
+     "rule": "builtin:open(w)",
+     "symbol": "InvariantReporter.save_report"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 228,
+     "rule": "builtin:open(w)",
+     "symbol": "KernelSealCertificate.save"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 283,
+     "rule": "builtin:open(w)",
+     "symbol": "create_kernel_seal_certificate"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 294,
+     "rule": "builtin:open(w)",
+     "symbol": "create_kernel_seal_certificate"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 304,
+     "rule": "builtin:open(w)",
+     "symbol": "create_kernel_seal_certificate"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/ecosystem/run_ecosystem.py",
+     "line": 239,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/ecosystem/run_ecosystem_batch_2.py",
+     "line": 245,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/enterprise/run_enterprise.py",
+     "line": 241,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/enterprise/run_enterprise_batch_2.py",
+     "line": 238,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/evolution/run_evolution.py",
+     "line": 220,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/federation/run_federation.py",
+     "line": 240,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/federation/run_federation_batch_2.py",
+     "line": 239,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 1023,
+     "rule": "builtin:open(w)",
+     "symbol": "ReportGenerator.generate_executive_summary"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/finalization/kernel_finalizer.py",
+     "line": 1055,
+     "rule": "builtin:open(w)",
+     "symbol": "ReportGenerator._save_json"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/main.py",
+     "line": 66,
+     "rule": "builtin:open(w)",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 32,
+     "rule": "builtin:open(w)",
+     "symbol": "FilesystemProvider.write"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/skills/file/operations.py",
+     "line": 43,
+     "rule": "builtin:open(w)",
+     "symbol": "WriteFileSkill.execute"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "git_operations": {
+   "category": "vcs",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 69,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 83,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 94,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 102,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 114,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/__init__.py",
+     "line": 134,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "RepositoryAnalysisCapability._remote_revision"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 681,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "RepositoryAnalysisService._local_revision"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 693,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "RepositoryAnalysisService._actual_branch"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/core/civilization_engine.py",
+     "line": 163,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "CivilizationEngine.analyze_github_repository"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 76,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 84,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 92,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+     "line": 112,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GraphBuilder._create_repository_node"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/conftest.py",
+     "line": 57,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 99,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 105,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 111,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 65,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitProvider.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 96,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitProvider.pull"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 109,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitProvider.status"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 34,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 41,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 48,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 118,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.checkout"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 130,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.branch"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 142,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.commit"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 147,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.commit"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 161,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 168,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 175,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 314,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 316,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 319,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 320,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 323,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_extraction.py",
+     "line": 363,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_extraction.py",
+     "line": 374,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_online_reference_repository"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_framework_detection.py",
+     "line": 314,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_language_weights.py",
+     "line": 52,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_language_weights.py",
+     "line": 280,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_online_reference_repository"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 357,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 358,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 360,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 361,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 882,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 883,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 885,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 886,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 44,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "git"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 70,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "blob"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 94,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "check"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 139,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "is_pre_governance"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 158,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 160,
+     "rule": "git-arg:subprocess.run",
+     "symbol": "main"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "http_request": {
+   "category": "web",
+   "declared_in": [
+    "requests@pypi"
+   ],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/foundation_extra.py",
+     "line": 325,
+     "rule": "attr:urllib.request.urlopen",
+     "symbol": "osv_query_batch"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/providers/github_provider.py",
+     "line": 92,
+     "rule": "attr:urllib.request.urlopen",
+     "symbol": "GitHubProvider._request"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 215,
+     "rule": "attr:urllib.request.urlopen",
+     "symbol": "HTTPProvider.get"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 225,
+     "rule": "attr:urllib.request.urlopen",
+     "symbol": "HTTPProvider.post"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "logging": {
+   "category": "observability",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/implementation.py",
+     "line": 13,
+     "rule": "attr:logging.getLogger",
+     "symbol": "<module>"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "parse_cli_args": {
+   "category": "cli",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "tools/audit/inventory.py",
+     "line": 237,
+     "rule": "attr:argparse.ArgumentParser",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 144,
+     "rule": "attr:argparse.ArgumentParser",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "tools/quality/run_tests.py",
+     "line": 60,
+     "rule": "attr:argparse.ArgumentParser",
+     "symbol": "main"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "parse_json": {
+   "category": "data",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 182,
+     "rule": "attr:json.loads",
+     "symbol": "NpmAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 220,
+     "rule": "attr:json.loads",
+     "symbol": "NpmAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 290,
+     "rule": "attr:json.loads",
+     "symbol": "DockerAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 308,
+     "rule": "attr:json.loads",
+     "symbol": "DockerAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 338,
+     "rule": "attr:json.loads",
+     "symbol": "KubernetesAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/foundation_extra.py",
+     "line": 326,
+     "rule": "attr:json.loads",
+     "symbol": "osv_query_batch"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/foundation_extra.py",
+     "line": 542,
+     "rule": "attr:json.loads",
+     "symbol": "LicenseAnalysisCapability._declared"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/foundation_extra.py",
+     "line": 711,
+     "rule": "attr:json.loads",
+     "symbol": "ConfigurationAnalysisCapability.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/artifact_system/artifact.py",
+     "line": 248,
+     "rule": "attr:json.load",
+     "symbol": "ArtifactStore.load"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/capabilities/dependency_analysis.py",
+     "line": 192,
+     "rule": "attr:json.load",
+     "symbol": "DependencyAnalyzer._parse_package_json"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py",
+     "line": 347,
+     "rule": "attr:json.load",
+     "symbol": "EngineeringIntelligencePipeline.load_package"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py",
+     "line": 440,
+     "rule": "attr:json.load",
+     "symbol": "KnowledgeGraph.load"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py",
+     "line": 196,
+     "rule": "attr:json.load",
+     "symbol": "GraphVersioning.load_versions"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/providers/github_provider.py",
+     "line": 93,
+     "rule": "attr:json.loads",
+     "symbol": "GitHubProvider._request"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/core/seal.py",
+     "line": 248,
+     "rule": "attr:json.load",
+     "symbol": "KernelSealCertificate.verify"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_contracts.py",
+     "line": 54,
+     "rule": "attr:json.load",
+     "symbol": "TestKernelContracts.test_contract_files_are_valid_json"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_contracts.py",
+     "line": 96,
+     "rule": "attr:json.load",
+     "symbol": "TestContractBackwardCompatibility.test_contract_version_exists"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_events.py",
+     "line": 58,
+     "rule": "attr:json.load",
+     "symbol": "TestKernelEvents.test_event_files_are_valid_json"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_events.py",
+     "line": 77,
+     "rule": "attr:json.load",
+     "symbol": "TestKernelEvents.test_events_are_immutable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_events.py",
+     "line": 101,
+     "rule": "attr:json.load",
+     "symbol": "TestEventCompleteness.test_all_events_have_required_fields"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_performance.py",
+     "line": 56,
+     "rule": "attr:json.load",
+     "symbol": "TestKernelPerformance.test_contract_files_load_quickly"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_performance.py",
+     "line": 74,
+     "rule": "attr:json.load",
+     "symbol": "TestKernelPerformance.test_event_files_load_quickly"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_registry.py",
+     "line": 55,
+     "rule": "attr:json.load",
+     "symbol": "TestRegistryIntegrity.test_registry_entries_are_valid"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_registry.py",
+     "line": 74,
+     "rule": "attr:json.load",
+     "symbol": "TestRegistryIntegrity.test_registry_has_version"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 31,
+     "rule": "attr:json.load",
+     "symbol": "TestSerialization.test_kernel_contracts_are_json_serializable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 35,
+     "rule": "attr:json.loads",
+     "symbol": "TestSerialization.test_kernel_contracts_are_json_serializable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 49,
+     "rule": "attr:json.load",
+     "symbol": "TestSerialization.test_kernel_events_are_json_serializable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 53,
+     "rule": "attr:json.loads",
+     "symbol": "TestSerialization.test_kernel_events_are_json_serializable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 67,
+     "rule": "attr:json.load",
+     "symbol": "TestSerialization.test_kernel_lock_file_is_valid"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 86,
+     "rule": "attr:json.load",
+     "symbol": "TestSerializationStability.test_contract_structure_is_stable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_serialization.py",
+     "line": 102,
+     "rule": "attr:json.load",
+     "symbol": "TestSerializationStability.test_event_structure_is_stable"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/stack_detection/__init__.py",
+     "line": 425,
+     "rule": "attr:json.loads",
+     "symbol": "_parse_package_json"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/stack_detection/__init__.py",
+     "line": 488,
+     "rule": "attr:json.loads",
+     "symbol": "_parse_composer"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/stack_detection/__init__.py",
+     "line": 1043,
+     "rule": "attr:json.loads",
+     "symbol": "_manifest_entry_points"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/test_knowledge_unification.py",
+     "line": 481,
+     "rule": "attr:json.loads",
+     "symbol": "test_model_identity_both_import_orders"
+    },
+    {
+     "context": "production",
+     "file": "agos/meta/schema.py",
+     "line": 96,
+     "rule": "attr:json.loads",
+     "symbol": "UniversalSchemaPlatform.deserialize"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/application/dna_generator.py",
+     "line": 135,
+     "rule": "attr:json.loads",
+     "symbol": "RepositoryDNAv2.from_json"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_audit_tools.py",
+     "line": 33,
+     "rule": "attr:json.loads",
+     "symbol": "test_inventory_records_external_tests_and_register_uses_them"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 39,
+     "rule": "attr:json.loads",
+     "symbol": "test_default_boot_discovers_and_validates_real_components"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 79,
+     "rule": "attr:json.loads",
+     "symbol": "test_mission_runs_end_to_end_through_pipeline"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 171,
+     "rule": "attr:json.loads",
+     "symbol": "test_main_boots_through_bootstrapper"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_audit.py",
+     "line": 68,
+     "rule": "attr:json.loads",
+     "symbol": "test_clean_environment_report"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_extraction.py",
+     "line": 380,
+     "rule": "attr:json.loads",
+     "symbol": "test_online_reference_repository"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_facade.py",
+     "line": 42,
+     "rule": "attr:json.loads",
+     "symbol": "test_lifecycle_and_registries"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_facade.py",
+     "line": 67,
+     "rule": "attr:json.loads",
+     "symbol": "test_mission_success_updates_mission_object"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_facade.py",
+     "line": 122,
+     "rule": "attr:json.loads",
+     "symbol": "test_health_report_is_truthful"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_knowledge_graph_from_analysis.py",
+     "line": 128,
+     "rule": "attr:json.loads",
+     "symbol": "test_saved_graph_answers_queries_from_disk"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_namespace_identity.py",
+     "line": 159,
+     "rule": "attr:json.loads",
+     "symbol": "test_every_platform_module_importable_under_agos_namespace_with_kernel"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_registry_manifest.py",
+     "line": 19,
+     "rule": "attr:json.loads",
+     "symbol": "test_manifest_is_versioned_and_consistent_with_runtime"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_registry_manifest.py",
+     "line": 24,
+     "rule": "attr:json.loads",
+     "symbol": "test_manifest_is_versioned_and_consistent_with_runtime"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/clean_env.py",
+     "line": 92,
+     "rule": "attr:json.loads",
+     "symbol": "installed_probe"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/clean_env.py",
+     "line": 96,
+     "rule": "attr:json.loads",
+     "symbol": "runtime_modules"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/module_register.py",
+     "line": 46,
+     "rule": "attr:json.loads",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/registry_manifest.py",
+     "line": 27,
+     "rule": "attr:json.loads",
+     "symbol": "generate"
+    },
+    {
+     "context": "production",
+     "file": "tools/quality/run_tests.py",
+     "line": 70,
+     "rule": "attr:json.loads",
+     "symbol": "main"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "parse_yaml": {
+   "category": "data",
+   "declared_in": [
+    "pyyaml@pypi"
+   ],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/rie/application/dna_generator.py",
+     "line": 140,
+     "rule": "attr:yaml.safe_load",
+     "symbol": "RepositoryDNAv2.from_yaml"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "run_command": {
+   "category": "execution",
+   "declared_in": [],
+   "findings": [
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 69,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 83,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 94,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 102,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 114,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 178,
+     "rule": "attr:subprocess.run",
+     "symbol": "NpmAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 191,
+     "rule": "attr:subprocess.run",
+     "symbol": "NpmAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 203,
+     "rule": "attr:subprocess.run",
+     "symbol": "NpmAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 215,
+     "rule": "attr:subprocess.run",
+     "symbol": "NpmAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 246,
+     "rule": "attr:subprocess.run",
+     "symbol": "DockerAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 252,
+     "rule": "attr:subprocess.run",
+     "symbol": "DockerAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 271,
+     "rule": "attr:subprocess.run",
+     "symbol": "DockerAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 282,
+     "rule": "attr:subprocess.run",
+     "symbol": "DockerAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 300,
+     "rule": "attr:subprocess.run",
+     "symbol": "DockerAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 334,
+     "rule": "attr:subprocess.run",
+     "symbol": "KubernetesAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 353,
+     "rule": "attr:subprocess.run",
+     "symbol": "KubernetesAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 364,
+     "rule": "attr:subprocess.run",
+     "symbol": "KubernetesAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 375,
+     "rule": "attr:subprocess.run",
+     "symbol": "KubernetesAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 402,
+     "rule": "attr:subprocess.run",
+     "symbol": "TerraformAdapter.discover"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 415,
+     "rule": "attr:subprocess.run",
+     "symbol": "TerraformAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 426,
+     "rule": "attr:subprocess.run",
+     "symbol": "TerraformAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/adapters/implementation.py",
+     "line": 437,
+     "rule": "attr:subprocess.run",
+     "symbol": "TerraformAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/__init__.py",
+     "line": 134,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryAnalysisCapability._remote_revision"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 681,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryAnalysisService._local_revision"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/capabilities/analysis_service.py",
+     "line": 693,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryAnalysisService._actual_branch"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/core/civilization_engine.py",
+     "line": 163,
+     "rule": "attr:subprocess.run",
+     "symbol": "CivilizationEngine.analyze_github_repository"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 76,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 84,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
+     "line": 92,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryFingerprintStage.process"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/knowledge_graph/builder.py",
+     "line": 112,
+     "rule": "attr:subprocess.run",
+     "symbol": "GraphBuilder._create_repository_node"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/civilization/providers/git_provider.py",
+     "line": 49,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitProvider._run_git"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/clone_safety.py",
+     "line": 96,
+     "rule": "attr:subprocess.run",
+     "symbol": "default_branch"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/clone_safety.py",
+     "line": 226,
+     "rule": "attr:subprocess.run",
+     "symbol": "_run_clone"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/clone_safety.py",
+     "line": 244,
+     "rule": "attr:subprocess.run",
+     "symbol": "_run_clone"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/conftest.py",
+     "line": 57,
+     "rule": "attr:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_performance.py",
+     "line": 33,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestKernelPerformance.test_kernel_imports_quickly"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_golden_performance.py",
+     "line": 93,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestPerformanceBaselines.test_no_performance_regression"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/core/tests/test_runner.py",
+     "line": 70,
+     "rule": "attr:subprocess.run",
+     "symbol": "run_golden_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 99,
+     "rule": "attr:subprocess.run",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 105,
+     "rule": "attr:subprocess.run",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/__init__.py",
+     "line": 111,
+     "rule": "attr:subprocess.run",
+     "symbol": "LocalRepositoryProvider.Metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 65,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitProvider.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 96,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitProvider.pull"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 109,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitProvider.status"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/filesystem.py",
+     "line": 249,
+     "rule": "attr:subprocess.run",
+     "symbol": "DockerProvider.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/network.py",
+     "line": 83,
+     "rule": "attr:subprocess.run",
+     "symbol": "CLIProvider.execute_sandboxed"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/providers/network.py",
+     "line": 154,
+     "rule": "attr:subprocess.run",
+     "symbol": "LocalExecutionProvider.execute_sandboxed"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/self_hosting/runtime.py",
+     "line": 259,
+     "rule": "attr:subprocess.run",
+     "symbol": "SelfHostingRuntime.run_self_tests"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/skills/execution/operations.py",
+     "line": 21,
+     "rule": "attr:subprocess.run",
+     "symbol": "ExecuteCLISkill.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/agos-kernel/skills/implementation.py",
+     "line": 165,
+     "rule": "attr:subprocess.run",
+     "symbol": "RepositoryAnalysisSkill._analyze_structure"
+    },
+    {
+     "context": "test",
+     "file": "agos/agos-kernel/test_knowledge_unification.py",
+     "line": 478,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_model_identity_both_import_orders"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 34,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 41,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/rie/infrastructure/__init__.py",
+     "line": 48,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitFetcher.get_metadata"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/tools/__init__.py",
+     "line": 103,
+     "rule": "attr:subprocess.run",
+     "symbol": "BaseToolAdapter.execute"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/tools/__init__.py",
+     "line": 125,
+     "rule": "attr:subprocess.run",
+     "symbol": "BaseToolAdapter.health_check"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/tools/__init__.py",
+     "line": 136,
+     "rule": "attr:subprocess.run",
+     "symbol": "BaseToolAdapter.get_version"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 118,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.checkout"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 130,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.branch"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 142,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.commit"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 147,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.commit"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 161,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 168,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "context": "production",
+     "file": "agos/seos/workspace/__init__.py",
+     "line": 175,
+     "rule": "attr:subprocess.run",
+     "symbol": "GitOperations.get_info"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_aware_utc.py",
+     "line": 66,
+     "rule": "attr:subprocess.run",
+     "symbol": "_in_riyadh"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 19,
+     "rule": "attr:subprocess.run",
+     "symbol": "run"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 34,
+     "rule": "attr:subprocess.run",
+     "symbol": "git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 166,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_main_boots_through_bootstrapper"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_bootstrap.py",
+     "line": 174,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_main_boots_through_bootstrapper"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 314,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 316,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 319,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 320,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_capability_genome.py",
+     "line": 323,
+     "rule": "attr:subprocess.run",
+     "symbol": "TestCapabilityEntry.test_url_flow_records_commit_from_provider"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_civilization_unification.py",
+     "line": 261,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_identity_across_paths_in_fresh_interpreters"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_clone_safety.py",
+     "line": 39,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_clone_safety.py",
+     "line": 174,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_escaping_symlink_rejects_the_clone"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_clone_safety.py",
+     "line": 189,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_internal_symlink_is_allowed"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_audit.py",
+     "line": 14,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_committed_report_is_fresh_and_has_no_problems"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_extraction.py",
+     "line": 40,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_extraction.py",
+     "line": 363,
+     "rule": "attr:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_dependency_extraction.py",
+     "line": 374,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_online_reference_repository"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_framework_detection.py",
+     "line": 53,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_framework_detection.py",
+     "line": 314,
+     "rule": "attr:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_import_health.py",
+     "line": 16,
+     "rule": "attr:subprocess.run",
+     "symbol": "run"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_conftest.py",
+     "line": 14,
+     "rule": "attr:subprocess.run",
+     "symbol": "pytest_in"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_facade.py",
+     "line": 20,
+     "rule": "attr:subprocess.run",
+     "symbol": "run"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_facade.py",
+     "line": 37,
+     "rule": "attr:subprocess.run",
+     "symbol": "git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_kernel_facade.py",
+     "line": 172,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_strict_return_hook_fails_false_returning_validation"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_knowledge_graph_from_analysis.py",
+     "line": 52,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_language_weights.py",
+     "line": 43,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_language_weights.py",
+     "line": 52,
+     "rule": "attr:subprocess.run",
+     "symbol": "_reachable"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_language_weights.py",
+     "line": 280,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_online_reference_repository"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_namespace_identity.py",
+     "line": 19,
+     "rule": "attr:subprocess.run",
+     "symbol": "run"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_registry_manifest.py",
+     "line": 13,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_committed_manifest_matches_a_fresh_boot"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_registry_manifest.py",
+     "line": 22,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_manifest_is_versioned_and_consistent_with_runtime"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 357,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 358,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 360,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 361,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_url_branch_fallback_reflected_in_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 882,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 883,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 885,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 886,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_rie_branch_reflects_actual_facts"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_repository_intelligence_unification.py",
+     "line": 958,
+     "rule": "attr:subprocess.run",
+     "symbol": "test_import_orders_in_fresh_interpreters"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_rie_pipeline.py",
+     "line": 24,
+     "rule": "attr:subprocess.run",
+     "symbol": "local_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_seven_capabilities.py",
+     "line": 51,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "test",
+     "file": "tests/test_structure_fields.py",
+     "line": 38,
+     "rule": "attr:subprocess.run",
+     "symbol": "_git_repo"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/clean_env.py",
+     "line": 65,
+     "rule": "attr:subprocess.run",
+     "symbol": "run"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/inventory.py",
+     "line": 225,
+     "rule": "attr:subprocess.run",
+     "symbol": "probe_import"
+    },
+    {
+     "context": "production",
+     "file": "tools/audit/registry_manifest.py",
+     "line": 25,
+     "rule": "attr:subprocess.run",
+     "symbol": "generate"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 44,
+     "rule": "attr:subprocess.run",
+     "symbol": "git"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 70,
+     "rule": "attr:subprocess.run",
+     "symbol": "blob"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 94,
+     "rule": "attr:subprocess.run",
+     "symbol": "check"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 139,
+     "rule": "attr:subprocess.run",
+     "symbol": "is_pre_governance"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 158,
+     "rule": "attr:subprocess.run",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "tools/governance/check_commit.py",
+     "line": 160,
+     "rule": "attr:subprocess.run",
+     "symbol": "main"
+    },
+    {
+     "context": "production",
+     "file": "tools/quality/run_tests.py",
+     "line": 37,
+     "rule": "attr:subprocess.run",
+     "symbol": "run"
+    }
+   ],
+   "status": "statically_supported"
+  },
+  "run_tests": {
+   "category": "testing",
+   "declared_in": [
+    "pytest@pypi"
+   ],
+   "findings": [],
+   "status": "declared"
+  }
+ },
+ "supported_skill_count": 9,
+ "unread_python_files": {},
+ "verified_capability_count": 3
+}

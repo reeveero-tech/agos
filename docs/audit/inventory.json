@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 531,
-  "lines": 94430,
-  "functions": 5915,
+  "files": 532,
+  "lines": 95221,
+  "functions": 5935,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 253,
-  "import_ok": 529,
+  "import_ok": 530,
   "import_fail": 0
  },
  "packages": {
@@ -166,14 +166,14 @@
    "import_fail": 0
   },
   "agos-kernel/capabilities": {
-   "files": 11,
-   "lines": 3459,
-   "functions": 189,
+   "files": 12,
+   "lines": 4250,
+   "functions": 209,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 11,
+   "import_ok": 12,
    "import_fail": 0
   },
   "agos-kernel/certification": {
@@ -2289,7 +2289,7 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 351,
+   "lines": 353,
    "syntax_ok": true,
    "classes": 2,
    "functions": 16,
@@ -2306,6 +2306,7 @@
     "contracts",
     "interfaces",
     "capabilities.foundation_extra",
+    "capabilities.genome",
     "capabilities.analysis_service",
     "agos_kernel.civilization.knowledge_graph.analysis_loader",
     "stack_detection",
@@ -2323,6 +2324,7 @@
    "resolved_imports": [
     "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
+    "K:capabilities.genome",
     "K:civilization.knowledge_graph.analysis_loader",
     "K:contracts",
     "K:interfaces",
@@ -2440,7 +2442,7 @@
    "path": "agos/agos-kernel/capabilities/analysis_service.py",
    "module": "capabilities.analysis_service",
    "root": "kernel",
-   "lines": 698,
+   "lines": 711,
    "syntax_ok": true,
    "classes": 6,
    "functions": 26,
@@ -2474,6 +2476,7 @@
    ],
    "imported_by": [
     "K:capabilities",
+    "K:capabilities.genome",
     "K:civilization.capabilities.repository_analysis",
     "K:civilization.capabilities.repository_dna",
     "K:intelligence.repository.analyzer",
@@ -2481,6 +2484,7 @@
     "S:rie.infrastructure"
    ],
    "tested_by_external": [
+    "tests/test_capability_genome.py",
     "tests/test_repository_intelligence_unification.py"
    ],
    "import_status": "OK"
@@ -2556,6 +2560,43 @@
    ],
    "tested_by_external": [
     "tests/test_seven_capabilities.py"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/capabilities/genome.py",
+   "module": "capabilities.genome",
+   "root": "kernel",
+   "lines": 776,
+   "syntax_ok": true,
+   "classes": 2,
+   "functions": 20,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "ast",
+    "shlex",
+    "datetime",
+    "typing",
+    "interfaces",
+    "yaml",
+    "capabilities.analysis_service",
+    "stack_detection"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:capabilities.genome",
+   "resolved_imports": [
+    "K:capabilities.analysis_service",
+    "K:interfaces",
+    "K:stack_detection"
+   ],
+   "imported_by": [
+    "K:capabilities"
+   ],
+   "tested_by_external": [
+    "tests/test_capability_genome.py"
    ],
    "import_status": "OK"
   },
@@ -8522,6 +8563,7 @@
    "imported_by": [
     "K:capabilities",
     "K:capabilities.foundation_extra",
+    "K:capabilities.genome",
     "K:decision",
     "K:discovery",
     "K:providers",
@@ -8892,6 +8934,7 @@
    "imported_by": [],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_capability_genome.py",
     "tests/test_clone_safety.py",
     "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
@@ -9685,6 +9728,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_capability_genome.py",
     "tests/test_clone_safety.py",
     "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_repository_intelligence_unification.py",
@@ -11588,12 +11632,16 @@
     "K:capabilities",
     "K:capabilities.analysis_service",
     "K:capabilities.foundation_extra",
+    "K:capabilities.genome",
     "K:capabilities.technology.detection",
     "K:civilization.capabilities.dependency_analysis",
     "K:civilization.intelligence_pipeline.stages",
     "K:intelligence.repository.analyzer",
     "K:providers",
     "K:vertical_slices.repo_discovery.slice"
+   ],
+   "tested_by_external": [
+    "tests/test_capability_genome.py"
    ],
    "import_status": "OK"
   },
@@ -16144,6 +16192,36 @@
     "K:registry.provider",
     "K:resolvers",
     "S:"
+   ]
+  },
+  {
+   "path": "tests/test_capability_genome.py",
+   "imports": [
+    "agos.kernel",
+    "capabilities.analysis_service",
+    "capabilities.genome",
+    "datetime",
+    "json",
+    "os",
+    "pathlib",
+    "providers",
+    "pytest",
+    "requests",
+    "shutil",
+    "stack_detection",
+    "subprocess",
+    "sys",
+    "urllib.request"
+   ],
+   "scripts": [
+    "main"
+   ],
+   "resolved": [
+    "K:capabilities.analysis_service",
+    "K:capabilities.genome",
+    "K:main",
+    "K:providers",
+    "K:stack_detection"
    ]
   },
   {

@@ -4,6 +4,15 @@
   "generated_by": "tools/audit/registry_manifest.py",
   "capabilities": [
     {
+      "name": "CapabilityGenome",
+      "version": "1.0.0",
+      "class": "capabilities.genome.CapabilityGenomeCapability",
+      "skills": [
+        "CloneRepository",
+        "ReadRepository"
+      ]
+    },
+    {
       "name": "ConfigurationAnalysis",
       "version": "1.0.0",
       "class": "capabilities.foundation_extra.ConfigurationAnalysisCapability",

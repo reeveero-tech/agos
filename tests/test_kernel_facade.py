@@ -56,7 +56,9 @@ def test_lifecycle_and_registries():
     expected_caps = sorted(["RepositoryAnalysis", "SecurityScan", "LicenseAnalysis",
                             "DocumentationAnalysis", "ConfigurationAnalysis",
                             "InfrastructureAnalysis", "RepositoryDNAGeneration",
-                            "EngineeringKnowledgeExtraction"])
+                            "EngineeringKnowledgeExtraction",
+                                # R-W2-012: جينوم القدرات — قدرة حقيقية مسجلة
+                                "CapabilityGenome"])
     assert out["during"] == ["running", expected_caps, ["LocalRepositoryProvider"], True]
     assert out["after"] == "stopped"
 

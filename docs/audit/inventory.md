@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 531
-- **functions**: 5915
+- **files**: 532
+- **functions**: 5935
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 529
-- **lines**: 94430
+- **import_ok**: 530
+- **lines**: 95221
 - **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -32,7 +32,7 @@
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 11 | 3459 | 189 | 26 | 0 | 11 | 0 | 0 |
+| `agos-kernel/capabilities` | 12 | 4250 | 209 | 26 | 0 | 12 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
 | `agos-kernel/civilization` | 100 | 24397 | 1312 | 120 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
