@@ -1,12 +1,12 @@
 {
  "totals": {
   "files": 533,
-  "lines": 96382,
-  "functions": 6004,
+  "lines": 97440,
+  "functions": 6018,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 253,
+  "not_imported_by_others": 251,
   "import_ok": 531,
   "import_fail": 0
  },
@@ -310,7 +310,7 @@
   },
   "agos-kernel/decision": {
    "files": 1,
-   "lines": 86,
+   "lines": 119,
    "functions": 2,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -321,12 +321,12 @@
   },
   "agos-kernel/decision-pipeline": {
    "files": 1,
-   "lines": 305,
-   "functions": 12,
+   "lines": 1177,
+   "functions": 24,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 1,
    "import_fail": 0
   },
@@ -337,7 +337,7 @@
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 1,
    "import_fail": 0
   },
@@ -695,7 +695,7 @@
   },
   "agos-kernel/mission-engine": {
    "files": 1,
-   "lines": 248,
+   "lines": 257,
    "functions": 9,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -794,7 +794,7 @@
   },
   "agos-kernel/pipeline": {
    "files": 1,
-   "lines": 166,
+   "lines": 179,
    "functions": 4,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -893,8 +893,8 @@
   },
   "agos-kernel/resolvers": {
    "files": 1,
-   "lines": 206,
-   "functions": 8,
+   "lines": 326,
+   "functions": 10,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -981,7 +981,7 @@
   },
   "agos-kernel/shared": {
    "files": 1,
-   "lines": 60,
+   "lines": 63,
    "functions": 2,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1256,7 +1256,7 @@
   },
   "cognitive": {
    "files": 11,
-   "lines": 609,
+   "lines": 617,
    "functions": 58,
    "stub_functions": 6,
    "hardcoded_paths": 0,
@@ -1900,6 +1900,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py",
     "tests/test_registry_manifest.py"
    ],
@@ -6721,7 +6722,7 @@
    "path": "agos/agos-kernel/decision/__init__.py",
    "module": "decision",
    "root": "kernel",
-   "lines": 86,
+   "lines": 119,
    "syntax_ok": true,
    "classes": 2,
    "functions": 2,
@@ -6730,17 +6731,22 @@
    "imports": [
     "dataclasses",
     "typing",
+    "typing",
     "context",
     "interfaces",
     "registry.capability",
     "registry.provider",
-    "shared"
+    "shared",
+    "uuid",
+    "datetime",
+    "decision_pipeline"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:decision",
    "resolved_imports": [
     "K:context",
+    "K:decision_pipeline",
     "K:interfaces",
     "K:registry.capability",
     "K:registry.provider",
@@ -6748,6 +6754,7 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_decision_unification.py",
     "tests/test_import_health.py"
    ],
    "import_status": "OK"
@@ -6756,10 +6763,10 @@
    "path": "agos/agos-kernel/decision-pipeline/__init__.py",
    "module": "decision_pipeline",
    "root": "kernel",
-   "lines": 305,
+   "lines": 1177,
    "syntax_ok": true,
-   "classes": 10,
-   "functions": 12,
+   "classes": 16,
+   "functions": 24,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -6774,7 +6781,10 @@
    "alias_of": "decision-pipeline",
    "id": "K:decision_pipeline",
    "resolved_imports": [],
-   "imported_by": [],
+   "imported_by": [
+    "K:decision",
+    "K:resolvers"
+   ],
    "import_status": "OK"
   },
   {
@@ -6796,7 +6806,13 @@
    "importable_package_path": true,
    "id": "K:decision_pipeline",
    "resolved_imports": [],
-   "imported_by": [],
+   "imported_by": [
+    "K:decision",
+    "K:resolvers"
+   ],
+   "tested_by_external": [
+    "tests/test_decision_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -7369,6 +7385,9 @@
     "K:bootstrapper",
     "K:pipeline",
     "K:test_validation"
+   ],
+   "tested_by_external": [
+    "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
   },
@@ -9181,6 +9200,7 @@
     "K:test_validation"
    ],
    "tested_by_external": [
+    "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
@@ -9189,7 +9209,7 @@
    "path": "agos/agos-kernel/mission-engine/__init__.py",
    "module": "mission_engine",
    "root": "kernel",
-   "lines": 248,
+   "lines": 257,
    "syntax_ok": true,
    "classes": 10,
    "functions": 9,
@@ -9237,7 +9257,8 @@
     "K:bootstrapper"
    ],
    "tested_by_external": [
-    "tests/test_bootstrap.py"
+    "tests/test_bootstrap.py",
+    "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
   },
@@ -9531,7 +9552,7 @@
    "path": "agos/agos-kernel/pipeline/__init__.py",
    "module": "pipeline",
    "root": "kernel",
-   "lines": 166,
+   "lines": 179,
    "syntax_ok": true,
    "classes": 4,
    "functions": 4,
@@ -9558,6 +9579,9 @@
    ],
    "imported_by": [
     "K:bootstrapper"
+   ],
+   "tested_by_external": [
+    "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
   },
@@ -10105,6 +10129,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
@@ -10136,6 +10161,7 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
+    "tests/test_decision_unification.py",
     "tests/test_kernel_facade.py"
    ],
    "import_status": "OK"
@@ -10196,10 +10222,10 @@
    "path": "agos/agos-kernel/resolvers/__init__.py",
    "module": "resolvers",
    "root": "kernel",
-   "lines": 206,
+   "lines": 326,
    "syntax_ok": true,
    "classes": 6,
-   "functions": 8,
+   "functions": 10,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -10211,13 +10237,18 @@
     "interfaces",
     "mission",
     "registry.capability",
-    "registry.provider"
+    "registry.provider",
+    "uuid",
+    "datetime",
+    "decision_pipeline",
+    "decision_pipeline"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:resolvers",
    "resolved_imports": [
     "K:context",
+    "K:decision_pipeline",
     "K:interfaces",
     "K:mission",
     "K:registry.capability",
@@ -10228,7 +10259,8 @@
     "K:pipeline"
    ],
    "tested_by_external": [
-    "tests/test_bootstrap.py"
+    "tests/test_bootstrap.py",
+    "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
   },
@@ -11263,7 +11295,7 @@
    "path": "agos/agos-kernel/shared/__init__.py",
    "module": "shared",
    "root": "kernel",
-   "lines": 60,
+   "lines": 63,
    "syntax_ok": true,
    "classes": 5,
    "functions": 2,
@@ -11286,6 +11318,7 @@
     "K:interfaces"
    ],
    "tested_by_external": [
+    "tests/test_decision_unification.py",
     "tests/test_import_health.py"
    ],
    "import_status": "OK"
@@ -13385,7 +13418,7 @@
    "path": "agos/cognitive/decision.py",
    "module": "cognitive.decision",
    "root": "src",
-   "lines": 80,
+   "lines": 88,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -13403,6 +13436,9 @@
     "S:cognitive"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_decision_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16327,6 +16363,43 @@
     "K:providers",
     "S:rie.application",
     "S:rie.infrastructure"
+   ]
+  },
+  {
+   "path": "tests/test_decision_unification.py",
+   "imports": [
+    "agos_runtime",
+    "cognitive.decision",
+    "datetime",
+    "decision",
+    "decision_pipeline",
+    "events",
+    "json",
+    "mission",
+    "mission_engine",
+    "pathlib",
+    "pipeline",
+    "pytest",
+    "registry.capability",
+    "registry.provider",
+    "resolvers",
+    "shared",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:decision",
+    "K:decision_pipeline",
+    "K:events",
+    "K:mission",
+    "K:mission_engine",
+    "K:pipeline",
+    "K:registry.capability",
+    "K:registry.provider",
+    "K:resolvers",
+    "K:shared",
+    "S:cognitive.decision"
    ]
   },
   {

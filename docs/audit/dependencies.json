@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 570,
+  "files_scanned": 571,
   "external_imports": [
     {
       "import": "a",
@@ -75,6 +75,7 @@
           "tests/test_capability_genome.py",
           "tests/test_civilization_unification.py",
           "tests/test_clone_safety.py",
+          "tests/test_decision_unification.py",
           "tests/test_dependency_extraction.py",
           "tests/test_framework_detection.py",
           "tests/test_kernel_facade.py",

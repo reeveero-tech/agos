@@ -33,7 +33,7 @@ class ExecutionStep:
 
 @dataclass
 class ExecutionResult:
-    """Result of an execution pipeline."""
+    """Result of an execution pipeline — carries its decision evidence."""
     status: ExecutionStatus
     mission_id: str
     steps: List[ExecutionStep] = field(default_factory=list)
@@ -42,6 +42,8 @@ class ExecutionResult:
     started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     duration_ms: int = 0
+    #: عقود الدليل من قراري القدرة والموفّر (R-W1-004) — من المسار الموحد
+    decision_records: List[Any] = field(default_factory=list)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -52,7 +54,8 @@ class ExecutionResult:
             "error": self.error,
             "started_at": self.started_at.isoformat(),
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
-            "duration_ms": self.duration_ms
+            "duration_ms": self.duration_ms,
+            "decision_records": [r.to_dict() for r in self.decision_records]
         }
 
 
@@ -75,6 +78,11 @@ class ExecutionPipeline:
             result.steps.append(step)
             
             capability_selection = self.capability_resolver.resolve(mission, context)
+            # R-W1-004: يُحفظ أثر القرار فور عودة كل مرحلة — قبل فحص حالتها
+            # ففشل الحل لا يسقط الدليل (من اختار، ولماذا رُفض/تعذر)
+            result.decision_records = [
+                r for r in (getattr(capability_selection, "record", None),)
+                if r is not None]
             
             if capability_selection.status.value != "success":
                 raise Exception(f"Capability resolution failed: {capability_selection.reason}")
@@ -94,6 +102,11 @@ class ExecutionPipeline:
             result.steps.append(step)
             
             provider_selection = self.provider_resolver.resolve(capability_selection.capability, mission)
+            # R-W1-004: عقدي القرار معاً — حتى لو فشل حل الموفّر بعدها
+            result.decision_records = [
+                r for r in (getattr(capability_selection, "record", None),
+                            getattr(provider_selection, "record", None))
+                if r is not None]
             
             if provider_selection.status.value != "success":
                 raise Exception(f"Provider resolution failed: {provider_selection.reason}")

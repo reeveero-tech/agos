@@ -38,7 +38,7 @@ class MissionPlan:
 
 @dataclass
 class MissionExecutionResult:
-    """Result of mission execution."""
+    """Result of mission execution — carries decision evidence."""
     mission_id: str
     state: MissionState
     started_at: datetime
@@ -48,6 +48,8 @@ class MissionExecutionResult:
     error: Optional[str] = None
     events: List[Dict[str, Any]] = field(default_factory=list)
     metrics: Dict[str, Any] = field(default_factory=dict)
+    #: عقود دليل قراري القدرة والموفّر (R-W1-004) — من المسار الموحد
+    decision_records: List[Any] = field(default_factory=list)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -58,6 +60,7 @@ class MissionExecutionResult:
             "duration_ms": self.duration_ms,
             "result": self.result,
             "error": self.error,
+            "decision_records": [r.to_dict() for r in self.decision_records],
             "events": self.events,
             "metrics": self.metrics
         }
@@ -161,9 +164,15 @@ class MissionExecutor:
                 result.state = MissionState.COMPLETED
                 result.result = pipeline_result.result
                 result.events = [{"step": s.name, "status": s.status.value} for s in pipeline_result.steps]
+                result.decision_records = list(
+                    getattr(pipeline_result, "decision_records", []))
             else:
                 result.state = MissionState.FAILED
                 result.error = pipeline_result.error
+                # R-W1-004: الدليل لا يُسقط عند فشل التنفيذ — مراحل الاختيار
+                # نجحت وأثرها محفوظ حتى في النتيجة الفاشلة
+                result.decision_records = list(
+                    getattr(pipeline_result, "decision_records", []))
             
             result.completed_at = datetime.now(timezone.utc)
             result.duration_ms = int((result.completed_at - result.started_at).total_seconds() * 1000)

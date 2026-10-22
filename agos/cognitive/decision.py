@@ -1,4 +1,10 @@
-"""AGOS Universal Decision Engine - EXECUTION-000026."""
+"""AGOS Universal Decision Engine - EXECUTION-000026.
+
+R-W1-004: هذه واجهة **تسجيل** اختيارات خارجية — المقدَّر (الأدلة والثقة
+والاختيار) يقدمه المستدعي، والمحرك لا يقيّم البدائل ولا يدّعي إثبات تفوق
+المختار. الاختيارات الحسابية تُنتج من المسار الموحد (``decision-pipeline``)
+بعقدها الدليلي؛ هذا السجل يوسم مصدره بصدق: ``caller-provided``.
+"""
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 from datetime import datetime
@@ -18,6 +24,8 @@ class Decision:
     rejected_options: List[str] = field(default_factory=list)
     expected_outcome: str = ""
     created_at: str = ""
+    #: مصدر التقدير معلن — المقدَّم من المستدعي لا مُقيَّم من المحرك
+    evidence_provenance: str = "caller-provided"
 
 class DecisionRegistry:
     def __init__(self):

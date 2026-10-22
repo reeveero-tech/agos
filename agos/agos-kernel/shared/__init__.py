@@ -28,6 +28,9 @@ class Result(Generic[T]):
     data: Optional[Any] = None
     error: Optional[str] = None
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    #: R-W1-004: عقد دليل القرار متاح حتى في نتائج الفشل — بعد
+    #: timestamp كي لا تزاحم الاستدعاءات الموضعية القديمة (إضافة متوافقة)
+    record: Optional[Any] = None
     
     @property
     def is_success(self) -> bool:

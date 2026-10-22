@@ -5,12 +5,12 @@
 ## Totals
 
 - **files**: 533
-- **functions**: 6004
+- **functions**: 6018
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 531
-- **lines**: 96382
-- **not_imported_by_others**: 253
+- **lines**: 97440
+- **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
 
@@ -45,9 +45,9 @@
 | `agos-kernel/contracts` | 1 | 124 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/core` | 24 | 3695 | 181 | 0 | 0 | 24 | 0 | 15 |
 | `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/decision` | 1 | 86 | 2 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/decision-pipeline` | 1 | 305 | 12 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/decision_pipeline` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/decision` | 1 | 119 | 2 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/decision-pipeline` | 1 | 1177 | 24 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/decision_pipeline` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/diagnostics` | 3 | 159 | 8 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/discovery` | 1 | 442 | 22 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
@@ -80,7 +80,7 @@
 | `agos-kernel/marketplace` | 3 | 391 | 34 | 5 | 0 | 3 | 0 | 0 |
 | `agos-kernel/memory` | 3 | 394 | 19 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/mission` | 1 | 46 | 1 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/mission-engine` | 1 | 248 | 9 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/mission-engine` | 1 | 257 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/mission_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/model_packs` | 1 | 149 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/models` | 1 | 292 | 22 | 0 | 0 | 1 | 0 | 1 |
@@ -89,7 +89,7 @@
 | `agos-kernel/optimization` | 2 | 221 | 10 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/orchestrator` | 2 | 362 | 26 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/organization` | 2 | 183 | 10 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/pipeline` | 1 | 166 | 4 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/pipeline` | 1 | 179 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/platform_runtime` | 2 | 263 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
@@ -98,7 +98,7 @@
 | `agos-kernel/recommendation` | 2 | 175 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/registry` | 3 | 123 | 15 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/repository` | 2 | 309 | 25 | 2 | 0 | 2 | 0 | 0 |
-| `agos-kernel/resolvers` | 1 | 206 | 8 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/resolvers` | 1 | 326 | 10 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/resource-manager` | 1 | 222 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/resource_manager` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/runtime` | 29 | 3373 | 148 | 0 | 0 | 29 | 0 | 9 |
@@ -106,7 +106,7 @@
 | `agos-kernel/sdk` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/sdks` | 3 | 545 | 66 | 9 | 0 | 3 | 0 | 1 |
 | `agos-kernel/self_hosting` | 1 | 379 | 16 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/shared` | 1 | 60 | 2 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/shared` | 1 | 63 | 2 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/simulation` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/skill-engine` | 1 | 209 | 17 | 1 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skill_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
@@ -131,7 +131,7 @@
 | `cloud_session` | 1 | 95 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `cloud_workspace` | 1 | 103 | 9 | 1 | 0 | 1 | 0 | 1 |
 | `cognition` | 6 | 373 | 45 | 8 | 0 | 6 | 0 | 5 |
-| `cognitive` | 11 | 609 | 58 | 6 | 0 | 11 | 0 | 10 |
+| `cognitive` | 11 | 617 | 58 | 6 | 0 | 11 | 0 | 10 |
 | `consolidation` | 1 | 66 | 5 | 1 | 0 | 1 | 0 | 1 |
 | `constitution` | 2 | 264 | 21 | 1 | 0 | 2 | 0 | 1 |
 | `domain` | 6 | 419 | 49 | 7 | 0 | 6 | 0 | 5 |
