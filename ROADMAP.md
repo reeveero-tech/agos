@@ -73,7 +73,7 @@
 | R-W1-002 | توحيد **المهمة** (`mission`, `mission-engine`, `longrunning`, `vertical_slices`, `fabric.mission`, `products.missions`, `civilization/mission_planner`) | ADR + نموذج Mission واحد + واجهات | R-F-004 | TODO |
 | R-W1-003 | توحيد **التنفيذ** (`execution`(K), `pipeline`, `execution-context`, `context`, `agos.execution`, `fabric.execution`, `cloud_execution`) | ADR + محرك تنفيذ واحد | R-F-005 | TODO |
 | R-W1-004 | توحيد **القرار** (`decision`, `decision-pipeline`, `cognitive.decision`, وثائق `aie-intelligence`) | ADR + مسار قرار واحد يُنتج دليلاً | R-F-004 | TODO |
-| R-W1-005 | توحيد **المعرفة** (`knowledge`, `marketplace` knowledge fabric, `civilization/knowledge_*`, `fabric.knowledge`, `agos.evolution.knowledge`) | ADR + كائن معرفة واحد بمتطلبات المادة 13 | R-F-003 | TODO |
+| R-W1-005 | توحيد **المعرفة** (`knowledge`, `marketplace` knowledge fabric, `civilization/knowledge_*`, `fabric.knowledge`, `agos.evolution.knowledge`) | ADR + كائن معرفة واحد بمتطلبات المادة 13 | R-F-003 | DONE |
 | R-W1-006 | توحيد **الذكاء** (`intelligence`(K), `agos.intelligence`, وثائق `agos-intelligence`/`aie-intelligence`) | ADR + واجهة ذكاء واحدة (الأنماط الثلاثة: Instant/Engineer/Research) | R-F-005 | TODO |
 | R-W1-007 | توحيد **الحوكمة** (`governance`(K), `agos.governance`, `constitution`, `agos-canon`, `architecture`) | ADR + محرك سياسات واحد | R-F-005 | TODO |
 | R-W1-008 | توحيد **التطور** (`evolution`(K), `agos.evolution`, `laboratory`, `learning`) | ADR | R-F-005 | TODO |

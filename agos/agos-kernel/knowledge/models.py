@@ -137,6 +137,24 @@ class Knowledge:
     # Graph
     graph_position: Optional[Dict[str, float]] = None  # x, y for visualization
     
+    # R-W1-005 (ADR-0002): المادة 13 — كائن المعرفة المعتمد الموحد.
+    # الحقول إضافية بقيم افتراضية بعد الحقول القائمة فلا تنكسر المنشئات الموضعية.
+    source: str = ""                      # المصدر الأولي (الأساسي) — والقائمة الكاملة في metadata.sources
+    confidence: Optional[float] = None    # None = مجهولة (بيانات قديمة)، 0.0 = صفر معلن، وإلا [0, 1]
+    lineage: Optional[List[str]] = None   # None = نسب مجهول، [] = جذر معلن، وقائمة = مشتقة من آبائها
+    origin: str = "native"              # native | imported (حُوّل من أسرة أخرى — ADR-0002)
+    imported_at: Optional[datetime] = None  # وقت الاستيراد — ليس بديلاً عن زمن أصل المعرفة
+    domain_extras: Dict[str, Any] = field(default_factory=dict)  # بيانات مجال غير مشتركة بين الأسر — تُحفظ بلا فقد (ADR-0002)
+    
+    @property
+    def version(self) -> str:
+        """الإصدار — مصدر حقيقة واحد: يفوّض إلى metadata.version (ADR-0002)."""
+        return self.metadata.version
+    
+    @version.setter
+    def version(self, value: str) -> None:
+        self.metadata.version = value
+    
     def add_evidence(self, evidence: Evidence) -> None:
         """Add evidence to knowledge."""
         self.evidence.append(evidence)

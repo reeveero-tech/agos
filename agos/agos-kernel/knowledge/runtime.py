@@ -9,6 +9,7 @@ from .models import (
     Knowledge, KnowledgeType, KnowledgeStatus, KnowledgeMetadata,
     KnowledgeRelationship, Evidence, EvidenceQuality, Validation, KnowledgeGraph
 )
+from .article13 import article13_status
 
 
 class KnowledgeRuntime:
@@ -23,6 +24,9 @@ class KnowledgeRuntime:
         # Cache
         self.cache: Dict[str, Knowledge] = {}
         self.cache_enabled = True
+        
+        # R-W1-005 (ADR-0002): ختم حالة المادة 13 عند التخزين — حد الاعتماد
+        self.article13_index: Dict[str, Dict[str, Any]] = {}  # knowledge_id -> status
     
     def create_knowledge(
         self,
@@ -32,15 +36,26 @@ class KnowledgeRuntime:
         description: str = "",
         tags: Optional[List[str]] = None,
         evidence: Optional[List[Evidence]] = None,
+        source: str = "",
+        confidence: Optional[float] = None,
+        lineage: Optional[List[str]] = None,
+        version: str = "1.0.0",
     ) -> Knowledge:
-        """Create new knowledge."""
+        """Create new knowledge.
+        
+        R-W1-005: معاملات المادة 13 اختيارية بقيم افتراضية — النداءات القديمة
+        تعمل كما كانت، والنقص يُختم بحالته (لا يُختلق مصدر ولا دليل ولا ثقة).
+        """
         knowledge_id = self._generate_id(title)
         
         metadata = KnowledgeMetadata(
             title=title,
             description=description,
             tags=tags or [],
+            version=version,
         )
+        if source:
+            metadata.sources = [source]
         
         knowledge = Knowledge(
             id=knowledge_id,
@@ -48,6 +63,9 @@ class KnowledgeRuntime:
             metadata=metadata,
             content=content or {},
             evidence=evidence or [],
+            source=source,
+            confidence=confidence,
+            lineage=lineage,
         )
         
         # Index knowledge
@@ -56,10 +74,32 @@ class KnowledgeRuntime:
         # Add to graph
         self.graph.add_knowledge(knowledge)
         
-        # Store
+        # Store — وختم حالة المادة 13 عند التخزين (حد الاعتماد)
         self.knowledge_store[knowledge_id] = knowledge
+        self.article13_index[knowledge_id] = article13_status(knowledge)
         
         return knowledge
+    
+    def article13_report(self) -> Dict[str, Any]:
+        """R-W1-005: تقرير المادة 13 على كل المعرفة المخزونة.
+        
+        يتحقق حياً وقت التقرير — الكائنات قابلة للتعديل، والحالة المخزنة عند
+        الإنشاء لا تُعرض صلاحية حالية لشيء تغيّر (لا حالة مبيتة).
+        """
+        statuses = [article13_status(k) for k in self.knowledge_store.values()]
+        return {
+            "total": len(self.knowledge_store),
+            "constitutionally_complete": sum(1 for s in statuses if s["valid"]),
+            "incomplete": sum(1 for s in statuses if not s["valid"]),
+            "by_requirement": {
+                req: sum(
+                    1 for s in statuses
+                    for v in s["violations"] if v["requirement"] == req
+                )
+                for req in ("Source", "Evidence", "Confidence", "Version",
+                            "Timestamp", "Lineage")
+            },
+        }
     
     def get_knowledge(self, knowledge_id: str) -> Optional[Knowledge]:
         """Get knowledge by ID."""

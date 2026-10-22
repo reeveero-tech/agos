@@ -54,7 +54,7 @@
 | L1 | `agos-kernel/resolvers` | registry | 1 | 206 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 60 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos_kernel` | namespace | 1 | 172 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
-| L2 | `agos-kernel` | quality | 21 | 4434 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
+| L2 | `agos-kernel` | quality | 22 | 5179 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/agos_runtime` | boot | 1 | 139 | 0 | yes | yes | yes | L4 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
@@ -119,7 +119,7 @@
 | L4 | `agos-kernel/expansion` | evolution | 2 | 182 | 1 | yes | no | no | L1 | R-W5-007 |
 | L4 | `agos-kernel/experience` | learning | 2 | 156 | 0 | yes | no | yes | L1 | R-W5-001 |
 | L4 | `agos-kernel/intelligence` | intelligence | 16 | 4305 | 0 | yes | no | yes | L1 | R-W1-006, R-W2-006 |
-| L4 | `agos-kernel/knowledge` | knowledge | 4 | 692 | 0 | yes | no | yes | L1 | R-W1-005, R-W2-008 |
+| L4 | `agos-kernel/knowledge` | knowledge | 6 | 939 | 0 | yes | no | yes | L1 | R-W1-005, R-W2-008 |
 | L4 | `agos-kernel/laboratory` | evolution | 2 | 353 | 4 | yes | no | yes | L1 | R-W5-006 |
 | L4 | `agos-kernel/learning` | learning | 2 | 186 | 0 | yes | no | yes | L1 | R-W5-001 |
 | L4 | `agos-kernel/marketplace` | marketplace | 3 | 391 | 5 | yes | no | yes | L1 | R-W4-003 |
@@ -132,13 +132,13 @@
 | L4 | `cognitive` | cognition | 11 | 609 | 6 | yes | no | no | L1 | R-W1-010, R-W3-016 |
 | L4 | `intelligence` | intelligence | 6 | 410 | 8 | yes | no | no | L1 | R-F-005, R-W1-006, R-W3-019 |
 | L4 | `research` | evolution | 6 | 337 | 5 | yes | no | no | L1 | R-W5-007 |
-| L5 | `agos-kernel/civilization` | civilization | 99 | 23507 | 120 | yes | no | yes | L1 | R-F-003, R-W1-009, R-W3-014 |
+| L5 | `agos-kernel/civilization` | civilization | 99 | 23757 | 120 | yes | no | yes | L1 | R-F-003, R-W1-009, R-W3-014 |
 | L5 | `civilization` | civilization | 5 | 529 | 16 | yes | no | yes | L1 | R-F-005, R-W1-009, R-W3-014 |
 | L5 | `consolidation` | governance | 1 | 66 | 1 | yes | no | no | L1 | R-W1-001 |
 | L5 | `constitution` | governance | 2 | 264 | 1 | yes | no | no | L1 | R-W1-022 |
 | L5 | `domain` | domains | 6 | 419 | 7 | yes | no | no | L1 | R-W4-013 |
 | L5 | `execution` | execution | 11 | 552 | 0 | yes | no | no | L1 | R-F-005, R-W1-003, R-W3-019 |
-| L5 | `fabric` | fabric | 6 | 527 | 8 | yes | no | no | L1 | R-W1-013, R-W3-018 |
+| L5 | `fabric` | fabric | 6 | 697 | 8 | yes | no | yes | L1 | R-W1-013, R-W3-018 |
 | L5 | `foundation` | object-model | 11 | 849 | 4 | yes | no | no | L1 | R-W1-012, R-W3-017 |
 | L5 | `governance` | governance | 4 | 437 | 14 | yes | no | no | L1 | R-F-005, R-W1-007 |
 | L5 | `meta` | registry | 7 | 626 | 0 | yes | no | no | L1 | R-W1-014, R-W3-017 |

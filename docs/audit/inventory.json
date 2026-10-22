@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 525,
-  "lines": 90996,
-  "functions": 5773,
+  "files": 528,
+  "lines": 92408,
+  "functions": 5834,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 253,
-  "import_ok": 523,
+  "import_ok": 526,
   "import_fail": 0
  },
  "packages": {
@@ -23,14 +23,14 @@
    "import_fail": 0
   },
   "agos-kernel": {
-   "files": 21,
-   "lines": 4434,
-   "functions": 132,
+   "files": 22,
+   "lines": 5179,
+   "functions": 167,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 20,
-   "import_ok": 20,
+   "not_imported_by_others": 21,
+   "import_ok": 21,
    "import_fail": 0
   },
   "agos-kernel/adapters": {
@@ -189,8 +189,8 @@
   },
   "agos-kernel/civilization": {
    "files": 99,
-   "lines": 23507,
-   "functions": 1280,
+   "lines": 23757,
+   "functions": 1292,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -606,14 +606,14 @@
    "import_fail": 0
   },
   "agos-kernel/knowledge": {
-   "files": 4,
-   "lines": 692,
-   "functions": 30,
+   "files": 6,
+   "lines": 939,
+   "functions": 38,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 4,
+   "import_ok": 6,
    "import_fail": 0
   },
   "agos-kernel/laboratory": {
@@ -1344,12 +1344,12 @@
   },
   "fabric": {
    "files": 6,
-   "lines": 527,
-   "functions": 56,
+   "lines": 697,
+   "functions": 62,
    "stub_functions": 8,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 5,
+   "not_imported_by_others": 4,
    "import_ok": 6,
    "import_fail": 0
   },
@@ -1859,7 +1859,8 @@
    "id": "K:agos_kernel",
    "resolved_imports": [],
    "imported_by": [
-    "K:core.tests.test_golden_runtime"
+    "K:core.tests.test_golden_runtime",
+    "K:test_knowledge_unification"
    ],
    "tested_by_external": [
     "tests/test_namespace_identity.py"
@@ -4483,7 +4484,8 @@
     "K:civilization.knowledge_runtime.knowledge"
    ],
    "imported_by": [
-    "K:civilization.foundation_integration.foundation"
+    "K:civilization.foundation_integration.foundation",
+    "K:test_knowledge_unification"
    ],
    "import_status": "OK"
   },
@@ -4491,10 +4493,10 @@
    "path": "agos/agos-kernel/civilization/knowledge_runtime/knowledge.py",
    "module": "civilization.knowledge_runtime.knowledge",
    "root": "kernel",
-   "lines": 87,
+   "lines": 337,
    "syntax_ok": true,
    "classes": 4,
-   "functions": 9,
+   "functions": 21,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -4502,12 +4504,23 @@
     "datetime",
     "typing",
     "enum",
-    "uuid"
+    "uuid",
+    "agos_kernel.knowledge.convert",
+    "agos_kernel.knowledge.convert",
+    "agos_kernel.knowledge.article13",
+    "agos_kernel.knowledge.models",
+    "agos_kernel.knowledge.models",
+    "agos_kernel.knowledge.article13",
+    "agos_kernel.knowledge.models"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.knowledge_runtime.knowledge",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:knowledge.article13",
+    "K:knowledge.convert",
+    "K:knowledge.models"
+   ],
    "imported_by": [
     "K:civilization.knowledge_runtime"
    ],
@@ -8420,6 +8433,33 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/knowledge/article13.py",
+   "module": "knowledge.article13",
+   "root": "kernel",
+   "lines": 117,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 3,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "typing",
+    "datetime"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:knowledge.article13",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:civilization.knowledge_runtime.knowledge",
+    "K:knowledge.runtime",
+    "K:test_knowledge_unification",
+    "S:fabric.knowledge"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/knowledge/base.py",
    "module": "knowledge.base",
    "root": "kernel",
@@ -8445,13 +8485,41 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/knowledge/convert.py",
+   "module": "knowledge.convert",
+   "root": "kernel",
+   "lines": 72,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 2,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "__future__",
+    "datetime",
+    "typing",
+    "knowledge.models"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:knowledge.convert",
+   "resolved_imports": [
+    "K:knowledge.models"
+   ],
+   "imported_by": [
+    "K:civilization.knowledge_runtime.knowledge",
+    "S:fabric.knowledge"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/knowledge/models.py",
    "module": "knowledge.models",
    "root": "kernel",
-   "lines": 212,
+   "lines": 230,
    "syntax_ok": true,
    "classes": 9,
-   "functions": 7,
+   "functions": 9,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8465,8 +8533,12 @@
    "id": "K:knowledge.models",
    "resolved_imports": [],
    "imported_by": [
+    "K:civilization.knowledge_runtime.knowledge",
     "K:knowledge",
-    "K:knowledge.runtime"
+    "K:knowledge.convert",
+    "K:knowledge.runtime",
+    "K:test_knowledge_unification",
+    "S:fabric.knowledge"
    ],
    "import_status": "OK"
   },
@@ -8474,10 +8546,10 @@
    "path": "agos/agos-kernel/knowledge/runtime.py",
    "module": "knowledge.runtime",
    "root": "kernel",
-   "lines": 307,
+   "lines": 347,
    "syntax_ok": true,
    "classes": 1,
-   "functions": 17,
+   "functions": 18,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8486,12 +8558,14 @@
     "uuid",
     "datetime",
     "typing",
-    "knowledge.models"
+    "knowledge.models",
+    "knowledge.article13"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:knowledge.runtime",
    "resolved_imports": [
+    "K:knowledge.article13",
     "K:knowledge.models"
    ],
    "imported_by": [
@@ -8499,7 +8573,8 @@
     "K:civilization.runtime",
     "K:core.autonomous",
     "K:knowledge",
-    "K:platform_runtime.runtime"
+    "K:platform_runtime.runtime",
+    "K:test_knowledge_unification"
    ],
    "import_status": "OK"
   },
@@ -11843,6 +11918,62 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/test_knowledge_unification.py",
+   "module": "test_knowledge_unification",
+   "root": "kernel",
+   "lines": 745,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 35,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "os",
+    "pathlib",
+    "sys",
+    "agos_kernel",
+    "knowledge.runtime",
+    "knowledge.models",
+    "knowledge.article13",
+    "civilization.knowledge_runtime",
+    "datetime",
+    "datetime",
+    "datetime",
+    "agos.fabric.knowledge",
+    "agos.fabric.knowledge",
+    "knowledge.models",
+    "agos_kernel.knowledge.models",
+    "importlib.util",
+    "dataclasses",
+    "datetime",
+    "subprocess",
+    "sys",
+    "json",
+    "datetime",
+    "datetime",
+    "agos.fabric.knowledge",
+    "agos.fabric.knowledge",
+    "datetime",
+    "agos.fabric.knowledge",
+    "datetime",
+    "agos.fabric.knowledge",
+    "agos.fabric.knowledge"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:test_knowledge_unification",
+   "resolved_imports": [
+    "K:agos_kernel",
+    "K:civilization.knowledge_runtime",
+    "K:knowledge.article13",
+    "K:knowledge.models",
+    "K:knowledge.runtime",
+    "S:fabric.knowledge"
+   ],
+   "imported_by": [],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/test_language_framework_cloud.py",
    "module": "test_language_framework_cloud",
    "root": "kernel",
@@ -14134,24 +14265,34 @@
    "path": "agos/fabric/knowledge.py",
    "module": "fabric.knowledge",
    "root": "src",
-   "lines": 78,
+   "lines": 248,
    "syntax_ok": true,
    "classes": 3,
-   "functions": 7,
+   "functions": 13,
    "stub_functions": 1,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "datetime",
-    "typing"
+    "typing",
+    "agos_kernel.knowledge.models",
+    "agos_kernel.knowledge.article13",
+    "agos_kernel.knowledge.article13",
+    "agos_kernel.knowledge.convert",
+    "agos_kernel.knowledge.convert"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:fabric.knowledge",
    "resolved_imports": [
+    "K:knowledge.article13",
+    "K:knowledge.convert",
+    "K:knowledge.models",
     "S:fabric"
    ],
-   "imported_by": [],
+   "imported_by": [
+    "K:test_knowledge_unification"
+   ],
    "import_status": "OK"
   },
   {

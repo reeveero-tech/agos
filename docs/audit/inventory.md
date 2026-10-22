@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 525
-- **functions**: 5773
+- **files**: 528
+- **functions**: 5834
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 523
-- **lines**: 90996
+- **import_ok**: 526
+- **lines**: 92408
 - **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 21 | 4434 | 132 | 0 | 0 | 20 | 0 | 20 |
+| `agos-kernel` | 22 | 5179 | 167 | 0 | 0 | 21 | 0 | 21 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -34,7 +34,7 @@
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 10 | 2717 | 159 | 26 | 0 | 10 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 99 | 23507 | 1280 | 120 | 0 | 99 | 0 | 35 |
+| `agos-kernel/civilization` | 99 | 23757 | 1292 | 120 | 0 | 99 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 206 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -72,7 +72,7 @@
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 16 | 4305 | 139 | 0 | 0 | 16 | 0 | 4 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/knowledge` | 4 | 692 | 30 | 0 | 0 | 4 | 0 | 0 |
+| `agos-kernel/knowledge` | 6 | 939 | 38 | 0 | 0 | 6 | 0 | 0 |
 | `agos-kernel/laboratory` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/language_packs` | 1 | 107 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/learning` | 2 | 186 | 7 | 0 | 0 | 2 | 0 | 0 |
@@ -139,7 +139,7 @@
 | `enterprise` | 6 | 357 | 46 | 6 | 0 | 6 | 0 | 5 |
 | `evolution` | 6 | 405 | 48 | 17 | 0 | 6 | 0 | 5 |
 | `execution` | 11 | 552 | 55 | 0 | 0 | 11 | 0 | 10 |
-| `fabric` | 6 | 527 | 56 | 8 | 0 | 6 | 0 | 5 |
+| `fabric` | 6 | 697 | 62 | 8 | 0 | 6 | 0 | 4 |
 | `foundation` | 11 | 849 | 96 | 4 | 0 | 11 | 0 | 10 |
 | `governance` | 4 | 437 | 31 | 14 | 0 | 4 | 0 | 3 |
 | `intelligence` | 6 | 410 | 55 | 8 | 0 | 6 | 0 | 5 |
