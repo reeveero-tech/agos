@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 530,
-  "lines": 93307,
+  "lines": 93324,
   "functions": 5871,
   "stub_functions": 789,
   "hardcoded_paths": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24146,
+   "lines": 24163,
    "functions": 1303,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -4172,7 +4172,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/analysis_loader.py",
    "module": "civilization.knowledge_graph.analysis_loader",
    "root": "kernel",
-   "lines": 367,
+   "lines": 384,
    "syntax_ok": true,
    "classes": 1,
    "functions": 11,
@@ -9599,6 +9599,7 @@
    "tested_by_external": [
     "tests/test_bootstrap.py",
     "tests/test_clone_safety.py",
+    "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_seven_capabilities.py",
     "tests/test_structure_fields.py"
    ],
@@ -15617,6 +15618,9 @@
     "S:rie"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_knowledge_graph_from_analysis.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16230,12 +16234,16 @@
     "agos.kernel.civilization.knowledge_graph.query",
     "agos.kernel.contracts",
     "agos.rie.application",
+    "agos.rie.contracts",
+    "copy",
     "json",
     "os",
+    "providers",
     "pytest",
     "re",
     "shutil",
-    "subprocess"
+    "subprocess",
+    "tempfile"
    ],
    "scripts": [
     "main"
@@ -16248,7 +16256,9 @@
     "K:civilization.knowledge_graph.query",
     "K:contracts",
     "K:main",
-    "S:rie.application"
+    "K:providers",
+    "S:rie.application",
+    "S:rie.contracts"
    ]
   },
   {

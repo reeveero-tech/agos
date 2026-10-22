@@ -163,6 +163,90 @@ def test_refill_same_dna_is_idempotent(tmp_path):
     assert len(first.graph) == node_count
     assert first.graph.get_statistics().total_relationships == rel_count
 
+    # التصحيح 0029: الثبات بالمحتوى لا بالعدد فقط — إعادة ملء نفس التحليل
+    # (نفس المستودع ونفس الالتزام) لا تكرر الظهورات ولا تغير شيئا في اللقطة
+    import copy
+    multi = _git_repo(tmp_path / "sample2", {
+        "requirements.txt": "flask\n", "pyproject.toml":
+        '[project]\nname = "sample"\ndependencies = ["flask"]\n'})
+    first = fill_graph_from_dna(_rie_dna(multi))
+    snapshot = copy.deepcopy(first.graph.to_dict())
+    fill_graph_from_dna(_rie_dna(multi), graph=first.graph)
+    assert first.graph.to_dict() == snapshot, \
+        "refill must not change anything, occurrence records included"
+    flask = first.graph.get_nodes_by_name("pypi:flask")[0]
+    assert len(flask.metadata.properties["occurrences"]) == 2  # ملفان لا أربعة
+
+
+def test_bare_dependencies_fallback_scoped_by_identity():
+    """التصحيح 0029: احتياط dependencies المجردة لهوية المستودع الكاملة أيضاً —
+    مستودعان بنفس الاسم وdependency_details فارغة لا يتصادمان في رسم واحد."""
+    from agos.rie.contracts import RepositoryDNA as RieDNA
+    a = RieDNA(name="sample", url="https://github.com/two/sample",
+               dependencies=["flask"], dependency_details=[])
+    b = RieDNA(name="sample", url="https://github.com/other/sample",
+               dependencies=["flask"], dependency_details=[])
+    shared = KnowledgeGraph(name="shared")
+    fill_graph_from_dna(a, graph=shared)
+    fill_graph_from_dna(b, graph=shared)
+
+    assert len(shared.get_nodes_by_type(NodeType.REPOSITORY)) == 2
+    flasks = shared.get_nodes_by_name("flask")
+    assert len(flasks) == 2, "bare dependencies must stay scoped per repository"
+    assert {f.metadata.properties.get("ecosystem", "") for f in flasks} == {""}
+    # الفجوة المسمّاة (لا تفاصيل) معلنة لكل مستودع
+    for repo_node in shared.get_nodes_by_type(NodeType.REPOSITORY):
+        assert any("dependency_details empty" in g for g in
+                   repo_node.metadata.properties["analysis_gaps"])
+
+
+def test_framework_multiple_records_aggregate_in_both_orders():
+    """التصحيح 0029: سجلات دليل متعددة لإطار واحد (تشغيلي + مستبعد) — كلها
+    تبقى بأي ترتيب، والاستعمال مشتق من السجلات فلا يمحو استبعادٌ لاحقٌ استعمالاً
+    موثَقًا، والسجلات تنجو من الحفظ/التحميل."""
+    from agos.kernel.contracts import RepositoryDNA as KernelDNA
+
+    def make(ordered):
+        dna = KernelDNA(name="sample", url="https://github.com/t/sample")
+        dna.framework_evidence = list(ordered)
+        return dna
+
+    runtime = {"framework": "Flask", "dependency": "flask", "manifest": "requirements.txt",
+              "ecosystem": "pypi", "scope": "runtime", "counted": True}
+    dev_excluded = {"framework": "Flask", "dependency": "flask",
+                    "manifest": "requirements-dev.txt", "ecosystem": "pypi",
+                    "scope": "dev", "counted": False}
+
+    for ordered in ([runtime, dev_excluded], [dev_excluded, runtime]):
+        report = fill_graph_from_dna(make(ordered))
+        flasks = report.graph.get_nodes_by_name("Flask")
+        assert len(flasks) == 1
+        flask = flasks[0]
+        # السجلان كلاهما — لا يستبدل أحدهما الآخر
+        assert len(flask.metadata.properties["occurrences"]) == 2
+        assert flask.metadata.properties["counted"] is True
+        assert {"manifest:requirements.txt", "manifest:requirements-dev.txt"} <= \
+            set(flask.metadata.evidence)
+        assert "excluded:not counted as part of the project" in flask.metadata.evidence
+        # الاستعمال موجود لأن سجلا موثَقًا يقوله — مهما جاء الاستبعاد بعده
+        repo_node = _repo_node(report.graph)
+        uses = [r for r in report.graph.get_relationships_by_node(repo_node.id)
+                if r.type == RelationshipType.USES]
+        assert len(uses) == 1
+        assert report.graph.get_node(uses[0].target_id).name == "Flask"
+
+    # والسجلات تنجو من الحفظ/التحميل (الادعاء في التوصيف مختبر لا مُفترى)
+    import tempfile, os
+    report = fill_graph_from_dna(make([runtime, dev_excluded]))
+    with tempfile.TemporaryDirectory() as d:
+        p = os.path.join(d, "fw.json")
+        report.graph.save(p)
+        reloaded = KnowledgeGraph.load(p)
+        flask = reloaded.get_nodes_by_name("Flask")[0]
+        assert len(flask.metadata.properties["occurrences"]) == 2
+        assert flask.metadata.properties["counted"] is True
+        assert "manifest:requirements-dev.txt" in flask.metadata.evidence
+
 
 def test_changed_analysis_fresh_graph_exactly_reflects_it(tmp_path):
     """تحليل متغيّر = رسم جديد بمقاييسه بدقة — لا بقايا من تحليل سابق ولا فقد."""
@@ -369,7 +453,7 @@ def test_kernel_capability_saves_graph_on_analysis_path(tmp_path):
     assert query.find_node(node_type=NodeType.PACKAGE, name="pypi:flask") is not None
 
 
-def test_kernel_capability_saves_graph_on_cache_hit(tmp_path, capsys):
+def test_kernel_capability_saves_graph_on_cache_hit(tmp_path, capsys, monkeypatch):
     repo = _git_repo(tmp_path / "sample", SAMPLE_FILES)
     out = tmp_path / "out"
     cap = RepositoryAnalysisCapability()
@@ -377,11 +461,17 @@ def test_kernel_capability_saves_graph_on_cache_hit(tmp_path, capsys):
 
     cap.execute(dict(args, knowledge_graph_path=str(out / "fresh.json")))
     capsys.readouterr()  # نرمي مخرجات التحليل الأول
+
+    # إثبات قاطع: تعطيل الاستنساخ نفسه — إن لم يكن الكاش هو المسار لدُهِقَ الاختبار
+    from providers import LocalRepositoryProvider
+
+    def _no_clone(*a, **kw):
+        raise AssertionError("cache hit must not clone the repository")
+    monkeypatch.setattr(LocalRepositoryProvider, "_clone", _no_clone)
+
     cap.execute(dict(args, knowledge_graph_path=str(out / "cached.json")))
     second_out = capsys.readouterr().out
-    # إثبات أن الثانية استخدمت الكاش فعلاً لا أنها أعادت الاستنساخ
     assert "Reusing DNA" in second_out, "the second call must be a cache hit"
-    assert "Fetching" not in second_out
     assert (out / "fresh.json").exists() and (out / "cached.json").exists()
     fresh = KnowledgeGraph.load(str(out / "fresh.json"))
     cached = KnowledgeGraph.load(str(out / "cached.json"))

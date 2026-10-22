@@ -95,7 +95,10 @@ def _add_once(graph: KnowledgeGraph, node: GraphNode, result: "FillReport") -> s
                 existing.metadata.evidence.append(ev)
         for key, value in node.metadata.properties.items():
             if key == "occurrences":
-                existing.metadata.properties.setdefault("occurrences", []).extend(value)
+                kept = existing.metadata.properties.setdefault("occurrences", [])
+                for occ in value:
+                    if occ not in kept:  # إعادة الملء لا تكرر الظهور نفسه
+                        kept.append(occ)
             else:
                 existing.metadata.properties[key] = value
         return existing.id
@@ -200,13 +203,14 @@ def _dependency_nodes(dna: Any, identity: str,
             nodes.append(node)
         return nodes
     # لا تفاصيل: الأسماء المجردة تُمثَّل بلا دليل — والغياب مسمّى لا مُقنَّع
+    # (التصحيح 0029: هوية الابن هنا أيضاً بهوية المستودع الكاملة — لا بالاسم المشترك)
     for name in list(getattr(dna, "dependencies", None) or []):
         report.gaps.append(
             f"dependency {name}: dependency_details empty — no manifest evidence")
         nodes.append(GraphNode(
             type=NodeType.PACKAGE,
             name=name,
-            path=f"pkg:{name}",
+            path=f"{identity}/pkg:{name}",
             repository=dna.name,
         ))
     return nodes
@@ -218,18 +222,30 @@ def _framework_nodes(dna: Any, kind: str, identity: str,
 
     التصحيح 0028: دليل النواة قد يكون **استبعاداً** (counted=False — إطار مذكور
     في ملف اعتماديات لكنه لا يُعَدّ جزءاً من المشروع، مثل اعتمادية تطوير).
-    الاستبعاد يُوثَّق على العقدة (excluded) ولا يُنشأ USES — إظهار المستبعد
-    استعمالاً إيجابية كاذبة (المادة 6: لا ادعاء بلا دليل). العقدة تبقى شاهدة
-    الاستبعاد ولا تُحذف (G2).
+    الاستبعاد يُوثَّق ولا يُنشأ له USES — إظهار المستبعد استعمالاً إيجابية كاذبة.
+
+    التصحيح 0029: الإطار الواحد قد له أكثر من سجل دليل (تصريح تشغيلي + استبعاد
+    في ملف آخر) — السجلات كلها تُجمَّع (occurrences) ولا يستبدل آخرها أوله،
+    وقرار الاستعمال مشتق من السجلات (أي سجل counted=True ⇒ استعمال)، فلا
+    يستبدل استبعادٌ لاحقٌ استعمالًا موثَقًا بالفعل.
     """
     nodes: List[GraphNode] = []
     if kind == "kernel":
+        # سجلات الدليل كلها تُجمَّع لكل إطار قبل بناء العقدة
+        by_framework: dict = {}
         for ev in list(getattr(dna, "framework_evidence", None) or []):
             framework = str(ev.get("framework", "")).strip()
             if not framework:
                 report.gaps.append("framework: evidence entry without a framework name")
                 continue
-            counted = bool(ev.get("counted", False))
+            by_framework.setdefault(framework, []).append({
+                "dependency": str(ev.get("dependency", "") or ""),
+                "ecosystem": str(ev.get("ecosystem", "") or ""),
+                "scope": str(ev.get("scope", "") or ""),
+                "manifest": str(ev.get("manifest", "") or ""),
+                "counted": bool(ev.get("counted", False)),
+            })
+        for framework, records in by_framework.items():
             node = GraphNode(
                 type=NodeType.COMPONENT,
                 name=framework,
@@ -237,18 +253,19 @@ def _framework_nodes(dna: Any, kind: str, identity: str,
                 repository=dna.name,
             )
             node.metadata.properties.update({
-                "dependency": str(ev.get("dependency", "") or ""),
-                "ecosystem": str(ev.get("ecosystem", "") or ""),
-                "scope": str(ev.get("scope", "") or ""),
-                "counted": counted,
+                "occurrences": records,
+                # مشتق من السجلات — أي سجل counted=True يكفي للاستعمال
+                "counted": any(r["counted"] for r in records),
             })
-            manifest = str(ev.get("manifest", "") or "")
-            if manifest:
-                node.metadata.evidence.append(f"manifest:{manifest}")
-            else:
-                report.gaps.append(f"framework {framework}: manifest absent in evidence")
-            if not counted:
-                node.metadata.evidence.append("excluded:not counted as part of the project")
+            for r in records:
+                if r["manifest"]:
+                    node.metadata.evidence.append(f"manifest:{r['manifest']}")
+                else:
+                    report.gaps.append(
+                        f"framework {framework}: manifest absent in evidence")
+                if not r["counted"]:
+                    node.metadata.evidence.append(
+                        "excluded:not counted as part of the project")
             nodes.append(node)
         return nodes
     for framework in list(getattr(dna, "frameworks", None) or []):
