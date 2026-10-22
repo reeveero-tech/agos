@@ -135,6 +135,13 @@ class KnowledgeRuntime:
         
         knowledge.updated_at = datetime.now()
         
+        # R-W2-014: لا حالة نجاح تحقق قديمة — التحديث قد يجعل الكائن ناقصاً
+        # دستورياً فتُبطل كل حالة نجاح (VALID وVERIFIED) فوراً إلى INVALID متسقة
+        # مع نتيجة المدقق؛ ولا تعود إلا بإعادة تحقق ناجحة (لا استعادة تلقائية)
+        if knowledge.status in (KnowledgeStatus.VALID, KnowledgeStatus.VERIFIED):
+            if not article13_status(knowledge)["valid"]:
+                knowledge.status = KnowledgeStatus.INVALID
+        
         # Invalidate cache
         if knowledge_id in self.cache:
             del self.cache[knowledge_id]
@@ -217,7 +224,12 @@ class KnowledgeRuntime:
         return True
     
     def validate_knowledge(self, knowledge_id: str, validator: str) -> bool:
-        """Validate knowledge."""
+        """Validate knowledge — تفويض كامل للتحقق المباشر (R-W2-014).
+        
+        الفحص المشترك كله داخل `Knowledge.validate()` (دليل + مادة 13)؛
+        هذه الواجهة ترقّي الحالة إلى VERIFIED عند النجاح فقط — لا سجلين
+        متناقضين ولا تحذيرات مكررة.
+        """
         knowledge = self.knowledge_store.get(knowledge_id)
         if not knowledge:
             return False

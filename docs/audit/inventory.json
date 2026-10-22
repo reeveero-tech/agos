@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 528,
-  "lines": 92408,
-  "functions": 5834,
+  "files": 529,
+  "lines": 92899,
+  "functions": 5859,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 253,
-  "import_ok": 526,
+  "import_ok": 527,
   "import_fail": 0
  },
  "packages": {
@@ -23,14 +23,14 @@
    "import_fail": 0
   },
   "agos-kernel": {
-   "files": 22,
-   "lines": 5179,
-   "functions": 167,
+   "files": 23,
+   "lines": 5545,
+   "functions": 191,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 21,
-   "import_ok": 21,
+   "not_imported_by_others": 22,
+   "import_ok": 22,
    "import_fail": 0
   },
   "agos-kernel/adapters": {
@@ -607,8 +607,8 @@
   },
   "agos-kernel/knowledge": {
    "files": 6,
-   "lines": 939,
-   "functions": 38,
+   "lines": 1051,
+   "functions": 39,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -849,12 +849,12 @@
   },
   "agos-kernel/quality_gates": {
    "files": 1,
-   "lines": 430,
+   "lines": 443,
    "functions": 20,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 1,
    "import_fail": 0
   },
@@ -1860,6 +1860,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:core.tests.test_golden_runtime",
+    "K:test_knowledge_enforcement",
     "K:test_knowledge_unification"
    ],
    "tested_by_external": [
@@ -8436,7 +8437,7 @@
    "path": "agos/agos-kernel/knowledge/article13.py",
    "module": "knowledge.article13",
    "root": "kernel",
-   "lines": 117,
+   "lines": 125,
    "syntax_ok": true,
    "classes": 0,
    "functions": 3,
@@ -8453,7 +8454,10 @@
    "resolved_imports": [],
    "imported_by": [
     "K:civilization.knowledge_runtime.knowledge",
+    "K:knowledge.models",
     "K:knowledge.runtime",
+    "K:quality_gates.pipeline",
+    "K:test_knowledge_enforcement",
     "K:test_knowledge_unification",
     "S:fabric.knowledge"
    ],
@@ -8488,16 +8492,18 @@
    "path": "agos/agos-kernel/knowledge/convert.py",
    "module": "knowledge.convert",
    "root": "kernel",
-   "lines": 72,
+   "lines": 137,
    "syntax_ok": true,
    "classes": 0,
-   "functions": 2,
+   "functions": 3,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "__future__",
     "datetime",
     "typing",
+    "knowledge.models",
+    "datetime",
     "knowledge.models"
    ],
    "hardcoded_paths": 0,
@@ -8508,6 +8514,7 @@
    ],
    "imported_by": [
     "K:civilization.knowledge_runtime.knowledge",
+    "K:quality_gates.pipeline",
     "S:fabric.knowledge"
    ],
    "import_status": "OK"
@@ -8516,7 +8523,7 @@
    "path": "agos/agos-kernel/knowledge/models.py",
    "module": "knowledge.models",
    "root": "kernel",
-   "lines": 230,
+   "lines": 257,
    "syntax_ok": true,
    "classes": 9,
    "functions": 9,
@@ -8526,17 +8533,23 @@
     "dataclasses",
     "datetime",
     "enum",
-    "typing"
+    "typing",
+    "knowledge.article13",
+    "enum",
+    "knowledge.article13"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:knowledge.models",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:knowledge.article13"
+   ],
    "imported_by": [
     "K:civilization.knowledge_runtime.knowledge",
     "K:knowledge",
     "K:knowledge.convert",
     "K:knowledge.runtime",
+    "K:test_knowledge_enforcement",
     "K:test_knowledge_unification",
     "S:fabric.knowledge"
    ],
@@ -8546,7 +8559,7 @@
    "path": "agos/agos-kernel/knowledge/runtime.py",
    "module": "knowledge.runtime",
    "root": "kernel",
-   "lines": 347,
+   "lines": 359,
    "syntax_ok": true,
    "classes": 1,
    "functions": 18,
@@ -8574,6 +8587,7 @@
     "K:core.autonomous",
     "K:knowledge",
     "K:platform_runtime.runtime",
+    "K:test_knowledge_enforcement",
     "K:test_knowledge_unification"
    ],
    "import_status": "OK"
@@ -9729,7 +9743,7 @@
    "path": "agos/agos-kernel/quality_gates/pipeline.py",
    "module": "quality_gates.pipeline",
    "root": "kernel",
-   "lines": 430,
+   "lines": 443,
    "syntax_ok": true,
    "classes": 5,
    "functions": 20,
@@ -9743,13 +9757,20 @@
     "datetime",
     "enum",
     "typing",
-    "asyncio"
+    "asyncio",
+    "knowledge.article13",
+    "knowledge.convert"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:quality_gates.pipeline",
-   "resolved_imports": [],
-   "imported_by": [],
+   "resolved_imports": [
+    "K:knowledge.article13",
+    "K:knowledge.convert"
+   ],
+   "imported_by": [
+    "K:test_knowledge_enforcement"
+   ],
    "import_status": "OK"
   },
   {
@@ -11913,6 +11934,50 @@
     "K:memory",
     "K:optimization",
     "K:recommendation"
+   ],
+   "imported_by": [],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/test_knowledge_enforcement.py",
+   "module": "test_knowledge_enforcement",
+   "root": "kernel",
+   "lines": 366,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 24,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "os",
+    "pathlib",
+    "sys",
+    "agos_kernel",
+    "knowledge.runtime",
+    "knowledge.models",
+    "knowledge.article13",
+    "asyncio",
+    "quality_gates.pipeline",
+    "asyncio",
+    "quality_gates.pipeline",
+    "asyncio",
+    "quality_gates.pipeline",
+    "asyncio",
+    "quality_gates.pipeline",
+    "asyncio",
+    "quality_gates.pipeline",
+    "asyncio",
+    "quality_gates.pipeline"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:test_knowledge_enforcement",
+   "resolved_imports": [
+    "K:agos_kernel",
+    "K:knowledge.article13",
+    "K:knowledge.models",
+    "K:knowledge.runtime",
+    "K:quality_gates.pipeline"
    ],
    "imported_by": [],
    "import_status": "OK"

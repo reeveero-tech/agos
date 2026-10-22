@@ -48,42 +48,50 @@ def validate_article_13(knowledge) -> List[Dict[str, Any]]:
     """
     violations: List[Dict[str, Any]] = []
 
-    # Source — المصدر الأولي غير الخاوي واتساقه مع قائمة المصادر
-    source = (getattr(knowledge, "source", "") or "").strip()
-    if not source:
+    # Source — المصدر الأولي سلسلة غير خاوية واتساقه مع قائمة المصادر
+    raw_source = getattr(knowledge, "source", "")
+    source = raw_source.strip() if isinstance(raw_source, str) else raw_source
+    if not isinstance(source, str) or not source:
         violations.append(_violation(
-            "Source", "primary source is empty"))
+            "Source", "primary source is missing or not a string"))
     metadata_sources = getattr(getattr(knowledge, "metadata", None), "sources", None)
     if metadata_sources and source and source not in metadata_sources:
         violations.append(_violation(
             "Source",
             f"primary source {source!r} not among metadata.sources"))
 
-    # Evidence — قائمة أدلة غير خاوية وكل دليل بمصدره
-    evidence = getattr(knowledge, "evidence", None) or []
-    if not evidence:
+    # Evidence — قائمة أدلة غير خاوية وكل دليل بمصدره (قيمة غير قائمة خرق مسمى لا انهيار)
+    evidence = getattr(knowledge, "evidence", None)
+    if not isinstance(evidence, list):
+        violations.append(_violation(
+            "Evidence", "evidence is not a list"))
+    elif not evidence:
         violations.append(_violation(
             "Evidence", "no evidence attached"))
     else:
         for ev in evidence:
-            if not (getattr(ev, "source", "") or "").strip():
+            ev_source = getattr(ev, "source", "")
+            if not isinstance(ev_source, str) or not ev_source.strip():
                 violations.append(_violation(
-                    "Evidence", f"evidence {getattr(ev, 'id', '?')} has empty source"))
+                    "Evidence", f"evidence {getattr(ev, 'id', '?')} has missing or invalid source"))
 
-    # Confidence — معلومة لا مجهولة، وداخل النطاق [0, 1]
+    # Confidence — رقم معلوم لا مجهول ولا منطقي، وداخل النطاق [0, 1]
     confidence = getattr(knowledge, "confidence", None)
     if confidence is None:
         violations.append(_violation(
             "Confidence", "confidence is unknown (None)"))
+    elif isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+        violations.append(_violation(
+            "Confidence", f"confidence {confidence!r} is not a number"))
     elif not (0.0 <= confidence <= 1.0):
         violations.append(_violation(
             "Confidence", f"confidence {confidence} outside [0, 1]"))
 
-    # Version — إصدار غير خاوٍ (مصدر الحقيقة الوحيد: metadata.version)
-    version = (getattr(knowledge, "version", "") or "").strip()
-    if not version:
+    # Version — إصدار سلسلة غير خاوية (مصدر الحقيقة الوحيد: metadata.version)
+    version = getattr(knowledge, "version", "")
+    if not isinstance(version, str) or not version.strip():
         violations.append(_violation(
-            "Version", "version is empty"))
+            "Version", "version is missing or not a string"))
 
     # Timestamp — ختم إنشاء الكائن المعتمد نفسه (يجب أن يكون طابعاً زمنياً صالحاً)
     from datetime import datetime as _dt

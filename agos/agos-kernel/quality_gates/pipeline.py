@@ -168,14 +168,27 @@ class QualityGatesPipeline:
         )
     
     async def validate_knowledge(self, knowledge: List[Dict]) -> GateResult:
-        """Validate knowledge objects."""
+        """Validate knowledge objects — فرض المادة 13 (R-W2-014).
+        
+        تعيد استخدام المدقق المشترك (`knowledge.article13`) عبر تحويل القاموس
+        إلى الكائن المعتمد — لا نسخة ضعيفة موازية: كل كائن يُفحص على
+        المتطلبات الستة (المصدر/الدليل/الثقة/الإصدار/الطابع/النسب)
+        والناقص يُحجب باسم متطلبه.
+        """
         start = time.time()
+        
+        from knowledge.article13 import validate_article_13
+        from knowledge.convert import knowledge_dict_to_canonical
         
         issues = []
         
         for ko in knowledge:
-            if not ko.get("evidence"):
-                issues.append(f"Missing evidence for {ko.get('name')}")
+            violations = validate_article_13(knowledge_dict_to_canonical(ko))
+            for v in violations:
+                issues.append(
+                    f"Article 13 — {v['requirement']}: {v['message']} "
+                    f"({ko.get('name') or ko.get('id') or 'knowledge'})"
+                )
         
         status = GateStatus.PASSED if not issues else GateStatus.BLOCKED
         

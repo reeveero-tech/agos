@@ -156,21 +156,48 @@ class Knowledge:
         self.metadata.version = value
     
     def add_evidence(self, evidence: Evidence) -> None:
-        """Add evidence to knowledge."""
+        """Add evidence to knowledge — R-W2-014: مع تحديث حالة النجاح.
+        
+        دليل بلا مصدر ينقص الكائن دستورياً؛ وكل حالة نجاح تحقق قديمة (VALID
+        أو VERIFIED) تُبطل فوراً إلى INVALID متسقة مع نتيجة المدقق، ولا تعود
+        إلا بإعادة تحقق ناجحة.
+        """
+        from .article13 import article13_status
+        from enum import Enum as _Enum
+        
         self.evidence.append(evidence)
         self.updated_at = datetime.now()
+        
+        # إبطال حالات نجاح التحقق إن أصبح الكائن ناقصاً بعد الإضافة
+        valid_states = {s.value for s in KnowledgeStatus if s.value in ("valid", "verified")}
+        if self.status.value in valid_states:
+            if not article13_status(self)["valid"]:
+                self.status = KnowledgeStatus.INVALID
     
     def validate(self, validator: str) -> bool:
-        """Validate knowledge."""
+        """Validate knowledge — متسق مع الفحص المشترك للمادة 13 (R-W2-014).
+        
+        التحقق يشمل الدليل والصلاحية الدستورية معاً: الناقص (ولو كان له
+        دليل) لا ينجح، ونقصه يوثق باسمه في سجل التحقق نفسه.
+        """
+        from .article13 import article13_status
+        
+        # نتيجة الفحص المشترك نفسها — لا إعادة شرط غير محمية (قيمة غير قائمة
+        # تُعطي خرقاً مسمى من المدقق لا TypeError هنا)
+        article13 = article13_status(self)
+        has_evidence = isinstance(self.evidence, list) and len(self.evidence) > 0
         validation = Validation(
             id=f"{self.id}-val-{len(self.validations)}",
             validated_at=datetime.now(),
             validator=validator,
-            is_valid=len(self.evidence) > 0,
+            is_valid=(has_evidence and article13["valid"]),
         )
         
-        if not self.evidence:
+        if not has_evidence:
             validation.warnings.append("No evidence provided")
+        for v in article13["violations"]:
+            validation.warnings.append(
+                f"Article 13 incomplete: {v['requirement']} — {v['message']}")
         
         self.validations.append(validation)
         self.validation_count += 1

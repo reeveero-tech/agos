@@ -4,12 +4,12 @@
 
 ## Totals
 
-- **files**: 528
-- **functions**: 5834
+- **files**: 529
+- **functions**: 5859
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 526
-- **lines**: 92408
+- **import_ok**: 527
+- **lines**: 92899
 - **not_imported_by_others**: 253
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 22 | 5179 | 167 | 0 | 0 | 21 | 0 | 21 |
+| `agos-kernel` | 23 | 5545 | 191 | 0 | 0 | 22 | 0 | 22 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -72,7 +72,7 @@
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 16 | 4305 | 139 | 0 | 0 | 16 | 0 | 4 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/knowledge` | 6 | 939 | 38 | 0 | 0 | 6 | 0 | 0 |
+| `agos-kernel/knowledge` | 6 | 1051 | 39 | 0 | 0 | 6 | 0 | 0 |
 | `agos-kernel/laboratory` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/language_packs` | 1 | 107 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/learning` | 2 | 186 | 7 | 0 | 0 | 2 | 0 | 0 |
@@ -94,7 +94,7 @@
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/providers` | 7 | 1542 | 146 | 26 | 0 | 7 | 0 | 1 |
-| `agos-kernel/quality_gates` | 1 | 430 | 20 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/quality_gates` | 1 | 443 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/recommendation` | 2 | 175 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/registry` | 3 | 123 | 15 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/repository` | 2 | 309 | 25 | 2 | 0 | 2 | 0 | 0 |

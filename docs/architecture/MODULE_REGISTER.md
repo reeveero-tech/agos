@@ -54,7 +54,7 @@
 | L1 | `agos-kernel/resolvers` | registry | 1 | 206 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 60 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos_kernel` | namespace | 1 | 172 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
-| L2 | `agos-kernel` | quality | 22 | 5179 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
+| L2 | `agos-kernel` | quality | 23 | 5545 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/agos_runtime` | boot | 1 | 139 | 0 | yes | yes | yes | L4 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
@@ -74,7 +74,7 @@
 | L2 | `agos-kernel/organization` | human-loop | 2 | 183 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/pipeline` | execution | 1 | 166 | 0 | yes | yes | no | L2 | R-W3-003 |
 | L2 | `agos-kernel/platform_runtime` | civilization | 2 | 232 | 0 | yes | no | yes | L1 | R-W1-009, R-W3-014 |
-| L2 | `agos-kernel/quality_gates` | quality | 1 | 430 | 0 | yes | no | no | L1 | R-W4-004 |
+| L2 | `agos-kernel/quality_gates` | quality | 1 | 443 | 0 | yes | no | yes | L1 | R-W4-004 |
 | L2 | `agos-kernel/resource-manager` | runtime | 1 | 222 | 0 | yes | no | no | L1 | R-F-004, R-W3-007 |
 | L2 | `agos-kernel/resource_manager` | runtime | 1 | 18 | 0 | yes | no | no | L1 | R-F-004, R-W3-007 |
 | L2 | `agos-kernel/runtime` | runtime | 29 | 3373 | 0 | yes | no | yes | L1 | R-W3-006, R-W3-007 |
@@ -119,7 +119,7 @@
 | L4 | `agos-kernel/expansion` | evolution | 2 | 182 | 1 | yes | no | no | L1 | R-W5-007 |
 | L4 | `agos-kernel/experience` | learning | 2 | 156 | 0 | yes | no | yes | L1 | R-W5-001 |
 | L4 | `agos-kernel/intelligence` | intelligence | 16 | 4305 | 0 | yes | no | yes | L1 | R-W1-006, R-W2-006 |
-| L4 | `agos-kernel/knowledge` | knowledge | 6 | 939 | 0 | yes | no | yes | L1 | R-W1-005, R-W2-008 |
+| L4 | `agos-kernel/knowledge` | knowledge | 6 | 1051 | 0 | yes | no | yes | L1 | R-W1-005, R-W2-008 |
 | L4 | `agos-kernel/laboratory` | evolution | 2 | 353 | 4 | yes | no | yes | L1 | R-W5-006 |
 | L4 | `agos-kernel/learning` | learning | 2 | 186 | 0 | yes | no | yes | L1 | R-W5-001 |
 | L4 | `agos-kernel/marketplace` | marketplace | 3 | 391 | 5 | yes | no | yes | L1 | R-W4-003 |
