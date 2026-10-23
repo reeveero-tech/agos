@@ -45,11 +45,11 @@ INSTANT_GAPS = [
     # أو فشل (فشل مسمّى)، لا آلياً في كل نتيجة
     "intent-interpretation",
     # اختيار المزود بمعرفة/خبرة (أُعيدت بسجل العمل 0051 — إغلاق 0050 كان
-    # بلا دليل): المسار الحي يفاضل بسياسات معلنة (ADR-0006) — الاختيار
-    # الموجه بالمعرفة/الخبرة متطلب محرك المعرفة في رؤية AIE
-    # (aie-intelligence/01-Core-Engines: KnowledgeEngine) خارج نص قبول
-    # هذا البند (ADR-0009 يسمي فجوة Instant الوحيدة: تفسير القصد) —
-    # وجود سجل مزود معلل لا يثبت استهلاك مدخل معرفة
+    # بلا دليل؛ وصُحح إسنادها في 0052): المسار الحي يفاضل بسياسات معلنة
+    # (ADR-0006) لا بقاعدة معرفة/خبرة — الفجوة مسماة بغيابها الصادق
+    # (أصلها تعليق التنفيذ الأصلي نفسه)؛ نص قبول هذا البند (ADR-0009
+    # يسمي فجوة Instant الوحيدة: تفسير القصد) لا يتطلبها ولا يؤجلها
+    # صراحةً — ولا يُدَّعى إسنادها لأي محرك رؤية بغير نص
     "knowledge-driven-provider-selection",
 ]
 ENGINEER_GAPS = [
@@ -329,6 +329,20 @@ def _plan_fingerprint(plan: Any) -> tuple:
     )
 
 
+def _analysis_content_digest(shared: Any) -> str:
+    """هوية محتوى من فهرس التحليل الفعلي (مسار+حجم+هاش حيث توفر) — لإثبات
+    توافق السياق بين تحليلين لا بصمة معتمدة (لا بصمة تغيّر معتمدة بعد —
+    ADR-0005). إثبات الموضوع والسياق نفسيهما شرط التعارض (سجل العمل 0052)."""
+    import hashlib
+    files = getattr(shared, "files", None) or []
+    parts = []
+    for f in sorted(files, key=lambda x: str(getattr(x, "path", ""))):
+        parts.append("{}:{}:{}".format(getattr(f, "path", ""),
+                                      getattr(f, "size_bytes", 0),
+                                      getattr(f, "sha256", "") or ""))
+    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:16]
+
+
 def _design_tradeoffs(name: str, required_concepts: List[str]) -> List[str]:
     """مفاضلات تصميمية معلنة لكل بديل — من عقده وحقائق الكود الفعلية
     (سجل العمل 0051): لا تقييمات عامة بل ما يميز هذا التصميم للمتطلبات."""
@@ -536,22 +550,27 @@ def _interpreted_engineering_plan(
         "mitigation_verification": "المعتمِد يرى mission.parameters في الخطة "
                                    "قبل الإجازة",
         "probability": None})
-    # عينات مفصولة (سجل العمل 0051): خطة Engineer تُقدَّر من عينات الوضع
-    # نفسه (engineer) — تنفيذ instant لمدخل آخر لا يصير وسيط تقديرها ولا
-    # يغلق فجوتها؛ الشروط المعروفة فعلاً معروضة (الوضع/المدخل/الإصدار)
+    # عينات مفصولة (سجل العمل 0051+0052): مجموعة المقارنة مجموعة واحدة —
+    # الوضع (engineer) والمدخل (معاملات الطلب نفسها) والقدرة؛ تنفيذ بمدخل
+    # آخر لا يدخل وسيطها ولا يغلق فجوتها؛ الشروط المعروضة معروضة فعلاً
+    input_parameters = dict(getattr(mission, "parameters", None) or {})
     comparable = [e for e in measured_executions
-                  if e.get("state") == "completed" and e.get("mode") == "engineer"]
+                  if e.get("state") == "completed"
+                  and e.get("mode") == "engineer"
+                  and dict(e.get("parameters") or {}) == input_parameters]
     completed = comparable
     if not completed:
         risks.append({
-            "risk": "لا تاريخ تنفيذ مقيس لهذه القدرة — عدم يقين في المدة، "
-                    "ليس دليل فشل",
+            "risk": "لا تنفيذ مقيس لهذه القدرة بهذا المدخل في هذا الوضع — "
+                    "عدم يقين في المدة، ليس دليل فشل",
             "evidence": "سجل التنفيذات (rt.missions بإسناد المعرّف) لا يحوي "
-                        "تنفيذاً مكتملاً لهذه القدرة",
+                        "تنفيذاً مكتملاً بنفس معاملات هذا الطلب في وضع "
+                        "engineer",
             "impact": "تقدير المدة يبقى معلناً لا مقيساً",
-            "mitigation": "أول تنفيذ يُقاس ويُسند إلى القدرة فيغلق الفجوة",
+            "mitigation": "أول تنفيذ لهذا المدخل يُقاس ويُسند فيغلق الفجوة "
+                          "لطلبات المدخل نفسه فقط",
             "mitigation_verification": "المدة المقيسة تظهر في سجل rt.missions "
-                                       "بعد التنفيذ",
+                                       "بعد التنفيذ بشروط عينتها",
             "probability": None})
 
     # ---- التكلفة: مدة تنفيذ مقيسة من سجل التنفيذات، وإلا معلنة حرفياً ----
@@ -591,15 +610,24 @@ def _interpreted_engineering_plan(
                     "(engineering-plan-cost-estimate)",
         }
 
-    # ---- المعمارية: منتجو الحقائق الفعليون (سجل العمل 0051) ----
-    # الحوامل تحدد مكان النتيجة — المكونات المنتجة هي: خط التحليل المشترك
-    # (كاشفات الأطر بسجلات Evidence وأوزان اللغات وتحليل البيانات) ثم
-    # إسقاط المختار فوقه (RA: DNA / RPP: uro وسماته)
+    # ---- المعمارية: منتجون حقيقيون بأسماء الدوال (سجل العمل 0052) ----
+    # المساران الفعليان مقروءان من الكود: RA = RepositoryAnalysisCapability
+    # .execute (capabilities/__init__.py): analyze_url ← stack_detection
+    # (language_weights + detect_stack بسجلات Evidence) ← _manifest_files
+    # ← dna.framework_evidence = [e.to_dict() for e in shared.stack.evidence]
+    # وRPP = rpp.execute: analyze_url/analyze_path ← RPPPipeline.process
+    # ← uro — الحدود خاصة بمالكها (حالة RPP المشتركة لـ RPP وحده)
     contract = interpreted.get("contracts", {}).get(selected, {})
     carriers = {
         concept: intent_module.FULFILLMENT.get(concept, {}).get(
             selected, ([], False))[0]
         for concept in interpretation.required_concepts}
+    is_rpp = selected == "RepositoryProcessingPipeline"
+    rpp_boundary = ("عقد مخرج RPP؛ **لها وحدها** حالة مشتركة عبر "
+                   "الاستدعاءات (الرسم/اللقطات/الطابور — معلنة في عقده) "
+                   "تُقيَّد كمخاطر تصميم خاصة بها"
+                   if is_rpp else
+                   "عقد مخرج المختار — لا حالة مشتركة معلنة له")
     architecture_design = {
         "kind": "proposal",
         "derived_from": "requirements (before selection) + chosen contract",
@@ -617,13 +645,12 @@ def _interpreted_engineering_plan(
             },
             {
                 "component": "خط التحليل المشترك (ADR-0005)",
-                "responsibility": "منتج الحقائق: أوزان اللغات المقيسة، "
-                                  "كاشف الأطر بسجلات Evidence (مسارات "
-                                  "الملفات)، وتحليل بيانات الاعتماديات",
+                "responsibility": "منتج الحقائق وأدلتها",
                 "interface": "ملفات خام → حقائق مشتركة (لغات/أدلة أطر/"
                              "اعتماديات)",
-                "boundaries": "الخدمة المعتمدة get_analysis_service — "
-                             "القراءة والكشف لا الإسقاط",
+                "boundaries": "الخدمة المعتمدة get_analysis_service "
+                             "(analyze_path/analyze_url) — القراءة والكشف "
+                             "لا الإسقاط",
                 "declared_dependencies": [],
             },
             {
@@ -631,9 +658,7 @@ def _interpreted_engineering_plan(
                 "responsibility": "إنتاج كل مخرج مطلوب في حامله المثبت "
                                   "(إسقاط المختار المعلن في عقده)",
                 "interface": "حقائق مشتركة → حوامل المخرج (أدناه)",
-                "boundaries": "عقد مخرج المختار؛ للحالة المشتركة في RPP "
-                             "(الرسم/اللقطات/الطابور) أثر جانبي معلن "
-                             "يُقيَّد كمخاطر التصميم",
+                "boundaries": rpp_boundary,
                 "declared_dependencies": [
                     s for s in contract.get("skills", [])
                     if s not in ("CloneRepository", "ReadRepository")],
@@ -641,23 +666,40 @@ def _interpreted_engineering_plan(
         ],
         "output_fulfillment": carriers,
         "producers": {
-            "frameworks": "كاشف الأطر في خط التحليل المشترك (سجلات Evidence) "
-                          "→ إسقاط المختار",
-            "languages": "قياس أوزان اللغات في خط التحليل المشترك → إسقاط "
-                        "المختار",
-            "dependencies": "تحليل بيانات الاعتماديات في خط التحليل المشترك "
-                            "→ إسقاط المختار",
+            "frameworks": (
+                "RepositoryAnalysisCapability._detect_stack → "
+                "stack_detection.detect_stack (سجلات Evidence بمسارات "
+                "الملفات) → dna.framework_evidence"
+                if not is_rpp else
+                "RPPPipeline.process فوق detect_stack — سجلات الأدلة في "
+                "uro.framework_evidence"),
+            "languages": (
+                "RepositoryAnalysisCapability._detect_languages → "
+                "stack_detection.language_weights → dna.languages"
+                if not is_rpp else
+                "RPPPipeline.process فوق language_weights → "
+                "uro.all_languages"),
+            "dependencies": (
+                "RepositoryAnalysisCapability._manifest_files + "
+                "stack_detection.parse_manifest → dna.dependencies"
+                if not is_rpp else
+                "RPPPipeline.process فوق فهرس الملفات → "
+                "uro.dependencies"),
         },
         "data_flow": [
             "المصدر المستخرج نصياً (url)",
-            "استنساخ وقراءة آمنة (خط ADR-0005)",
-            "كشف وتحليل في الخط المشترك (منتج الحقائق وأدلتها)",
-            "إسقاط المختار: الحقائق إلى حواملها المثبتة في مخرجه",
+            "get_analysis_service().analyze_url/analyze_path (خط ADR-0005)",
+            "stack_detection: language_weights + detect_stack + "
+            "parse_manifest (منتج الحقائق وأدلتها)",
+            ("RepositoryAnalysisCapability.execute → RepositoryDNA"
+             if not is_rpp else
+             "rpp.execute → RPPPipeline.process → uro"),
         ],
         "note": "مقترح معماري مشتق من عقد المختار ومتطلبات ما قبل الاختيار "
-                "— ليس وصف المنفذ القائم؛ skills المعلنة تبعيات معلنة لا "
-                "مراحل تنفيذ مرتبة مثبتة، والحامل يحدد مكان النتيجة لا "
-                "منتجها",
+                "— أسماء المنتجين فعلية من مساري الكود (capabilities/"
+                "__init__.py وrpp.py)؛ skills المعلنة تبعيات معلنة لا مراحل "
+                "تنفيذ مرتبة مثبتة، والحامل يحدد مكان النتيجة لا منتجها، "
+                "وحدود الحالة خاصة بالبديل مالكها",
     }
 
     return {
@@ -1168,8 +1210,12 @@ class IntelligenceInterface:
                  "engineering-plan-design-alternatives",
                  "engineering-plan-risks",
                  "engineering-plan-architecture"]
+        # مجموعة المقارنة نفسها (سجل العمل 0052): وضع + مدخل الطلب — تنفيذ
+        # مدخل آخر لا يغلق فجوة هذا الطلب
+        request_parameters = dict(interpretation.artifacts)
         measured = [e for e in self._measured_executions(selected)
-                   if e["state"] == "completed" and e.get("mode") == "engineer"]
+                   if e["state"] == "completed" and e.get("mode") == "engineer"
+                   and dict(e.get("parameters") or {}) == request_parameters]
         if measured:
             closed.append("engineering-plan-cost-estimate")
         # عقود البدائل من السجل الحي — تصميم كل بديل ومهاراته المعلنة
@@ -1459,10 +1505,11 @@ class IntelligenceInterface:
             request.question)
         sources: List[Dict[str, Any]] = []
         failed_sources: List[str] = []
-        for path in request.evidence_paths:
-            entry: Dict[str, Any] = {"path": path}
+        for source_id, path in enumerate(request.evidence_paths):
+            entry: Dict[str, Any] = {"path": path, "source_id": source_id}
             try:
                 shared = self._analyze(path)
+                entry["content_digest"] = _analysis_content_digest(shared)
                 facts = _evidence_facts(shared)
                 entry["detected"] = self._gathered_facts(facts, fact_categories)
                 entry["detected_stack"] = list(_detected_stack_names(
@@ -1599,43 +1646,56 @@ class IntelligenceInterface:
                         {"source": p, "observation": "مكتشف" if p in paths
                          else "غير مكتشف — غياب دليل لا إثبات عدم"}
                         for p in [s["path"] for s in ok_sources]]})
-        # التعارض الحقيقي (سجل العمل 0051): المصدر نفسه (الموضوع والسياق
-        # نفسيهما) بنتيجتين مختلفتين = ادعاءان متنافسان مسندان — يُعرضان
-        # مع إسناد كل ادعاء، لا يُدمان ولا يُحسمان هنا
-        by_path: Dict[str, List[Dict[str, Any]]] = {}
-        for s in ok_sources:
-            by_path.setdefault(s["path"], []).append(s)
+        # التعارض (سجل العمل 0052 — تصحيح 0051): تساوي المسار وحده لا يثبت
+        # تساوي المراجعة والسياق، و«غير مكتشف» غياب دليل لا ادعاء —
+        # فالتعارض يشترط: الموضوع نفسه (المسار) **وهوية محتوى متطابقة**
+        # (فهرس الملفات: مسار+حجم+هاش — سياق متوافق مثبت) + نتيجتا كشف
+        # مختلفتان عن المدخل نفسه = ادعاءان متنافسان (المدخل المطابق لا
+        # ينتج نتيجتين من الكاشف نفسه إلا بخطأ أحدهما) — كل ادعاء بهوية
+        # مصدره (source_id) لا بتكرار المسار؛ واختلاف هوية المحتوى
+        # (مراجعة تغيّرت) اختلاف لا تعارض؛ وغياب الكشف لا يولّد تعارضاً
         conflicts = []
-        for path, entries in by_path.items():
+        by_identity: Dict[tuple, List[Dict[str, Any]]] = {}
+        for s in ok_sources:
+            digest = s.get("content_digest")
+            if digest is None:
+                continue          # لا سياق مثبت — لا ادعاء تعارض
+            by_identity.setdefault((s["path"], digest), []).append(s)
+        for (path, digest), entries in sorted(by_identity.items()):
             if len(entries) < 2:
                 continue
-            stacks = {tuple(e["detected_stack"]) for e in entries}
-            if len(stacks) > 1:
-                for name in set().union(*[set(e["detected_stack"])
-                                         for e in entries]):
-                    present = [e for e in entries
-                               if name in e["detected_stack"]]
-                    if 0 < len(present) < len(entries):
-                        conflicts.append({
-                            "subject": f"stack: {name}",
-                            "context": f"المصدر نفسه: {path}",
-                            "claims": [
-                                {"source": path,
-                                 "claim": "مكتشف" if name in e["detected_stack"]
-                                 else "غير مكتشف"}
-                                for e in entries],
-                            "note": "ادعاءان متنافسان عن الموضوع والسياق "
-                                    "نفسيهما — يُعرضان بإسنادهما للفصل "
-                                    "لا يُدجان",
-                        })
+            # الادعاء هو مكدس كل تحليل كاملاً (نتيجته الموجبة كلها) —
+            # لا ادعاءات مُصنَّعة من غياب عنصر: مصدر بمكدس فارغ لا يدّعي
+            if any(not e["detected_stack"] for e in entries):
+                continue
+            stacks = {tuple(sorted(e["detected_stack"])) for e in entries}
+            if len(stacks) <= 1:
+                continue
+            conflicts.append({
+                "subject": "detected-stack: المكدس المكتشف للمدخل كاملاً",
+                "context": f"المسار نفسه ({path}) وهوية محتوى متطابقة "
+                           f"({digest}) — سياق متوافق مثبت",
+                "claims": [
+                    {"source_id": e.get("source_id"),
+                     "path": e["path"],
+                     "claim": "المكدس: " + ", ".join(sorted(
+                         e["detected_stack"]))}
+                    for e in entries],
+                "note": "ادعاءان عن الموضوع نفسه (مكدس المدخل) في سياق "
+                        "متوافق مثبت — كشفي المدة نفسها لا ينتجان نتيجتين "
+                        "صحيحتين معاً؛ يُعرضان بهوية مصدر كل ادعاء للفصل، "
+                        "لا يُدجان ولا يُحسمان هنا",
+            })
         return {
             "agreements": agreements,
             "differences": differences,
             "conflicts": conflicts,
             "note": "اختلاف المستودعات اختلاف موثق لا تعارض — التعارض "
-                    "يتطلب الموضوع والسياق نفسيهما وادعاءين متنافسين "
-                    "مسندين (المصدر نفسه بنتيجتين مختلفتين)؛ ومصادر "
-                    "مختلفة المستودعات لا تناقض بعضها ببعض.",
+                    "يتطلب إثبات الموضوع والسياق نفسيهما (مسار + هوية "
+                    "محتوى متطابقة من فهرس التحليل) ونتيجتين مختلفتين عن "
+                    "المدخل نفسه؛ وغياب الكشف في تحليل ليس ادعاءً فيولّد "
+                    "اختلافاً لا تعارضاً؛ ومصادر مختلفة المستودعات لا "
+                    "تناقض بعضها ببعض.",
         }
 
     def _analyze(self, path: str) -> Any:

@@ -1638,6 +1638,13 @@ def test_engineer_natural_text_acceptance_path(tmp_path):
         "design-alternatives-fulfillment-tie"
     for candidate_row in ep["alternatives"]["candidates"]:
         assert candidate_row["design_tradeoffs"], candidate_row["name"]
+    # التعادل حقيقي بالدرجات الفعلية لا بالادعاء: كل المرشحين درجتهم
+    # متساوية، وقاعدة كسر التعادل معلنة من السياسة
+    evals = [c["evaluation"] for c in ep["alternatives"]["candidates"]]
+    assert len(evals) >= 2
+    assert all(e["score"] == evals[0]["score"] for e in evals)
+    assert ep["alternatives"]["selection"]["tie_break"] == \
+        "stable-registration-order"
     # ---- الاعتماد ثم التنفيذ مرة واحدة ----
     approved = interface.approve(result.approval_id, "المعتمِد")
     assert approved.status is IntelligenceStatus.APPROVED
@@ -2092,24 +2099,43 @@ def test_measured_cost_records_sample_conditions(tmp_path):
 
 
 def test_cross_source_real_conflict_same_path_different_stacks():
-    """آلية التعارض الحقيقية (0051): المصدر نفسه بنتيجتين مختلفتين —
-    ادعاءان متنافسان مسندان يُعرضان لا يُدجان؛ اختلاف المصادر ليس تعارضاً."""
-    e1 = {"path": "samer", "detected_stack": ["python", "flask",
-                                                "flask-sqlalchemy"]}
-    e2 = {"path": "samer", "detected_stack": ["python", "django"]}
-    other = {"path": "other", "detected_stack": ["python", "flask"]}
-    view = IntelligenceInterface()._cross_source_view([e1, e2, other])
-    conflict_names = {c["subject"] for c in view["conflicts"]}
-    # Flask وDjango كلاهما ادعاء متنافٍ عن المصدر نفسه
-    assert any("flask" in n for n in conflict_names)
-    assert any("django" in n for n in conflict_names)
-    for c in view["conflicts"]:
-        assert c["context"] == "المصدر نفسه: samer"
-        assert len(c["claims"]) == 2   # إسناد كل ادعاء محفوظ
-    # اختلاف مستودعات مختلفة ليس تعارضاً (المصدران مختلفان)
-    view2 = IntelligenceInterface()._cross_source_view([e1, other])
+    """آلية التعارض (0052 — تصحيح 0051): المسار وحده لا يثبت السياق —
+    التعارض يشترط المسار نفسه **وهوية محتوى متطابقة** (فهرس التحليل)
+    ونتيجتين مختلفتين؛ كل ادعاء بهوية مصدره (source_id) لا بتكرار المسار؛
+    واختلاف هوية المحتوى (مراجعة تغيّرت) اختلاف لا تعارض؛ وغياب الكشف
+    ليس ادعاءً فلا يولّد تعارضاً."""
+    # سياق متوافق مثبت: المسار نفسه + هوية المحتوى نفسها
+    e1 = {"path": "samer", "source_id": 0, "content_digest": "d1",
+          "detected_stack": ["python", "flask"]}
+    e2 = {"path": "samer", "source_id": 1, "content_digest": "d1",
+          "detected_stack": ["python", "django"]}
+    view = IntelligenceInterface()._cross_source_view([e1, e2])
+    # ادعاء واحد متنافٍ: المكدس الكامل لكل تحليل بهوية مصدره
+    assert len(view["conflicts"]) == 1
+    conflict = view["conflicts"][0]
+    # إثبات السياق معروض: المسار + هوية المحتوى
+    assert "samer" in conflict["context"] and "d1" in conflict["context"]
+    claims = conflict["claims"]
+    # هوية مصدر كل ادعاء محفوظة — لا تكرار المسار فقط
+    assert {cl["source_id"] for cl in claims} == {0, 1}
+    claim_texts = " | ".join(cl["claim"] for cl in claims)
+    assert "flask" in claim_texts and "django" in claim_texts
+    # مراجعة تغيّرت: المسار نفسه بهوية محتوى مختلفة — اختلاف لا تعارض
+    e3 = {"path": "samer", "source_id": 2, "content_digest": "d2",
+          "detected_stack": ["python", "django"]}
+    view2 = IntelligenceInterface()._cross_source_view([e1, e3])
     assert view2["conflicts"] == []
     assert view2["differences"] != []
+    # غياب الكشف ليس ادعاءً — لا يولّد تعارضاً
+    e4 = {"path": "samer", "source_id": 3, "content_digest": "d1",
+          "detected_stack": []}
+    view3 = IntelligenceInterface()._cross_source_view([e1, e4])
+    assert view3["conflicts"] == []
+    # مصادر مختلفة المسار: اختلاف موثق لا تعارض
+    other = {"path": "other", "source_id": 4, "content_digest": "d1",
+             "detected_stack": ["python", "flask"]}
+    view4 = IntelligenceInterface()._cross_source_view([e1, other])
+    assert view4["conflicts"] == []
 
 
 def test_runtimes_restored_without_question(tmp_path):
@@ -2135,9 +2161,10 @@ def test_runtimes_restored_without_question(tmp_path):
 
 
 def test_fulfillment_evidence_values_and_evidence(tmp_path):
-    """إيفاء المفاهيم بالقيم والأدلة معاً (0051): عينة RPP تحمل أدلة كشف
-    لكل إطار (framework_evidence بمسارات الملفات)؛ DNA لـ RA قيم بلا سجلات
-    أدلة (نقص مسمى) — القيم الصحيحة وحدها لا تثبت الإيفاء."""
+    """إيفاء المفاهيم بالقيم والأدلة معاً لكل بديل مؤهل (0052): القيم
+    (أطر/اعتماديات/لغات) وأسانيدها لـ RA (DNA + framework_evidence بسجلات
+    dependency/manifest) وRPP (uro + framework_evidence) — القيم الصحيحة
+    وحدها لا تثبت الإيفاء؛ الأدلة معروضة بمساراتها."""
 
     interface = IntelligenceInterface()   # سجل حقيقي + قدرات حقيقية
     repo = _natrepo(tmp_path, "evidrepo")
@@ -2154,7 +2181,7 @@ def test_fulfillment_evidence_values_and_evidence(tmp_path):
     assert row["fulfillment_evidence"]["frameworks"] == \
         ["universal_repository_object.frameworks"]
     # المختار بقاعدة التعادل المعلنة (ترتيب التسجيل) هو RA — قيمه مقيسة
-    # ونقص أدلته مسمى: DNA كائن قيم بلا سجلات أدلة لكل إطار
+    # وأدلة أطره محفوظة في DNA نفسه (framework_evidence — إثبات 0051/0052)
     assert result.engineering_plan["alternatives"]["selection"]["selected"] \
         == "RepositoryAnalysis"
     interface.approve(result.approval_id, approver="م")
@@ -2162,6 +2189,9 @@ def test_fulfillment_evidence_values_and_evidence(tmp_path):
     assert approved.status is IntelligenceStatus.COMPLETED
     dna = approved.result
     assert "flask" in [f.lower() for f in dna.frameworks]   # القيمة مثبتة
+    # قيم كل المفاهيم المطلوبة مثبتة في DNA (الاعتماديات واللغات أيضاً)
+    assert "flask" in [str(d).lower() for d in dna.dependencies]
+    assert "python" in [str(l).lower() for l in dna.languages]
     # تصحيح 0051: DNA يحمل سجلات أدلة أطر فعلاً (framework_evidence:
     # الاعتمادية/البيان) — ادعاء «قيم بلا أدلة» في 0050 كان خاطئاً
     ra_evidence = getattr(dna, "framework_evidence", None) or []
@@ -2178,7 +2208,83 @@ def test_fulfillment_evidence_values_and_evidence(tmp_path):
     assert rpp.status is IntelligenceStatus.COMPLETED
     uro = rpp.result["universal_repository_object"]
     assert "flask" in [f.lower() for f in uro["frameworks"]]
+    # قيم كل المفاهيم المطلوبة في uro (الاعتماديات واللغات أيضاً)
+    assert any(str(d.get("name", "")).lower() == "flask"
+               for d in uro.get("dependencies", []) if isinstance(d, dict))
+    assert "python" in [str(l).lower()
+                        for l in (uro.get("all_languages") or [])]
     # مخرج uro يصرّح أدلة الكشف كقائمة سجلات (framework/dependency/manifest)
     rpp_evidence = uro.get("framework_evidence") or []
     assert any(str(e.get("dependency", "")).lower() == "flask"
                and e.get("manifest") for e in rpp_evidence)
+
+
+# ------------------------------------------------------------------ 0052 --
+def test_cost_samples_separated_by_request_input(tmp_path):
+    """عينات التكلفة مجموعة واحدة بالوضع والمدخل (0052): تنفيذ المستودع A
+    لا يغلق فجوة خطة المستودع B — وبعد تنفيذ B لا يُدمج زمنا A وB في وسيط
+    واحد (وسيط B من عينة B وحدها)."""
+    repo_a = _natrepo(tmp_path / "a", "arepo")
+    repo_b = _natrepo(tmp_path / "b", "brepo")
+    interface = IntelligenceInterface()
+    # تنفيذ A (engineer) — أغلق فجوة A فقط
+    first_a = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + str(repo_a)))
+    assert first_a.status is IntelligenceStatus.AWAITING_APPROVAL
+    interface.approve(first_a.approval_id, approver="م")
+    assert interface.execute_approved(
+        first_a.approval_id).status is IntelligenceStatus.COMPLETED
+    # طلب B: عينة A (مدخل آخر) لا تغلق فجوة B — الفجوة باقية
+    first_b = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + str(repo_b)))
+    assert first_b.status is IntelligenceStatus.AWAITING_APPROVAL
+    assert "engineering-plan-cost-estimate" in first_b.gaps
+    assert first_b.engineering_plan["cost"]["source"] == "declared-literal"
+    # تنفيذ B ثم طلب B ثانية: الفجوة تُغلق بعينة B وحدها — لا دمج مع A
+    interface.approve(first_b.approval_id, approver="م")
+    interface.execute_approved(first_b.approval_id)
+    second_b = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + str(repo_b)))
+    assert second_b.status is IntelligenceStatus.AWAITING_APPROVAL
+    assert "engineering-plan-cost-estimate" not in second_b.gaps
+    cost = second_b.engineering_plan["cost"]
+    assert cost["source"] == "measured"
+    # وسيط B من عينة B وحدها: n=1 ومدخل العينة هو B — لا زمن A فيها
+    assert cost["n"] == 1
+    assert cost["conditions"]["inputs"] == [str(repo_b)]
+    assert cost["conditions"]["modes"] == ["engineer"]
+    # ووسيط A أيضاً من عينة A وحدها (الطلب التالي لـ A)
+    second_a = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + str(repo_a)))
+    cost_a = second_a.engineering_plan["cost"]
+    assert cost_a["n"] == 1
+    assert cost_a["conditions"]["inputs"] == [str(repo_a)]
+
+
+def test_runtimes_restored_without_question_real_runtime(tmp_path):
+    """انحدار runtimes (0052 — تصحيح اختبار 0051): العينة تُنتج runtime فعلياً
+    (package.json ⇒ Node.js — من ملفات الاعتماديات لا من Dockerfile)؛ ظهوره
+    دون ترشيح واستبعاده بترشيح الأطر توكيدين إلزاميين على خط التحليل
+    المعتمد نفسه (evidence.stack.runtimes) — لا على مخرج إسقاط."""
+    repo = tmp_path / "rtrepo"
+    _write_repo(repo, {"app.py": "import json\n",
+                       "requirements.txt": "flask>=2.0\n",
+                       "package.json": '{"name": "x", "dependencies": {}}\n'})
+    interface = IntelligenceInterface()
+    shared = interface._analyze(str(repo))   # خط ADR-0005 المعتمد
+    stack = getattr(shared, "stack", None)
+    assert stack is not None
+    # العينة تُنتج runtime فعلياً — وإلا فالكاشف نفسه ناقص (لا تخطي)
+    runtimes = {r.lower() for r in (getattr(stack, "runtimes", None) or [])}
+    assert "node.js" in runtimes
+    # دون ترشيح: runtimes كاملة (السلوك قبل 0050)
+    names = set(_iface_module._detected_stack_names(shared))
+    assert "node.js" in names
+    # بترشيح الأطر: استبعاد مقصود مسمى
+    fw_only = _iface_module._detected_stack_names(
+        shared, fact_categories={"frameworks"})
+    assert "node.js" not in fw_only
