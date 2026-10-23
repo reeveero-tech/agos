@@ -9,8 +9,8 @@
 - ``unverified``: القاعدة غير معروفة، أو بلا مواصفة تنفيذية، أو المدخل
   ناقص — لا يُدّعى امتثال ولا تُختلق مخالفة.
 
-القاعدة بلا مواصفة تنفيذية = حكم غير مثبت (مسار ``GovernanceRuntime``
-القديم يبقى حرفياً لها — ADR-0010 §القرار 2).
+القاعدة بلا مواصفة تنفيذية = حكم غير مثبت: ``unverified`` معلل عبر
+``GovernanceRuntime`` كذلك (ADR-0010 §القرار 2 منقّح — سجل العمل 0062).
 """
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional

@@ -334,10 +334,14 @@ def test_civilization():
     # Check governance
     result = civilization.check_governance("entity-1", "deployment")
     print(f"✓ Governance check: {result['compliant']}")
-    # R-Q-001: نسخة الحضارة هذه بلا قواعد error مسجلة (قاعدة test_governance في
-    # نسخة مستقلة أخرى) فلا مخالفات — العقد من runtime.py محفوظ
-    assert result["compliant"] is True, result
+    # R-Q-001 (منقّح — R-W1-007/ADR-0010): لا قواعد نشطة في نطاق الفحص —
+    # عدم إجراء أي فحص ليس امتثالاً مثبتاً: unverified معلل (كان يُعلن
+    # امتثالاً بلا فحص — عدّل التوقع بلا حذف الاسم)
+    assert result["compliant"] is False, result
     assert result["violations"] == [], result
+    assert result["unverified"], result
+    assert "لا توجد قاعدة نشطة ضمن نطاق الفحص" in \
+        result["unverified"][0]["reason"]
     
     # Assess trust
     score = civilization.assess_trust("artifact-1", "artifact")

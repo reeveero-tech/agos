@@ -156,6 +156,32 @@ def test_legacy_rules_keep_literal_path():
     assert len(result2["unverified"]) == 1
 
 
+def test_no_rules_in_scope_not_proven_compliance():
+    """لا حكم بلا قواعد مفحوصة (تصحيح المراجعة على الشريحة الأولى): محرك
+    بلا قواعد، أو تصفية نطاق لا تجد قاعدة نشطة — عدم إجراء أي فحص ليس
+    امتثالاً مثبتاً؛ unverified معلل ولا تُختلق مخالفة."""
+    runtime = GovernanceRuntime()
+    result = runtime.check_compliance(
+        "e1", "contract",
+        entity={"type": "Contracts", "version": "1.0"},
+    )
+    assert result["compliant"] is False
+    assert result["violations"] == []
+    assert result["unverified"]
+    assert "لا توجد قاعدة نشطة ضمن نطاق الفحص" in result["unverified"][0]["reason"]
+    # حالة توجد فيها قواعد لكن لا تبقى نشطة بعد تصفية domain
+    runtime2 = _runtime_with_article5()
+    filtered = runtime2.check_compliance(
+        "e1", "contract",
+        domain=GovernanceDomain.SECURITY,   # القاعدة في POLICIES لا SECURITY
+        entity={"type": "Contracts", "version": "1.0"},
+    )
+    assert filtered["compliant"] is False
+    assert filtered["violations"] == []
+    assert "لا توجد قاعدة نشطة ضمن نطاق الفحص" in \
+        filtered["unverified"][0]["reason"]
+
+
 def test_incomplete_spec_is_unverified():
     """المواصفة الناقصة ليست قائمة سماح فارغة: غياب تعريف الحقول المطلوبة
     حكم unverified بسبب نقص المواصفة — لا امتثال بلا فحص؛ وتغيير مواصفة

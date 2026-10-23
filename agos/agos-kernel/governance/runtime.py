@@ -125,6 +125,7 @@ class GovernanceRuntime:
         """
         violations = []
         unverified = []
+        checked_any = False
         
         rules_to_check = self.rules.values()
         if domain:
@@ -133,6 +134,7 @@ class GovernanceRuntime:
         for rule in rules_to_check:
             if rule.status != GovernanceStatus.ACTIVE:
                 continue
+            checked_any = True
             
             spec = self.evaluator.get_spec(rule.id)
             if spec is None:
@@ -167,6 +169,18 @@ class GovernanceRuntime:
                     "rule_name": rule.name,
                     "reason": verdict.reason,
                 })
+        
+        if not checked_any:
+            # لا فحص أُجري أصلاً (تصحيح المراجعة على الشريحة الأولى):
+            # محرك بلا قواعد نشطة في النطاق، أو تصفية نطاق لا تجد قاعدة —
+            # عدم إجراء أي فحص ليس امتثالاً مثبتاً؛ unverified معلل، ولا
+            # تُختلق مخالفة بدلاً منه
+            unverified.append({
+                "rule_id": "",
+                "rule_name": "",
+                "reason": "لا توجد قاعدة نشطة ضمن نطاق الفحص — لا فحص "
+                          "ولا امتثال مثبت",
+            })
         
         return {
             "entity_id": entity_id,

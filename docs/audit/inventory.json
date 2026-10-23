@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 537,
-  "lines": 101665,
+  "lines": 101683,
   "functions": 6153,
   "stub_functions": 790,
   "hardcoded_paths": 0,
@@ -24,7 +24,7 @@
   },
   "agos-kernel": {
    "files": 23,
-   "lines": 5551,
+   "lines": 5555,
    "functions": 191,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -552,7 +552,7 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 747,
+   "lines": 761,
    "functions": 40,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -8167,7 +8167,7 @@
    "path": "agos/agos-kernel/governance/runtime.py",
    "module": "governance.runtime",
    "root": "kernel",
-   "lines": 570,
+   "lines": 584,
    "syntax_ok": true,
    "classes": 18,
    "functions": 32,
@@ -12199,7 +12199,7 @@
    "path": "agos/agos-kernel/test_civilization.py",
    "module": "test_civilization",
    "root": "kernel",
-   "lines": 395,
+   "lines": 399,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,

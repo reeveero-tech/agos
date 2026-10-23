@@ -9,7 +9,7 @@
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 101665
+- **lines**: 101683
 - **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 23 | 5551 | 191 | 0 | 0 | 22 | 0 | 22 |
+| `agos-kernel` | 23 | 5555 | 191 | 0 | 0 | 22 | 0 | 22 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -67,7 +67,7 @@
 | `agos-kernel/federation` | 5 | 2034 | 190 | 98 | 0 | 5 | 0 | 4 |
 | `agos-kernel/finalization` | 1 | 1142 | 37 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/framework_packs` | 1 | 135 | 6 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/governance` | 3 | 747 | 40 | 0 | 0 | 3 | 0 | 0 |
+| `agos-kernel/governance` | 3 | 761 | 40 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 18 | 6757 | 204 | 0 | 0 | 18 | 0 | 5 |
