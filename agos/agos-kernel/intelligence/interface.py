@@ -413,6 +413,22 @@ _VERIFIED_PRODUCER_PATHS: Dict[str, Dict[str, Any]] = {
 }
 
 
+def _git_head(path: str) -> Optional[str]:
+    """المراجعة الفعلية للمصدر إن كان مستودع git — **دليل المصدر نفسه**
+    لا ادعاء المرسل (سجل العمل 0056): تحقق سياق الدعوى يُربط به، فإن
+    غاب (ليس مستودع git) فلا تحقق ممكن ويسمّى ذلك."""
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(path), "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=10)
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+
 def _design_tradeoffs(name: str, required_concepts: List[str]) -> List[str]:
     """مفاضلات تصميمية معلنة لكل بديل — من عقده وحقائق الكود الفعلية
     (سجل العمل 0051): لا تقييمات عامة بل ما يميز هذا التصميم للمتطلبات."""
@@ -1591,6 +1607,9 @@ class IntelligenceInterface:
                 "origin": "caller-provided"}
         for source_id, path in enumerate(request.evidence_paths):
             entry: Dict[str, Any] = {"path": path, "source_id": source_id}
+            # سياق المصدر الفعلي (دليل المصدر): مراجعة git إن وجدت —
+            # تحقق سياق الدعوى يُقارن به، لا بتساوي نصي قدّمه المرسل
+            entry["actual_context"] = _git_head(path)
             entry["explicit_claims"] = claims_by_source.get(source_id, {})
             if invalid_claims:
                 entry["invalid_source_claims"] = [
@@ -1754,14 +1773,15 @@ class IntelligenceInterface:
         # فالسياق غير قابل للإثبات حالياً ويسمّى كذلك)
         conflicts = []
         incomparable = []
-        # التعارض (سجل العمل 0055 — تصحيح 0054): الدعوى الصريحة تحمل
-        # هويتها (المسار والخاصية والقيمة والدليل) **وسياقها كما قدّمه
-        # المرسل** — دعويان متنافيتان عن الخاصية نفسها لمسار واحد
-        # **بسياق معلن متطابق** = تعارض؛ والسياقات المختلفة (مراجعة قديمة
-        # مقابل جديدة) أو الغائبة تجعل الدعويين غير قابلين للمقارنة —
-        # تُحفظان بتسمية ذلك ولا يُعلن تعارض مثبت؛ والمصدر الصامت عن
-        # الخاصية لا يشارك في المقارنة فلا يُسقط تعارض المدّعيين؛ والدعاوى
-        # caller-provided (من الطلب) — لا تحقق منها المحلل
+        caller_contradictions = []
+        # التعارض (سجل العمل 0056 — تصحيح 0055): التساوي النصي للسياق
+        # ليس تحققاً — التحقق يُربط بدليل المصدر الفعلي (actual_context:
+        # مراجعة git المسجلة للمصدر)؛ فالمتحقق المتوافق فقط يُعلن تعارضاً
+        # مثبتاً، وتناقض دعاوى المرسل بسياق معلن غير متحقق يُعرض منفصلاً
+        # (caller_claims_contradictions) ولا يُسمى تعارض مصادر؛ ومجموعات
+        # السياق مستقلة — دعوى عن مراجعة أخرى لا تُبطل مقارنة غيرها؛
+        # والمصدر الصامت لا يشارك فلا يُسقط تعارض المدّعيين؛ والدعاوى
+        # caller-provided لا يتحقق من قيمها المحلل
         claims_by_key: Dict[tuple, List[Dict[str, Any]]] = {}
         for src in ok_sources:
             for prop, claim in (src.get("explicit_claims") or {}).items():
@@ -1774,10 +1794,13 @@ class IntelligenceInterface:
         for (path, prop), entries in sorted(claims_by_key.items()):
             if len(entries) < 2:
                 continue
-            contexts = {e["context"] for e in entries}
-            if "" in contexts or len(contexts) > 1:
-                # سياق غائب أو مختلف (مثل مراجعتين مختلفتين) — الدعويان
-                # محفوظتان ولا يُعلن تعارض مثبت
+            # مجموعات سياق مستقلة: كل سياق معلن مجموعة تُقارن وحدها
+            by_ctx: Dict[str, List[Dict[str, Any]]] = {}
+            for e in entries:
+                by_ctx.setdefault(e["context"], []).append(e)
+            if len(by_ctx) > 1:
+                # دعوى عن سياقات (مراجعات) مختلفة — محفوظة منفصلة ولا
+                # تُبطل مقارنة غيرها
                 incomparable.append({
                     "subject": f"explicit-claim: {prop}",
                     "path": path,
@@ -1787,34 +1810,58 @@ class IntelligenceInterface:
                          "evidence": e["evidence"],
                          "context": e["context"]}
                         for e in entries],
-                    "note": "دعويان عن الخاصية نفسها بمسار واحد بسياقين "
-                            "مختلفين أو غائبين (مثل مراجعتين مختلفتين) — "
-                            "غير قابلتين للمقارنة؛ لا يُعلن تعارض مثبت "
-                            "والدعويان محفوظتان بتسمية ذلك",
+                    "note": "دعاوى عن سياقات (مراجعات) مختلفة — مجموعات "
+                            "منفصلة تُقارن كلٌّ وحدها؛ هذه الدعاوى عبر "
+                            "السياقات غير قابلة للمقارنة معاً ولا يُعلن "
+                            "لها تعارض مثبت",
                 })
-                continue
-            values = {e["value"] for e in entries}
-            if len(values) < 2:
-                continue          # لا تنافي — كل المدّعين متفقون
-            shared_context = next(iter(contexts))
-            conflicts.append({
-                "subject": f"explicit-claim: {prop}",
-                "context": f"المسار نفسه ({path}) — الخاصية نفسها — "
-                           f"السياق المعلن من المرسل: {shared_context}",
-                "claims": [
+            for ctx, group in sorted(by_ctx.items()):
+                if len(group) < 2:
+                    continue
+                values = {e["value"] for e in group}
+                if len(values) < 2:
+                    continue      # لا تنافي داخل هذا السياق
+                # التحقق: سياق كل دعوى == مراجعة مصدرها الفعلية المسجلة
+                verified = all(
+                    (e["src"].get("actual_context") not in (None, ""))
+                    and e["context"] == e["src"].get("actual_context")
+                    for e in group)
+                claims_view = [
                     {"source_id": e["src"].get("source_id"),
                      "path": e["src"]["path"],
                      "claim": "أثبت" if e["value"] else "أنكر صراحةً",
                      "evidence": e["evidence"],
                      "origin": e["origin"]}
-                    for e in entries],
-                "note": "دعويان صريحتان متنافيتان عن الخاصية نفسها لمسار "
-                        "واحد بسياق معلن متطابق — يُعرضان بقيمة كل دعوى "
-                        "ودليلها وهوية مصدرها للفصل، لا يُدجان ولا "
-                        "يُحسمان هنا؛ والدعويان caller-provided (من الطلب) "
-                        "لا تحقق منهما المحلل؛ والمصدر الصامت عن الخاصية "
-                        "لا يُسقط تعارضهما",
-            })
+                    for e in group]
+                if verified:
+                    conflicts.append({
+                        "subject": f"explicit-claim: {prop}",
+                        "context": f"المسار نفسه ({path}) — الخاصية "
+                                   f"نفسها — السياق متحقق بدليل المصدر "
+                                   f"الفعلي (المراجعة): {ctx}",
+                        "claims": claims_view,
+                        "note": "دعويان صريحتان متنافيتان عن الخاصية "
+                                "نفسها لمسار واحد بسياق متحقق متوافق "
+                                "(مراجعة المصدر الفعلية) — يُعرضان بقيمة "
+                                "كل دعوى ودليلها وهوية مصدرها للفصل، لا "
+                                "يُدجان ولا يُحسمان هنا؛ والدعويان "
+                                "caller-provided لا تحقق من قيمهما "
+                                "المحلل؛ والمصدر الصامت عن الخاصية لا "
+                                "يُسقط تعارضهما",
+                    })
+                else:
+                    # سياق معلن غير متحقق بدليل المصدر — تناقض دعاوى
+                    # المرسل يُعرض منفصلاً ولا يُسمى تعارض مصادر
+                    caller_contradictions.append({
+                        "subject": f"explicit-claim: {prop}",
+                        "context": f"المسار نفسه ({path}) — سياق معلن من "
+                                   f"المرسل: {ctx} — غير متحقق بدليل "
+                                   "المصدر الفعلي",
+                        "claims": claims_view,
+                        "note": "تناقض دعاوى المرسل بسياق معلن غير متحقق "
+                                "بدليل المصدر — ليس إثبات تعارض مصادر؛ "
+                                "يُعرض للفصل ولا يُدجن ولا يُحسم",
+                    })
         invalid_total = sum(
             len(e.get("invalid_source_claims") or []) for e in ok_sources)
         return {
@@ -1822,6 +1869,7 @@ class IntelligenceInterface:
             "differences": differences,
             "conflicts": conflicts,
             "incomparable_claims": incomparable,
+            "caller_claims_contradictions": caller_contradictions,
             "invalid_source_claims_named": invalid_total,
             "note": "اختلاف المستودعات وقوائم الكشف اختلاف موثق لا "
                     "تعارض — القوائم ليست ادعاءات حصرية (عنصران قد يصحان "

@@ -33,7 +33,7 @@
 |---|---|
 | `docker` | 3: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/providers/filesystem.py`, `agos/agos-kernel/providers/network.py` |
 | `find` | 2: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/skills/implementation.py` |
-| `git` | 21: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/capabilities/__init__.py`, `agos/agos-kernel/capabilities/analysis_service.py`, `agos/agos-kernel/civilization/core/civilization_engine.py` … |
+| `git` | 22: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/capabilities/__init__.py`, `agos/agos-kernel/capabilities/analysis_service.py`, `agos/agos-kernel/civilization/core/civilization_engine.py` … |
 | `kubectl` | 1: `agos/agos-kernel/adapters/implementation.py` |
 | `npm` | 1: `agos/agos-kernel/adapters/implementation.py` |
 | `podman` | 1: `agos/agos-kernel/providers/network.py` |

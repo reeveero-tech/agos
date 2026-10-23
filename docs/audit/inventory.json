@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 536,
-  "lines": 101285,
-  "functions": 6141,
+  "lines": 101333,
+  "functions": 6142,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 6620,
-   "functions": 201,
+   "lines": 6668,
+   "functions": 202,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8578,10 +8578,10 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 1897,
+   "lines": 1945,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 49,
+   "functions": 50,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8589,6 +8589,7 @@
     "enum",
     "typing",
     "hashlib",
+    "subprocess",
     "intelligence",
     "hashlib",
     "json",

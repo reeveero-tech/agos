@@ -2115,17 +2115,21 @@ def test_cross_source_real_conflict_same_path_different_stacks():
     view = IntelligenceInterface()._cross_source_view([e1, e2])
     assert view["conflicts"] == []
     assert view["differences"] != []
-    # كاشف (2): دعويان صريحتان متنافيتان (flask) بمسار واحد **بسياق معلن
-    # متطابق** — تعارض بقيمة كل دعوى ودليلها وهوية مصدرها
-    c1 = dict(e1, explicit_claims={"flask": _claim(
-        True, "بيان requirements.txt", context="rev-9")})
-    c2 = dict(e2, explicit_claims={"flask": _claim(
-        False, "فحص يدوي للبيان", context="rev-9")})
+    # كاشف (2): دعويان صريحتان متنافيتان (flask) بمسار واحد **بسياق
+    # متحقق بدليل المصدر الفعلي** (actual_context للمصدرين = rev-9) —
+    # تعارض بقيمة كل دعوى ودليلها وهوية مصدرها
+    c1 = dict(e1, actual_context="rev-9",
+              explicit_claims={"flask": _claim(
+                  True, "بيان requirements.txt", context="rev-9")})
+    c2 = dict(e2, actual_context="rev-9",
+              explicit_claims={"flask": _claim(
+                  False, "فحص يدوي للبيان", context="rev-9")})
     view_c = IntelligenceInterface()._cross_source_view([c1, c2])
     assert len(view_c["conflicts"]) == 1
     conflict = view_c["conflicts"][0]
     assert "flask" in conflict["subject"]
     assert "samer" in conflict["context"] and "rev-9" in conflict["context"]
+    assert "متحقق بدليل المصدر" in conflict["context"]
     claims = conflict["claims"]
     assert {cl["source_id"] for cl in claims} == {0, 1}
     values = {cl["claim"] for cl in claims}
@@ -2140,20 +2144,46 @@ def test_cross_source_real_conflict_same_path_different_stacks():
     view_s = IntelligenceInterface()._cross_source_view([c1, c2, silent])
     assert len(view_s["conflicts"]) == 1
     assert {cl["source_id"] for cl in view_s["conflicts"][0]["claims"]} == {0, 1}
-    # كاشف (3-ب): سياقان مختلفان (مراجعة قديمة × جديدة) — لا تعارض مثبت
-    # والدعويان محفوظتان بتسمية عدم القابلية للمقارنة
-    old_rev = dict(e1, explicit_claims={"flask": _claim(
-        True, "بيان المراجعة القديمة", context="rev-7")})
+    # كاشف (3-ب): سياقان مختلفان (مراجعة قديمة × جديدة) — مجموعتان
+    # مستقلتان: لا تعارض مثبت والدعاوى محفوظة منفصلة (لا تُبطل إحداها
+    # الأخرى)
+    old_rev = dict(e1, actual_context="rev-7",
+                  explicit_claims={"flask": _claim(
+                      True, "بيان المراجعة القديمة", context="rev-7")})
     view_i = IntelligenceInterface()._cross_source_view([old_rev, c2])
     assert view_i["conflicts"] == []
     assert len(view_i["incomparable_claims"]) == 1
-    assert "غير قابلتين للمقارنة" in view_i["incomparable_claims"][0]["note"]
-    # كاشف (3-ج): سياق غائب — لا تعارض ولا قابلية مقارنة مثبتة
-    no_ctx = dict(e1, explicit_claims={"flask": _claim(
-        True, "دليل بلا سياق", context="")})
-    view_n = IntelligenceInterface()._cross_source_view([no_ctx, c2])
+    assert "مجموعات منفصلة" in view_i["incomparable_claims"][0]["note"]
+    # كاشف (3-ج): نصا سياق متساويان لكن غير متحققين بدليل المصدر —
+    # تناقض دعاوى المرسل يُعرض منفصلاً ولا يُسمى تعارض مصادر
+    u1 = dict(e1, actual_context=None,
+              explicit_claims={"flask": _claim(
+                  True, "دعوى بسياق معلن غير فعلي", context="rev-x")})
+    u2 = dict(e2, actual_context=None,
+              explicit_claims={"flask": _claim(
+                  False, "أخرى بسياق معلن غير فعلي", context="rev-x")})
+    view_u = IntelligenceInterface()._cross_source_view([u1, u2])
+    assert view_u["conflicts"] == []
+    assert len(view_u["caller_claims_contradictions"]) == 1
+    assert "ليس إثبات تعارض مصادر" in \
+        view_u["caller_claims_contradictions"][0]["note"]
+    # كاشف (3-د): دعوى ثالثة عن مراجعة أخرى لا تُخفي تعارض المتحققين
+    other_rev = dict(e1, actual_context="rev-8",
+                     explicit_claims={"flask": _claim(
+                         True, "دعوى عن مراجعة أخرى", context="rev-8")})
+    view_o = IntelligenceInterface()._cross_source_view(
+        [c1, c2, other_rev])
+    assert len(view_o["conflicts"]) == 1   # تعارض rev-9 قائم
+    # كاشف (3-هـ): سياق غائب فعلاً — تناقض دعاوى مرسل غير متحقق لا تعارض
+    no_ctx_a = dict(e1, actual_context=None,
+                    explicit_claims={"flask": _claim(
+                        True, "دليل بلا سياق", context="")})
+    no_ctx_b = dict(e2, actual_context=None,
+                    explicit_claims={"flask": _claim(
+                        False, "أخرى بلا سياق", context="")})
+    view_n = IntelligenceInterface()._cross_source_view([no_ctx_a, no_ctx_b])
     assert view_n["conflicts"] == []
-    assert len(view_n["incomparable_claims"]) == 1
+    assert len(view_n["caller_claims_contradictions"]) == 1
     # كاشف (4): ادعاءان متفقان (لا تنافي) — لا تعارض
     c3 = dict(e1, explicit_claims={"flask": _claim(True, "d")})
     view_a = IntelligenceInterface()._cross_source_view([c1, c3])
@@ -2171,101 +2201,118 @@ def test_cross_source_real_conflict_same_path_different_stacks():
 
 
 def test_source_claims_conflict_reaches_research_result(tmp_path):
-    """الدعاوى تصل عبر الواجهة فعلًا (0054+0055): run(RESEARCH) بمصدرين
-    لمسار واحد ودعويين متنافيتين بسياق معلن متطابق — التعارض بقيمة كل
-    دعوى ودليلها يظهر في النتيجة (وسمها caller-provided)؛ ومراجعتان
-    مختلفتان (سياقان) لا تعارض مثبتاً بل حفظ بتسمية عدم القابلية؛
-    والدعوى الناقصة (بلا قيمة منطقية أو بلا دليل) لا تصنع تعارضاً
-    وتُسمّى؛ وقوائم الكشف وحدها اختلاف لا تعارض."""
-    repo = tmp_path / "claimrepo"
-    _write_repo(repo, {"app.py": "import flask\n",
-                      "requirements.txt": "flask>=2\n"})
+    """الدعاوى تصل عبر الواجهة فعلًا (0054-0056): التساوي النصي للسياق
+    ليس تحققاً — التحقق بدليل المصدر الفعلي (مراجعة git المسجلة)؛ المتحقق
+    المتوافق يُعلن تعارضاً ولا يسقطه مصدر صامت ولا دعوى عن مراجعة أخرى؛
+    والنصان المتساويان غير المتحققين ⇒ تناقض دعاوى مرسل منفصل لا تعارض
+    مصادر؛ والقيمة الغائبة والسياق الغائب فعلاً عبر run؛ وقوائم الكشف
+    وحدها اختلاف لا تعارض."""
+    repo = _natrepo(tmp_path / "claimrepo", "claimrepo")
+    (repo / "app.py").write_text("import flask\n", encoding="utf-8")
+    (repo / "requirements.txt").write_text("flask>=2\n", encoding="utf-8")
+    import subprocess
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "claims"], cwd=str(repo),
+                   check=True, env=env)
+    head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+                          capture_output=True, text=True, check=True
+                          ).stdout.strip()
     interface = IntelligenceInterface()
-    rev = "commit-abc123"
+    # (1) سياق متحقق بدليل المصدر الفعلي (HEAD) + دعويان متنافيتان —
+    # ودعوى ثالثة عن مراجعة أخرى ومصدر رابع صامت: التعارض قائم لا يسقطهما
     result = interface.run(IntelligenceRequest(
         mode=IntelligenceMode.RESEARCH,
         question="ما إطار هذا المستودع؟",
-        evidence_paths=[str(repo), str(repo)],
+        evidence_paths=[str(repo), str(repo), str(repo), str(repo)],
         source_claims=[
             {"source_id": 0, "path": str(repo), "property": "flask",
-             "value": True, "context": rev,
+             "value": True, "context": head,
              "evidence": "بيان requirements.txt يذكر flask"},
             {"source_id": 1, "path": str(repo), "property": "flask",
-             "value": False, "context": rev,
+             "value": False, "context": head,
              "evidence": "فحص يدوي: لا أثر للاستيراد"},
+            # دعوى عن مراجعة أخرى (نص مختلف عن HEAD) — لا تُخفي تعارض
+            # المتحققين (مجموعات سياق مستقلة)
+            {"source_id": 2, "path": str(repo), "property": "flask",
+             "value": True, "context": "rev-older",
+             "evidence": "دعوى عن مراجعة أخرى"},
         ]))
     assert result.status in (IntelligenceStatus.RECOMMENDATION_UNAVAILABLE,
                             IntelligenceStatus.COMPLETED)
-    snapshot = result.evidence_snapshot
-    cross = snapshot["cross_source"]
+    cross = result.evidence_snapshot["cross_source"]
     conflicts = cross["conflicts"]
     assert len(conflicts) == 1
     conflict = conflicts[0]
     assert "flask" in conflict["subject"]
-    assert rev in conflict["context"]          # السياق المعلن معروض
+    assert head in conflict["context"]
+    assert "متحقق بدليل المصدر" in conflict["context"]
     claims = conflict["claims"]
-    assert {cl["source_id"] for cl in claims} == {0, 1}
+    assert {cl["source_id"] for cl in claims} == {0, 1}   # لا الثالث
     assert {cl["claim"] for cl in claims} == {"أثبت", "أنكر صراحةً"}
-    # دليل كل دعوى وصل معها إلى النتيجة
     joined = " ".join(cl.get("evidence", "") for cl in claims)
     assert "requirements.txt" in joined
     assert "فحص يدوي" in joined
-    # وسم الدعاوى caller-provided — لا تحقق من المحلل
     assert all(cl.get("origin") == "caller-provided" for cl in claims)
+    # ودعوى المراجعة الأخرى محفوظة منفصلة (لا تُبطل غيرها)
+    assert len(cross["incomparable_claims"]) == 1
+    assert "مجموعات منفصلة" in cross["incomparable_claims"][0]["note"]
 
-    # مراجعتان مختلفتان: إثبات قديم وإنكار جديد — لا تعارض مثبت؛ الدعويان
-    # محفوظتان بتسمية عدم القابلية للمقارنة
-    old_result = interface.run(IntelligenceRequest(
+    # (2) نصا سياق متساويان لكن غير متحققين (ليسا HEAD) — لا تعارض مثبت؛
+    # تناقض دعاوى المرسل يُعرض منفصلاً بوسمها
+    unverified = interface.run(IntelligenceRequest(
         mode=IntelligenceMode.RESEARCH,
         question="ما إطار هذا المستودع؟",
         evidence_paths=[str(repo), str(repo)],
         source_claims=[
             {"source_id": 0, "path": str(repo), "property": "flask",
-             "value": True, "context": "rev-old",
-             "evidence": "بيان المراجعة القديمة"},
+             "value": True, "context": "declared-x",
+             "evidence": "دعوى بسياق معلن غير فعلي"},
             {"source_id": 1, "path": str(repo), "property": "flask",
-             "value": False, "context": "rev-new",
-             "evidence": "فحص المراجعة الجديدة"},
+             "value": False, "context": "declared-x",
+             "evidence": "أخرى بسياق معلن غير فعلي"},
         ]))
-    cross_old = old_result.evidence_snapshot["cross_source"]
-    assert cross_old["conflicts"] == []
-    assert len(cross_old["incomparable_claims"]) == 1
-    assert "غير قابلتين للمقارنة" in \
-        cross_old["incomparable_claims"][0]["note"]
+    cross_u = unverified.evidence_snapshot["cross_source"]
+    assert cross_u["conflicts"] == []
+    assert len(cross_u["caller_claims_contradictions"]) == 1
+    assert "ليس إثبات تعارض مصادر" in \
+        cross_u["caller_claims_contradictions"][0]["note"]
 
-    # دعوى ناقصة: بلا قيمة منطقية (النص "false" ليس إثباتاً) — تُرفض وتُسمّى
-    # ولا تصنع تعارضاً؛ وغياب القيمة ليس إنكاراً يُستنتج
-    bad_result = interface.run(IntelligenceRequest(
+    # (3) القيمة الغائبة فعلاً: دعوى بلا قيمة منطقية — تُرفض وتُسمّى ولا
+    # تصنع تعارضاً (غياب القيمة ليس إنكاراً يُستنتج)
+    no_value = interface.run(IntelligenceRequest(
         mode=IntelligenceMode.RESEARCH,
         question="ما إطار هذا المستودع؟",
         evidence_paths=[str(repo), str(repo)],
         source_claims=[
             {"source_id": 0, "path": str(repo), "property": "flask",
-             "value": "false", "context": rev,
-             "evidence": "قيمة نصية لا منطقية"},
+             "context": head,
+             "evidence": "دعوى بلا قيمة"},
             {"source_id": 1, "path": str(repo), "property": "flask",
-             "value": True, "context": rev,
-             "evidence": "دعوى صحيحة مقابل المرفوضة"},
+             "value": False, "context": head,
+             "evidence": "مقابل بلا قيمة"},
         ]))
-    cross_bad = bad_result.evidence_snapshot["cross_source"]
-    assert cross_bad["conflicts"] == []
-    assert cross_bad["incomparable_claims"] == []
-    assert cross_bad["invalid_source_claims_named"] >= 1
+    cross_nv = no_value.evidence_snapshot["cross_source"]
+    assert cross_nv["conflicts"] == []
+    assert cross_nv["caller_claims_contradictions"] == []
+    assert cross_nv["invalid_source_claims_named"] >= 1
 
-    # ودعوى بلا دليل (دليل فارغ): تُرفض وتُسمّى — لا إسناد بلا دليل
-    no_ev = interface.run(IntelligenceRequest(
+    # (4) السياق الغائب فعلاً عبر run: دعويان متنافيتان بلا سياق — لا
+    # تعارض مثبت (تناقض دعاوى مرسل غير متحقق)
+    no_ctx = interface.run(IntelligenceRequest(
         mode=IntelligenceMode.RESEARCH,
         question="ما إطار هذا المستودع؟",
         evidence_paths=[str(repo), str(repo)],
         source_claims=[
             {"source_id": 0, "path": str(repo), "property": "flask",
-             "value": True, "context": rev, "evidence": ""},
+             "value": True, "evidence": "دعوى بلا سياق"},
             {"source_id": 1, "path": str(repo), "property": "flask",
-             "value": False, "context": rev, "evidence": "مقابل بلا دليل"},
+             "value": False, "evidence": "أخرى بلا سياق"},
         ]))
-    cross_ne = no_ev.evidence_snapshot["cross_source"]
-    assert cross_ne["conflicts"] == []
-    assert cross_ne["invalid_source_claims_named"] >= 1
+    cross_nc = no_ctx.evidence_snapshot["cross_source"]
+    assert cross_nc["conflicts"] == []
+    assert len(cross_nc["caller_claims_contradictions"]) == 1
 
 
 def test_content_digest_reliability_same_length_content_change(tmp_path):

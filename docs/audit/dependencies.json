@@ -193,6 +193,7 @@
       "agos/agos-kernel/civilization/intelligence_pipeline/stages.py",
       "agos/agos-kernel/civilization/knowledge_graph/builder.py",
       "agos/agos-kernel/conftest.py",
+      "agos/agos-kernel/intelligence/interface.py",
       "agos/agos-kernel/providers/__init__.py",
       "agos/agos-kernel/providers/filesystem.py",
       "agos/rie/infrastructure/__init__.py",
