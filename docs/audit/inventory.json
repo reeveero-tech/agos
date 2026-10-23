@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102007,
-  "functions": 6160,
+  "lines": 102041,
+  "functions": 6162,
   "stub_functions": 780,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24465,
+   "lines": 24469,
    "functions": 1317,
    "stub_functions": 119,
    "hardcoded_paths": 0,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 931,
-   "functions": 44,
+   "lines": 961,
+   "functions": 46,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -3041,7 +3041,7 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 984,
+   "lines": 988,
    "syntax_ok": true,
    "classes": 69,
    "functions": 113,
@@ -8155,10 +8155,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 341,
+   "lines": 371,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 12,
+   "functions": 14,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [

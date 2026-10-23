@@ -649,26 +649,79 @@ def test_autonomous_policy_enforcer_delegates_to_shared_evaluator():
 
 
 def test_authorize_execution_empty_policies_denies_with_reason():
-    """التوصيل الحالي (الشريحة الرابعة): authorize_execution يمنع عند
-    القائمة الفارغة وينقل سبب غياب القواعد (لا اختزال في Policy
-    violation)، ولا يستدعي التدقيق بعد المنع."""
+    """تصحيح الشريحة السابعة: التوصيل الافتراضي في authorize_execution صار
+    يستشير مصدر القواعد المعتمد (تشريع الدستور المفعّل) لا قائمة فارغة
+    يمررها المحرك — والقائمة الفارغة ما تزال تمنع على مستوى المفوّض نفسه
+    (لا سماح أعمى)؛ وسبب المنع منقول من المقيم، ولا تدقيق بعد منع."""
     from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
-        GovernanceRuntime as AutoGovRuntime)
+        GovernanceRuntime as AutoGovRuntime, PolicyEnforcer)
+    # القائمة الفارغة على مستوى المفوّض: العقد كما هو — لا فحص ولا سماح مثبت
+    enforcer = PolicyEnforcer()
+    assert enforcer.enforce({"type": "Contracts", "version": "1.0"}, []) is False
+    assert "لا فحص ولا سماح مثبت" in enforcer.last_outcome["reason"]
+    # التوصيل الافتراضي: مدخل بلا نوع يُمنع بسببه المنقول من المقيم المعتمد
     rt = AutoGovRuntime()
-    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    res = rt.authorize_execution({"version": "1.0"})
     assert res["authorized"] is False
-    assert "لا فحص ولا سماح مثبت" in res["reason"]   # السبب منقول
+    assert "نوع الكيان غائب" in res["reason"]   # السبب منقول
     assert len(rt.auditor.audit_log) == 0            # لا تدقيق بعد منع
 
 
+def test_default_rule_source_is_enacted_constitution_legislation():
+    """مصدر القواعد المعتمد للمحرك المحلي (الشريحة السابعة — إغلاق الفجوة
+    المسماة في ADR-0010 §5): المصدر هو التشريع المفعّل الذي يسجله المصنع
+    المعتمد نفسه (لا نسخة ثانية)، وحد السلطة معلن — التسجيلات العابرة وقت
+    الحكم ليست تشريعاً دائماً؛ والسماح مثبت فقط بفحص ناجح لكل القواعد،
+    والمخالفة وعدم الانطباق كلاهما منع معلل، والتفويض مثبت بوصول المقيم."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    # المصدر = التشريع المفعّل نفسه الذي يسجله المصنع المعتمد
+    rules = pe.default_policy_rules()
+    assert rules == [{"rule_id": pe.CONSTITUTION_ARTICLE_5_RULE_ID}]
+    assert set(pe.ENACTED_CONSTITUTION_RULE_IDS) <= set(
+        pe.get_shared_evaluator().registered_rule_ids())
+
+    # حد السلطة: تسجيل عابر وقت الحكم ليس تشريعاً دائماً (يُستعاد بعده)
+    ev = pe.get_shared_evaluator()
+    specs_before = dict(ev._specs)
+    try:
+        ev.register_spec("transient-judgment-rule",
+                         {"kind": "required_fields", "required_fields": ["x"]})
+        assert pe.default_policy_rules() == rules   # المصدر لم يتغير
+    finally:
+        ev._specs.clear()
+        ev._specs.update(specs_before)
+
+    # الترخيص عبر التشريع المفعّل: امتثال مثبت يمر بالبوابات كلها ويدقّق
+    rt = AutoGovRuntime()
+    log_before = len(ev.evaluation_log)
+    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    assert res["authorized"] is True
+    assert len(ev.evaluation_log) > log_before     # وصل المقيم المشترك فعلاً
+    assert len(rt.auditor.audit_log) == 1          # التدقيق بعد الترخيص
+    # المخالفة تمنع بسببه المنقول (كيان منصوص بلا حقل الإصدار)
+    res = rt.authorize_execution({"type": "Contracts"})
+    assert res["authorized"] is False
+    assert "version" in res["reason"]
+    # غير المشمول بالتشريع لا يُمنح ترخيصاً (لا امتثال بلا فحص ناجح)
+    res = rt.authorize_execution({"type": "mission"})
+    assert res["authorized"] is False
+    assert "لا تنطبق" in res["reason"]
+
+
 def test_authorize_execution_gate_order_and_right_to_block():
-    """ترتيب البوابات وحق المنع (الشريحة الرابعة — تصحيح المراجعة): بدائل
-    تسجّل كل استدعاء، ويتحقق الاختبار من **تسلسل الاستدعاءات كاملاً حتى
-    المنع** — لا خلو سجل التدقيق وحده: الطوارئ تمنع بـ[emergency] فقط،
-    والتفويض بـ[emergency, authorizer]، والتوصيل الحقيقي بالقائمة الفارغة
-    بـ[emergency, authorizer, policy] مع السبب المنقول، والسلامة
-    بـ[...policy, safety]، والموافقة البشرية بـ[...safety, approval] بلا
-    audit. هذه اختبارات ترتيب لا دليل نجاح المسار الحقيقي بسياسات معتمدة."""
+    """ترتيب البوابات وحق المنع (الشريحة الرابعة — تصحيح المراجعة + تصحيح
+    السابعة): بدائل تسجّل كل استدعاء، ويتحقق الاختبار من **تسلسل
+    الاستدعاءات كاملاً حتى المنع** — لا خلو سجل التدقيق وحده: الطوارئ
+    تمنع بـ[emergency] فقط، والتفويض بـ[emergency, authorizer]، والتوصيل
+    الحقيقي بمخالفة قاعدة التشريع المفعّل (المادة 5 — كيان منصوص بلا
+    حقل الإصدار) بـ[emergency, authorizer, policy] مع السبب المنقول،
+    والسلامة بـ[...policy, safety]، والموافقة البشرية بـ[...safety,
+    approval] بلا audit. هذه اختبارات ترتيب لا دليل نجاح المسار الحقيقي
+    بسياسات معتمدة للمخالف؛ والممتثل عبر التشريع المفعّل مختبر في اختبار
+    المصدر المعتمد."""
     from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
         GovernanceRuntime as AutoGovRuntime, PolicyEnforcer)
 
@@ -735,12 +788,14 @@ def test_authorize_execution_gate_order_and_right_to_block():
     rt, calls = _recorded(authorize=False)
     assert rt.authorize_execution({})["reason"] == "Not authorized"
     assert calls == ["emergency", "authorizer"]
-    # (3) التوصيل الحقيقي بالقائمة الفارغة: [emergency, authorizer, policy]
-    # فقط — المفوّض الحقيقي يمنع بسببه المنقول ولا تُستدعى السلامة بعده
+    # (3) التوصيل الحقيقي بمخالفة قاعدة التشريع المفعّل (كيان منصوص بلا
+    # حقل الإصدار): [emergency, authorizer, policy] فقط — المفوّض الحقيقي
+    # يمنع بسببه المنقول ولا تُستدعى السلامة بعده (الممتثل عبر التشريع
+    # المفعّل يمر — مختبر في اختبار المصدر المعتمد)
     rt, calls = _recorded(enforce="real")
-    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    res = rt.authorize_execution({"type": "Contracts"})
     assert res["authorized"] is False
-    assert "لا فحص ولا سماح مثبت" in res["reason"]
+    assert "version" in res["reason"]
     assert calls == ["emergency", "authorizer", "policy"]
     # (4) السلامة تمنع: [emergency, authorizer, policy, safety]
     rt, calls = _recorded(safe=False)
@@ -756,8 +811,10 @@ def test_authorize_execution_gate_order_and_right_to_block():
 
 
 def test_mission_denied_before_workspace_and_resources():
-    """المستهلك الأعلى (الشريحة الرابعة): رفض المهمة يحدث قبل إنشاء مساحة
-    العمل أو تخصيص الموارد — والسبب منقول."""
+    """المستهلك الأعلى (الشريحة الرابعة + تصحيح السابعة): رفض المهمة يحدث
+    قبل إنشاء مساحة العمل أو تخصيص الموارد — والسبب منقول من المقيم
+    المعتمد (نوع 'mission' ليس من الأنواع المنصوصة في المادة 5 فلا
+    امتثال مثبت — لا يُمنح ترخيص بلا فحص ناجح)."""
     from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
         AutonomousEngineeringRuntime)
     runtime = AutonomousEngineeringRuntime()
@@ -768,7 +825,7 @@ def test_mission_denied_before_workspace_and_resources():
         lambda tid, req: (allocated.append(tid), True)[1])
     result = runtime.execute_mission_autonomously({"id": "m1"})
     assert result["status"] == "denied"
-    assert "لا فحص ولا سماح مثبت" in result["reason"]
+    assert "لا تنطبق" in result["reason"]   # السبب منقول من المقيم
     assert created == []       # الرفض قبل إنشاء مساحة العمل
     assert allocated == []     # وقبل تخصيص الموارد
 

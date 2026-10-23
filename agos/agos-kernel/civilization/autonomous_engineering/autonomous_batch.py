@@ -12,7 +12,8 @@ from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
 
-from agos_kernel.governance.policy_evaluator import evaluate_rule_dicts
+from agos_kernel.governance.policy_evaluator import (
+    evaluate_rule_dicts, default_policy_rules)
 
 
 # ============================================================
@@ -853,9 +854,12 @@ class GovernanceRuntime:
         if not self.authorizer.authorize(action):
             return {'authorized': False, 'reason': 'Not authorized'}
         
-        if not self.policy_enforcer.enforce(action, []):
-            # سبب المنع منقول من المقيم المعتمد — غياب القواعد ليس مخالفة
-            # مثبتة كي يُختزل في «Policy violation»
+        if not self.policy_enforcer.enforce(action, default_policy_rules()):
+            # مصدر القواعد معتمد ومسلّطته معلنة (الشريحة السابعة — R-W1-007):
+            # تشريع الدستور المفعّل في المصنع المعتمد، لا قائمة فارغة يمررها
+            # المحرك فيُرفض التنفيذ الافتراضي دائماً — والسماح يبقى مثبتاً
+            # بفحص ناجح لكل القواعد؛ وسبب المنع منقول من المقيم المعتمد كما هو
+            # (غياب القواعد ليس مخالفة مثبتة كي يُختزل في «Policy violation»)
             outcome = getattr(self.policy_enforcer, "last_outcome", None) or {}
             return {'authorized': False,
                     'reason': outcome.get("reason", "Policy violation")}
