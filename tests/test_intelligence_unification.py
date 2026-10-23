@@ -2100,57 +2100,92 @@ def test_measured_cost_records_sample_conditions(tmp_path):
 
 
 def test_cross_source_real_conflict_same_path_different_stacks():
-    """آلية التعارض (0053 — تصحيح 0052): قوائم الكشف ليست ادعاءات حصرية
-    (Flask في كشف وDjango في آخر قد يصحان معاً) — فاختلافها اختلاف موثق
-    دائماً ولو تطابقت هوية المحتوى؛ التعارض الوحيد المثبت: ادعاءان صريحان
-    متنافيان (إثبات مقابل إنكار صريح مسند) عن الخاصية نفسها في سياق متوافق
-    مثبت — بهوية مصدر كل ادعاء؛ وهوية غير موثوقة أو غائبة تسمّي السياق
-    غير قابل للإثبات فلا تعارض يُدَّعى."""
-    # كاشف (1): مكدسان مختلفان بهوية موثوقة متطابقة — اختلاف لا تعارض
-    e1 = {"path": "samer", "source_id": 0, "content_digest": "d1",
-          "content_identity_reliable": True,
+    """آلية التعارض (0054 — تصحيح 0053): قوائم الكشف ليست ادعاءات حصرية —
+    اختلافها اختلاف موثق دائماً؛ التعارض الوحيد المثبت: دعويان صريحتان
+    متنافيتان عن الخاصية نفسها لمسار واحد (بقيمة كل دعوى ودليلها وهوية
+    مصدرها)؛ والمصدر الصامت عن الخاصية لا يُسقط تعارض المدّعيين."""
+    def _claim(value, evidence=""):
+        return {"value": value, "evidence": evidence}
+
+    # كاشف (1): مكدسان مختلفان — اختلاف لا تعارض (لا حصرية في القوائم)
+    e1 = {"path": "samer", "source_id": 0,
           "detected_stack": ["python", "flask"]}
-    e2 = {"path": "samer", "source_id": 1, "content_digest": "d1",
-          "content_identity_reliable": True,
+    e2 = {"path": "samer", "source_id": 1,
           "detected_stack": ["python", "django"]}
     view = IntelligenceInterface()._cross_source_view([e1, e2])
-    assert view["conflicts"] == []          # لا حصرية ⇒ لا تعارض
-    assert view["differences"] != []         # اختلاف موثق معروض
-    # كاشف (2): ادعاءان صريحان متنافيان (flask: أثبت × أنكر) بسياق مثبت
-    c1 = dict(e1, explicit_claims={"flask": True})
-    c2 = dict(e2, explicit_claims={"flask": False})
+    assert view["conflicts"] == []
+    assert view["differences"] != []
+    # كاشف (2): دعويان صريحتان متنافيتان (flask) بمسار واحد — تعارض
+    # بقيمة كل دعوى ودليلها وهوية مصدرها
+    c1 = dict(e1, explicit_claims={"flask": _claim(True, "بيان requirements.txt")})
+    c2 = dict(e2, explicit_claims={"flask": _claim(False, "فحص يدوي للبيان")})
     view_c = IntelligenceInterface()._cross_source_view([c1, c2])
     assert len(view_c["conflicts"]) == 1
     conflict = view_c["conflicts"][0]
     assert "flask" in conflict["subject"]
-    assert "samer" in conflict["context"] and "d1" in conflict["context"]
-    # هوية مصدر كل ادعاء محفوظة — لا تكرار المسار فقط
-    assert {cl["source_id"] for cl in conflict["claims"]} == {0, 1}
-    # كاشف (3): هوية غير موثوقة (بيانات وصفية بلا تجزئة) — السياق يسمّى
-    # غير قابل للإثبات ولا تعارض حتى مع ادعاءات صريحة متنافية
-    u1 = dict(c1, content_identity_reliable=False, content_digest="dX")
-    u2 = dict(c2, content_identity_reliable=False, content_digest="dX")
-    view_u = IntelligenceInterface()._cross_source_view([u1, u2])
-    assert view_u["conflicts"] == []
-    assert "غير قابل للإثبات" in view_u["note"]
-    # كاشف (4): مراجعة تغيّرت (هوية مختلفة) — اختلاف لا تعارض
-    e3 = {"path": "samer", "source_id": 2, "content_digest": "d2",
-          "content_identity_reliable": True,
-          "detected_stack": ["python", "django"]}
-    view2 = IntelligenceInterface()._cross_source_view([e1, e3])
-    assert view2["conflicts"] == []
-    # كاشف (5): غياب الكشف ليس ادعاءً — لا يولّد تعارضاً
-    e4 = {"path": "samer", "source_id": 3, "content_digest": "d1",
-          "content_identity_reliable": True,
-          "detected_stack": []}
+    assert "samer" in conflict["context"]
+    claims = conflict["claims"]
+    assert {cl["source_id"] for cl in claims} == {0, 1}
+    values = {cl["claim"] for cl in claims}
+    assert values == {"أثبت", "أنكر صراحةً"}
+    # دليل كل دعوى محفوظ
+    evidences = {cl["evidence"] for cl in claims}
+    assert "بيان requirements.txt" in evidences
+    assert "فحص يدوي للبيان" in evidences
+    # كاشف (3): مصدر ثالث صامت عن flask لا يُسقط تعارض المدّعيين
+    silent = {"path": "samer", "source_id": 2,
+              "detected_stack": ["python"]}
+    view_s = IntelligenceInterface()._cross_source_view([c1, c2, silent])
+    assert len(view_s["conflicts"]) == 1
+    assert {cl["source_id"] for cl in view_s["conflicts"][0]["claims"]} == {0, 1}
+    # كاشف (4): ادعاءان متفقان (لا تنافي) — لا تعارض
+    c3 = dict(e1, explicit_claims={"flask": _claim(True, "d")})
+    view_a = IntelligenceInterface()._cross_source_view([c1, c3])
+    assert view_a["conflicts"] == []
+    # كاشف (5): مصادر مختلفة المسار — اختلاف موثق لا تعارض
+    other = {"path": "other", "source_id": 4,
+             "explicit_claims": {"flask": _claim(False, "d")},
+             "detected_stack": ["python"]}
+    view_o = IntelligenceInterface()._cross_source_view([c1, other])
+    assert view_o["conflicts"] == []
+    # كاشف (6): غياب الكشف ليس ادعاءً — لا يولّد تعارضاً
+    e4 = {"path": "samer", "source_id": 3, "detected_stack": []}
     view3 = IntelligenceInterface()._cross_source_view([e1, e4])
     assert view3["conflicts"] == []
-    # كاشف (6): مصادر مختلفة المسار — اختلاف موثق لا تعارض
-    other = {"path": "other", "source_id": 4, "content_digest": "d1",
-             "content_identity_reliable": True,
-             "detected_stack": ["python", "flask"]}
-    view4 = IntelligenceInterface()._cross_source_view([e1, other])
-    assert view4["conflicts"] == []
+
+
+def test_source_claims_conflict_reaches_research_result(tmp_path):
+    """الدعاوى تصل عبر الواجهة فعلًا (0054): run(RESEARCH) بمصدرين لمسار
+    واحد ودعويين متنافيتين (source_claims) — التعارض بقيمة كل دعوى
+    ودليلها يظهر في نتيجة العرض التبادلي؛ ومصدر ثالث صامت لا يُسقطه."""
+    repo = tmp_path / "claimrepo"
+    _write_repo(repo, {"app.py": "import flask\n",
+                      "requirements.txt": "flask>=2\n"})
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(repo), str(repo)],
+        source_claims=[
+            {"source_id": 0, "path": str(repo), "property": "flask",
+             "value": True, "evidence": "بيان requirements.txt يذكر flask"},
+            {"source_id": 1, "path": str(repo), "property": "flask",
+             "value": False, "evidence": "فحص يدوي: لا أثر للاستيراد"},
+        ]))
+    assert result.status in (IntelligenceStatus.RECOMMENDATION_UNAVAILABLE,
+                            IntelligenceStatus.COMPLETED)
+    snapshot = result.evidence_snapshot
+    conflicts = snapshot["cross_source"]["conflicts"]
+    assert len(conflicts) == 1
+    conflict = conflicts[0]
+    assert "flask" in conflict["subject"]
+    claims = conflict["claims"]
+    assert {cl["source_id"] for cl in claims} == {0, 1}
+    assert {cl["claim"] for cl in claims} == {"أثبت", "أنكر صراحةً"}
+    # دليل كل دعوى وصل معها إلى النتيجة
+    joined = " ".join(cl.get("evidence", "") for cl in claims)
+    assert "requirements.txt" in joined
+    assert "فحص يدوي" in joined
 
 
 def test_content_digest_reliability_same_length_content_change(tmp_path):
@@ -2398,11 +2433,50 @@ def test_fulfillment_evidence_values_and_evidence_committed(tmp_path):
     manifest = (flask_ev.get("manifest") if isinstance(flask_ev, dict)
                 else getattr(flask_ev, "manifest", ""))
     assert manifest == "requirements.txt"
-    # اللغات بقياسها الفعلي: language_stats (ملفات/أسطر) من القياس
+    # وسجل تفاصيل الاعتمادية نفسها يحمل المصدر (dependency_details)
+    dep_details = [d for d in (getattr(dna, "dependency_details", None) or [])
+                   if isinstance(d, dict)
+                   and str(d.get("name", "")).lower() == "flask"]
+    assert dep_details, "سجل تفاصيل الاعتمادية غائب في DNA"
+    assert any(str(d.get("manifest", "")) == "requirements.txt"
+               for d in dep_details)
+    # اللغات بقياسها الفعلي من العينة المعروفة: ملف Python واحد (app.py)
+    # بسطر واحد — لا يمر قياس أقدم مختلف
     stats = getattr(dna, "language_stats", None) or {}
     py = stats.get("Python") or {}
-    assert py.get("files", 0) >= 1 and py.get("lines", 0) >= 1
+    assert py.get("files") == 1 and py.get("lines") == 1
     # قصور مسمى: DNA لا يحمل سجل دليل منفصلاً لكل لغة (القياس نفسه
     # هو المتاح) — لا يُدَّعى سند غير موجود
     assert not any("language_evidence" in str(k)
                    for k in dir(dna))
+    # ---- البديل الثاني المؤهل على العينة الملتزمة نفسها (0054) ----
+    # RPP: القيم والأسانيد نفسها في uro — لا يثبت اختبار RA وحده الإيفاء
+    rpp = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        mission={"name": "خط", "capability": "RepositoryProcessingPipeline",
+                 "parameters": {"url": str(repo)}}))
+    assert rpp.status is IntelligenceStatus.COMPLETED
+    uro = rpp.result["universal_repository_object"]
+    # القيم: كل المفاهيم المطلوبة من العينة الملتزمة المعروفة
+    assert "flask" in [f.lower() for f in uro["frameworks"]]
+    assert "python" in [str(l).lower()
+                        for l in (uro.get("all_languages") or [])]
+    # الاعتمادية بمصدرها: سجل uro يحمل الاعتمادية ببيانها requirements.txt
+    dep_records = [d for d in (uro.get("dependencies") or [])
+                   if isinstance(d, dict)
+                   and str(d.get("name", "")).lower() == "flask"]
+    assert dep_records, "سجل الاعتمادية غائب في uro"
+    assert any(str(d.get("manifest", "")) == "requirements.txt"
+               for d in dep_records)
+    # دليل الإطار: uro يصرّح أدلة الكشف — سجلات dependency/manifest
+    rpp_ev = uro.get("framework_evidence") or []
+    flask_ev = [e for e in rpp_ev
+                if str(e.get("dependency", "")).lower() == "flask"]
+    assert flask_ev, "دليل الإطار غائب في uro"
+    assert any(str(e.get("manifest", "")) == "requirements.txt"
+               for e in flask_ev)
+    # اللغات بقياسها الفعلي من العينة المعروفة: ملف Python واحد (app.py)
+    # بسطر واحد — لا يمر قياس أقدم مختلف
+    rpp_stats = uro.get("language_stats") or {}
+    py_stat = rpp_stats.get("Python") or {}
+    assert py_stat.get("files") == 1 and py_stat.get("lines") == 1

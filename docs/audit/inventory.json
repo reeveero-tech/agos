@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 536,
-  "lines": 101212,
+  "lines": 101222,
   "functions": 6141,
   "stub_functions": 790,
   "hardcoded_paths": 0,
@@ -585,7 +585,7 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 6547,
+   "lines": 6557,
    "functions": 201,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -8578,7 +8578,7 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 1824,
+   "lines": 1834,
    "syntax_ok": true,
    "classes": 11,
    "functions": 49,

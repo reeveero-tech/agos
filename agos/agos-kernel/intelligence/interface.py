@@ -248,6 +248,11 @@ class IntelligenceRequest:
     #: إثبات لكل مصدر لكل مرشح (لا اتحاد)؛ أُضيف في النهاية حفظاً
     #: للتوافق الموضعي
     evidence_paths: Optional[List[str]] = None
+    #: دعاوى صريحة مسندة عن المصادر (سجل العمل 0054): كل دعوى تحمل
+    #: المسار والخاصية والقيمة (أثبت/أنكر صراحةً) ودليلها — تصل من مدخل
+    #: الواجهة فعلًا (تُطابق بمسار المصدر)؛ التحليل الحالي لا ينتجها،
+    #: والدعاوى المتنافاة عن الخاصية نفسها لمسار واحد تُعرض تعارضاً
+    source_claims: Optional[List[Dict[str, Any]]] = None
 
 
 @dataclass
@@ -1552,8 +1557,22 @@ class IntelligenceInterface:
             request.question)
         sources: List[Dict[str, Any]] = []
         failed_sources: List[str] = []
+        claims_by_source: Dict[Any, Dict[str, Dict[str, Any]]] = {}
+        for claim in (request.source_claims or []):
+            sid = claim.get("source_id")
+            if sid is None:      # بلا معرّف مصدر: أوّل مصدر بمساره
+                try:
+                    sid = request.evidence_paths.index(
+                        str(claim.get("path", "")))
+                except ValueError:
+                    continue       # دعوى بلا مصدر — لا تُطابق صامتاً
+            claims_by_source.setdefault(sid, {})[
+                str(claim.get("property", ""))] = {
+                "value": bool(claim.get("value", False)),
+                "evidence": str(claim.get("evidence", ""))}
         for source_id, path in enumerate(request.evidence_paths):
             entry: Dict[str, Any] = {"path": path, "source_id": source_id}
+            entry["explicit_claims"] = claims_by_source.get(source_id, {})
             try:
                 shared = self._analyze(path)
                 digest, reliable = _analysis_content_digest(shared)
@@ -1712,59 +1731,50 @@ class IntelligenceInterface:
         # لا تُدَّعى موثوقة إلا بتجزئة فعلية للمحتوى (سياستنا لا تهشّ —
         # فالسياق غير قابل للإثبات حالياً ويسمّى كذلك)
         conflicts = []
-        unproven_context = True
-        by_identity: Dict[tuple, List[Dict[str, Any]]] = {}
+        # التعارض (سجل العمل 0054 — تصحيح 0053): الدعوى الصريحة تحمل هويتها
+        # (المسار والخاصية والقيمة والدليل) — دعويان متنافيتان عن الخاصية
+        # نفسها لمسار واحد = تعارض، بغض النظر عن الكشف التحليلي؛ والمصدر
+        # الصامت عن الخاصية لا يُسقط تعارض المدّعيين (لا يشارك في المقارنة
+        # أصلاً)؛ والدعاوى تصل من مدخل الواجهة (source_claims)
+        claims_by_key: Dict[tuple, List[Dict[str, Any]]] = {}
         for src in ok_sources:
-            digest = src.get("content_digest")
-            reliable = src.get("content_identity_reliable", False)
-            if digest is None or not reliable:
-                continue          # سياق غير قابل للإثبات — لا ادعاء تعارض
-            unproven_context = False
-            by_identity.setdefault((src["path"], digest), []).append(src)
-        for (path, digest), entries in sorted(by_identity.items()):
+            for prop, claim in (src.get("explicit_claims") or {}).items():
+                claims_by_key.setdefault((src["path"], prop), []).append({
+                    "src": src, "value": bool(claim.get("value")),
+                    "evidence": str(claim.get("evidence", ""))})
+        for (path, prop), entries in sorted(claims_by_key.items()):
             if len(entries) < 2:
                 continue
-            # ادعاءات صريحة فقط (explicit_claims: خاصية → أثبت/أنكر) —
-            # لا ينتجها التحليل الحالي أصلاً؛ المصدر بلا ادعاءات لا يدّعي
-            claims_map = [dict(e.get("explicit_claims") or {})
-                          for e in entries]
-            if not any(claims_map):
-                continue
-            for prop in sorted(set().union(
-                    *[set(c) for c in claims_map if c])):
-                values = {c.get(prop) for c in claims_map}
-                if len(values) < 2 or None in values:
-                    continue
-                conflicts.append({
-                    "subject": f"explicit-claim: {prop}",
-                    "context": f"المسار نفسه ({path}) وهوية محتوى متطابقة "
-                               f"({digest}) — سياق متوافق مثبت",
-                    "claims": [
-                        {"source_id": e.get("source_id"),
-                         "path": e["path"],
-                         "claim": "أثبت" if e.get("explicit_claims", {})
-                         .get(prop) else "أنكر صراحةً"}
-                        for e in entries if e.get("explicit_claims", {})
-                        .get(prop) is not None],
-                    "note": "ادعاءان صريحان متنافيان عن الخاصية نفسها في "
-                            "سياق متوافق مثبت — يُعرضان بهوية مصدر كل ادعاء "
-                            "للفصل، لا يُدجان ولا يُحسمان هنا",
-                })
+            values = {e["value"] for e in entries}
+            if len(values) < 2:
+                continue          # لا تنافي — كل المدّعين متفقون
+            conflicts.append({
+                "subject": f"explicit-claim: {prop}",
+                "context": f"المسار نفسه ({path}) — الخاصية نفسها",
+                "claims": [
+                    {"source_id": e["src"].get("source_id"),
+                     "path": e["src"]["path"],
+                     "claim": "أثبت" if e["value"] else "أنكر صراحةً",
+                     "evidence": e["evidence"]}
+                    for e in entries],
+                "note": "دعويان صريحتان متنافيتان عن الخاصية نفسها "
+                        "لمسار واحد — يُعرضان بقيمة كل دعوى ودليلها "
+                        "وهوية مصدرها للفصل، لا يُدجان ولا يُحسمان هنا؛ "
+                        "والمصدر الصامت عن الخاصية لا يُسقط تعارضهما",
+            })
         return {
             "agreements": agreements,
             "differences": differences,
             "conflicts": conflicts,
             "note": "اختلاف المستودعات وقوائم الكشف اختلاف موثق لا "
                     "تعارض — القوائم ليست ادعاءات حصرية (عنصران قد يصحان "
-                    "معاً)؛ التعارض يتطلب ادعاءين صريحين متنافيين عن "
-                    "الخاصية نفسها (إثبات مقابل إنكار صريح مسند) في سياق "
-                    "متوافق مثبت بهوية محتوى موثوقة (تجزئة فعلية للمحتوى)؛ "
-                    "والتحليل الحالي لا يهشّ المحتوى (hash_predicate=None) "
-                    "فلا يمكن إثبات توافق السياق أصلاً — مسمّى: "
-                    + ("السياق غير قابل للإثبات بالهوية المتاحة (بيانات "
-                       "وصفية بلا تجزئة) — لا تعارض يُدَّعى"
-                       if unproven_context else
-                       "السياق قابل للإثبات بهوية موثوقة"),
+                    "معاً)؛ التعارض الوحيد المثبت: دعويان صريحتان متنافيتان "
+                    "عن الخاصية نفسها لمسار واحد، تصلان من مدخل الواجهة "
+                    "(source_claims) بقيمة كل دعوى ودليلها؛ والتحليل "
+                    "الحالي لا ينتج ادعاءات صريحة أصلاً (لا إثبات ولا إنكار "
+                    "مسند) فلا تعارض يُستنتج من الكشف — والتحليل لا يهشّ "
+                    "المحتوى (hash_predicate=None) فتوافق سياقه غير قابل "
+                    "للإثبات (بيانات وصفية بلا تجزئة) ويسمّى كذلك",
         }
 
     def _analyze(self, path: str) -> Any:
