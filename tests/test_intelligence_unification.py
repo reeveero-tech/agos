@@ -2100,6 +2100,79 @@ def test_measured_cost_records_sample_conditions(tmp_path):
     assert "parameters" in conditions or "inputs" in conditions
 
 
+def test_cross_source_unverified_member_does_not_hide_verified_conflict():
+    """عضو غير متحقق لا يخفي تعارض المتحققين (0058): ثلاثة سجلات للموضوع
+    نفسه (المسار نفسه) بسياقات فعلية H وH وNone وسياق معلن H للجميع —
+    تعارض الأولين المتحققين قائم، والثالثة محفوظة منفصلة بلا إبطال."""
+    interface = IntelligenceInterface()
+    head = "abc123def"
+    sources = []
+    for sid, actual in enumerate([head, head, None]):
+        sources.append({
+            "path": "/repos/x", "source_id": sid,
+            "actual_context": actual,
+            "detected_stack": ["flask"],
+            "explicit_claims": {"flask": {
+                "value": sid != 1,
+                "evidence": f"دعوى المصدر {sid}",
+                "context": head,
+                "origin": "caller-provided"}}})
+    cross = interface._cross_source_view(sources)
+    assert len(cross["conflicts"]) == 1
+    assert {c["source_id"] for c in cross["conflicts"][0]["claims"]} == {0, 1}
+    # والثالثة محفوظة منفصلة (سياق معلن غير متحقق — لا مقارنة ولا إبطال)
+    assert any("غير متحقق" in str(i.get("note", ""))
+               for i in cross["incomparable_claims"])
+    assert cross["caller_claims_contradictions"] == []
+
+
+def test_research_context_unverified_when_file_changes_during_analysis(
+        tmp_path, monkeypatch):
+    """فحص النظافة قبل القراءة لا يثبت اللقطة (0058): تغيير الملف عند دخول
+    التحليل بعد الفحص القبلي — الناتج يُعرض غير متحقق ولا يُسنَد إلى H
+    (لا يجوز تحليل المحتوى المعدّل وإسناده إلى المراجعة)."""
+    repo = _natrepo(tmp_path / "tourepo", "tourepo")
+    (repo / "app.py").write_text("import flask\n", encoding="utf-8")
+    (repo / "requirements.txt").write_text("flask>=2\n", encoding="utf-8")
+    import subprocess
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "claims"], cwd=str(repo),
+                   check=True, env=env)
+    head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+                          capture_output=True, text=True, check=True
+                          ).stdout.strip()
+    original = IntelligenceInterface._analyze
+
+    def _change_then_analyze(self, path):
+        # تغيير غير ملتزم عند دخول التحليل — بعد الفحص القبلي وقبل القراءة
+        (Path(path) / "app.py").write_text(
+            "import django\n", encoding="utf-8")
+        return original(self, path)
+
+    monkeypatch.setattr(
+        IntelligenceInterface, "_analyze", _change_then_analyze)
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(repo), str(repo)],
+        source_claims=[
+            {"source_id": 0, "path": str(repo), "property": "flask",
+             "value": True, "context": head,
+             "evidence": "دعوى بسياق H مع تغيير أثناء التحليل"},
+            {"source_id": 1, "path": str(repo), "property": "flask",
+             "value": False, "context": head,
+             "evidence": "أخرى بسياق H مع تغيير أثناء التحليل"},
+        ]))
+    cross = result.evidence_snapshot["cross_source"]
+    # غير متحقق: لا إسناد إلى H — لا تعارض مثبت بل تناقض دعاوى منفصل
+    assert cross["conflicts"] == []
+    assert len(cross["caller_claims_contradictions"]) == 1
+    assert "غير متحقق" in cross["caller_claims_contradictions"][0]["context"]
+
+
 def test_cross_source_real_conflict_same_path_different_stacks():
     """آلية التعارض (0054 — تصحيح 0053): قوائم الكشف ليست ادعاءات حصرية —
     اختلافها اختلاف موثق دائماً؛ التعارض الوحيد المثبت: دعويان صريحتان
@@ -2339,14 +2412,14 @@ def test_source_claims_conflict_reaches_research_result(tmp_path):
     assert len(cross_d["caller_claims_contradictions"]) == 1
     assert "غير متحقق" in cross_d["caller_claims_contradictions"][0]["context"]
 
-    # (6) عضو غير متحقق لا يخفي المتحققين (0057): دعويان متحققتان
-    # بسياق H (مصدراهما نظيف) + دعوى ثالثة سياقها المعلن H أيضاً لكن
-    # مصدرها وسخ (غير متحقق) — تعارض الأوليين قائم والثالثة محفوظة
-    # منفصلة لا تُبطله
-    mixed = interface.run(IntelligenceRequest(
+    # (6) مسار الدعوى لا يطابق مصدرها (0058 — تصحيح 0057): إسناد دعوى
+    # لمصدر آخر بموضوع من نص المرسل غير مُثبت — تُرفض رفضاً مسمى ولا
+    # تجعل نص المرسل موضوع التحقق؛ وتعارض المتحققين على مصدريهما لا
+    # يتأثر بها
+    mismatch = interface.run(IntelligenceRequest(
         mode=IntelligenceMode.RESEARCH,
         question="ما إطار هذا المستودع؟",
-        evidence_paths=[str(repo), str(repo), str(dirty)],
+        evidence_paths=[str(repo), str(repo)],
         source_claims=[
             {"source_id": 0, "path": str(repo), "property": "flask",
              "value": True, "context": head,
@@ -2354,19 +2427,19 @@ def test_source_claims_conflict_reaches_research_result(tmp_path):
             {"source_id": 1, "path": str(repo), "property": "flask",
              "value": False, "context": head,
              "evidence": "متحققة ثانية"},
-            # موضوعها المستودع النظيف نفسه (تجميع واحد) لكن مصدرها
-            # المرفقة به وسخ — غير متحققة لا تُخفي تعارض المتحققين
-            {"source_id": 2, "path": str(repo), "property": "flask",
+            # مسارها المعلن ليس مسار مصدرها — رفض مسمى لا موضوع جديد
+            {"source_id": 1, "path": str(dirty), "property": "flask",
              "value": True, "context": head,
-             "evidence": "غير متحققة (مصدرها وسخ)"},
+             "evidence": "دعوى بمسار لا يطابق مصدرها"},
         ]))
-    cross_m = mixed.evidence_snapshot["cross_source"]
+    cross_m = mismatch.evidence_snapshot["cross_source"]
+    assert cross_m["invalid_source_claims_named"] >= 1   # رفض مسمى
+    assert any("لا يطابق مصدرها" in str(c.get("reason", ""))
+               for src in mismatch.evidence_snapshot["sources"]
+               for c in (src.get("invalid_source_claims") or []))
     assert len(cross_m["conflicts"]) == 1   # تعارض المتحققين قائم
     assert {cl["source_id"] for cl in
             cross_m["conflicts"][0]["claims"]} == {0, 1}
-    # والثالثة محفوظة منفصلة (سياق معلن غير متحقق — لا مقارنة ولا إبطال)
-    assert any("غير متحقق" in str(i.get("note", ""))
-               for i in cross_m["incomparable_claims"])
 
     # (7) القيمة النصية "false" ليست إثباتاً (استعادة تغطية 0055 عبر
     # run): تُرفض وتُسمّى ولا تصنع تعارضاً

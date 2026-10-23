@@ -414,11 +414,13 @@ _VERIFIED_PRODUCER_PATHS: Dict[str, Dict[str, Any]] = {
 
 
 def _git_head(path: str) -> Optional[str]:
-    """مراجعة المحتوى المحلَّل فعلاً إن كان مستودع git — **دليل المصدر
-    نفسه** لا ادعاء المرسل (سجل العمل 0056+0057): HEAD يمثل الملفات
-    المحلَّلة فقط إذا كانت الشجرة نظيفة (لا تغييرات غير ملتزمة تغيّر
-    الأدلة التي يقرأها المحلل مع بقاء HEAD)؛ فتغيير غير ملتزم يبطل
-    الربط فلا تحقق ممكن ويُرجع None ويسمّى ذلك. لا بصمة وصفية بديلة."""
+    """مراجعة المحتوى عند لحظة الفحص إن كان مستودع git بشجرة نظيفة —
+    **فحص حالة واحد لا يثبت لقطة** (سجل العمل 0058 — تصحيح 0057):
+    النظافة قبل القراءة وحدها لا تثبت أن المحلل قرأ محتوى المراجعة؛
+    الربط المثبت يتم بحصر نافذة القراءة: فحص قبل القراءة وفحص بعدها
+    عند المراجعة نفسها — تطابقهما يثبت أن القراءة كانت لمحتوى المراجعة،
+    وأي تغيير يدوم خلال النافذة (يظهر في الفحص البعدي) يُبطل الإسناد
+    ويُعرض غير متحقق. لا بصمة وصفية بديلة."""
     import subprocess
     try:
         status = subprocess.run(
@@ -1604,6 +1606,18 @@ class IntelligenceInterface:
                                if not isinstance(value, bool) else
                                "دليل فارغ — الدعوى غير مسندة")})
                 continue
+            # مسار الدعوى إن أُعلن يجب أن يطابق مصدرها (سجل العمل 0058 —
+            # تصحيح 0057): لا يجعل نص المرسل موضوع التحقق — إسناد دعوى
+            # لمصدر آخر غير مُثبت فيُرفض رفضاً مسمى
+            if (0 <= int(sid) < len(request.evidence_paths)
+                    and str(claim.get("path", "") or "")
+                    and str(claim.get("path")) != request.evidence_paths[int(sid)]):
+                invalid_claims.append({
+                    "source_id": sid,
+                    "property": str(claim.get("property", "")),
+                    "reason": "مسار الدعوى لا يطابق مصدرها — لا إسناد "
+                              "لمصدر آخر بموضوع من نص المرسل"})
+                continue
             claims_by_source.setdefault(sid, {})[
                 str(claim.get("property", ""))] = {
                 "value": value,
@@ -1611,15 +1625,14 @@ class IntelligenceInterface:
                 # سياق الدعوى كما قدّمه المرسل (caller-provided) — لا يُصنع
                 # من التحليل ولا يُفترض؛ وتساويه شرط قابلية المقارنة
                 "context": str(claim.get("context", "") or ""),
-                # موضوع الدعوى (مسارها كما أعلنه المرسل) — التجميع به؛
-                # والتحقق من سياق المصدر المرفقة به
-                "subject": str(claim.get("path", "") or ""),
                 "origin": "caller-provided"}
         for source_id, path in enumerate(request.evidence_paths):
             entry: Dict[str, Any] = {"path": path, "source_id": source_id}
-            # سياق المصدر الفعلي (دليل المصدر): مراجعة git إن وجدت —
-            # تحقق سياق الدعوى يُقارن به، لا بتساوي نصي قدّمه المرسل
-            entry["actual_context"] = _git_head(path)
+            # فحص قبل القراءة (سجل العمل 0058): النظافة وحدها لا تثبت
+            # اللقطة — يُفحص قبل القراءة ويُفحص بعدها، وتطابقهما عند
+            # المراجعة نفسها يحصر نافذة القراءة فيثبت أن المحلل قرأ محتوى
+            # المراجعة؛ وأي تغيير يدوم خلالها يُبطل الإسناد
+            head_before = _git_head(path)
             entry["explicit_claims"] = claims_by_source.get(source_id, {})
             if invalid_claims:
                 entry["invalid_source_claims"] = [
@@ -1643,6 +1656,12 @@ class IntelligenceInterface:
             except Exception as exc:                               # noqa: BLE001
                 entry["error"] = f"تعذر تحليل المصدر: {exc}"
                 failed_sources.append(path)
+            # الفحص البعدي (سجل العمل 0058): إن تغيرت الشجرة أو المراجعة
+            # أثناء القراءة فلا ربط مثبت — الناتج يُعرض غير متحقق ولا
+            # يُسنَد إلى محتوى معدّل
+            entry["actual_context"] = (
+                head_before if head_before is not None
+                and _git_head(path) == head_before else None)
             sources.append(entry)
         cross = self._cross_source_view(sources)
         snapshot = {
@@ -1795,9 +1814,7 @@ class IntelligenceInterface:
         claims_by_key: Dict[tuple, List[Dict[str, Any]]] = {}
         for src in ok_sources:
             for prop, claim in (src.get("explicit_claims") or {}).items():
-                claims_by_key.setdefault(
-                    (str(claim.get("subject", "") or src["path"]), prop),
-                    []).append({
+                claims_by_key.setdefault((src["path"], prop), []).append({
                         "src": src,
                         "value": claim.get("value"),
                         "evidence": str(claim.get("evidence", "")),
