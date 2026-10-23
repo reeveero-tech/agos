@@ -73,13 +73,12 @@ FULFILLMENT: Dict[str, Dict[str, Tuple[List[str], bool]]] = {
     },
     "dependencies": {
         "RepositoryAnalysis": (["RepositoryDNA.dependencies"], False),
-        "RepositoryDNAGeneration": (["RepositoryDNA.dependencies"], False),
         "RepositoryProcessingPipeline": (
             ["universal_repository_object.dependencies"], False),
     },
     "languages": {
         "RepositoryAnalysis": (["RepositoryDNA.languages"], False),
-        "RepositoryDNAGeneration": (["RepositoryDNA.languages"], False),
+        "RepositoryDNAGeneration": (["مخرج dict: languages/language_stats"], False),
         "RepositoryProcessingPipeline": (
             ["universal_repository_object.all_languages"], False),
     },
@@ -136,10 +135,11 @@ NEEDS_REPOSITORY_SOURCE = {
 
 #: مفهوم الفعل: تحليل/فحص مستودع
 CONCEPT_SKILLS: Dict[str, List[str]] = {
-    # جدول معلن مؤسس على عقود السجل الحي: كل قدرة في إيفاء
-    # repository-analysis تتطلب هذه المهارات (يُختبر التأسيس)
+    # جدول معلن مؤسس على عقود السجل الحي: مهارات مُوفِيي المفهوم الفعليين
+    # (RDNG مُوفٍ للبصمة ولا يطلب GenerateDNA — الجدول تبعية المُوفِين لا
+    # قدرة بعينها؛ يُختبر التأسيس)
     "repository-analysis": ["CloneRepository", "ReadRepository"],
-    "dna": ["CloneRepository", "ReadRepository", "GenerateDNA"],
+    "dna": ["CloneRepository", "ReadRepository"],
 }
 
 
@@ -155,7 +155,13 @@ def derived_skills(interpretation: "IntentInterpretation") -> List[str]:
     return skills
 
 
-NEGATION_MARKERS = ("بدون", "بلا", "ليس", "غير", "لا")
+#: نوافي الاستثناء — نطاقها الاسم التالي مباشرةً (بدون/بلا/غير): استثناء
+#: مسمّى محدود النطاق
+EXCLUDING_NEGATION_MARKERS = ("بدون", "بلا", "غير")
+#: نفي فعلي — نطاقه الجملة/الطلب كله (لا/ليس): لا يمكن حسم نطاقه بآلية
+#: محدودة، فالطلب المنفي لا يُنفَّذ (غموض مسمّى صفر تنفيذ)
+VERBAL_NEGATION_MARKERS = ("لا", "ليس")
+NEGATION_MARKERS = EXCLUDING_NEGATION_MARKERS + VERBAL_NEGATION_MARKERS
 
 INTERROGATIVE_STARTERS = ("هل", "كيف", "لماذا", "أين", "متى", "ما هو",
                           "what", "how", "why", "can you", "could you")
@@ -199,6 +205,9 @@ class IntentInterpretation:
     is_repository_request: bool = False
     artifacts: Dict[str, str] = field(default_factory=dict)   # url فقط إن وُجد
     interrogative: bool = False
+    #: نفي فعلي (لا/ليس) — نطاقه الجملة كله ولا آلية محدودة تحسمه: الطلب
+    #: لا يُنفَّذ (غموض مسمّى)، والمنفيات قيود لا متطلبات محذوفة فقط
+    verbal_negation: bool = False
     matched_terms: List[Tuple[str, str]] = field(default_factory=list)  # (مفهوم، مصطلح)
 
 
@@ -229,7 +238,8 @@ def interpret(text: str) -> IntentInterpretation:
         or normalized.rstrip().endswith(("؟", "?")))
     toks = _tokens(normalized)
     stoks = _stripped_tokens(toks)
-    negation_tokens = {_normalize(m) for m in NEGATION_MARKERS}
+    out.verbal_negation = any(t in VERBAL_NEGATION_MARKERS for t in toks)
+    negation_tokens = {_normalize(m) for m in EXCLUDING_NEGATION_MARKERS}
     for concept, terms in CONCEPT_TERMS.items():
         hit = None
         for term in terms:
@@ -298,6 +308,7 @@ def ranked_candidates(interpretation: IntentInterpretation,
         return [], []
     eligible: Optional[set] = None
     rank: Dict[str, int] = {}
+    registration_index = {name: i for i, name in enumerate(registered_names)}
     for concept in interpretation.required_concepts:
         table = FULFILLMENT.get(concept, {})
         fulfillers = {cap for cap in table if cap in registered_names}
@@ -306,7 +317,9 @@ def ranked_candidates(interpretation: IntentInterpretation,
         eligible = fulfillers if eligible is None else eligible & fulfillers
     for cap in eligible or set():
         rank[cap] = _rank_of(cap, interpretation)
-    ordered = sorted(rank, key=lambda c: (rank[c], c))
+    # الترتيب بفهرس التسجيل الفعلي (ترتيب السجل) لا أبجدياً — فقاعدة كسر
+    # تعادل السياسة (stable-registration-order) تحترم ترتيب التسجيل الحقيقي
+    ordered = sorted(rank, key=lambda c: (rank[c], registration_index[c]))
     return ordered, []
 
 
@@ -314,6 +327,11 @@ def build_mission(interpretation: IntentInterpretation,
                   registered_names: List[str]) -> Tuple[Optional[Dict[str, Any]],
                                                           Optional[str]]:
     """نية → مواصفة مهمة أو خطأ مسمّى (لا تنفيذ عند الغموض/الغياب)."""
+    if interpretation.verbal_negation:
+        return None, ("نفي فعلي (لا/ليس) نطاقه الجملة — لا آلية محدودة تحسم "
+                      "ما نُفي بالضبط، فالطلب لا يُنفَّذ (غموض مسمّى: "
+                      "intent-interpretation). المنفيات قيود تُعرض للمعتمِد لا "
+                      "متطلبات تُحذف صامتة.")
     if interpretation.interrogative:
         return None, ("طلب استفهامي — سؤال لا أمر تنفيذ؛ يُوجَّه للبحث لا "
                       "للتنفيذ (فجوة مسماة: intent-interpretation)")

@@ -1443,9 +1443,11 @@ def test_intent_acceptance_example_tie_is_named_ambiguity():
     mission, error = _intent.build_mission(interpretation, _LIVE_REGISTRY_NAMES)
     assert mission is None
     assert "تعادل" in error
-    for cap in ("RepositoryAnalysis", "RepositoryDNAGeneration",
-                "RepositoryProcessingPipeline"):
-        assert cap in error            # المرشحون الثلاثة مسمّون في الخطأ
+    # المرشحان المُوفِيان فعلاً مسمّيان في الخطأ — RDNG ليس بينهما: مخرجه
+    # dict بلا dependencies (تأسيس مُختبر بالقيم الفعلية في 0050)
+    for cap in ("RepositoryAnalysis", "RepositoryProcessingPipeline"):
+        assert cap in error
+    assert "RepositoryDNAGeneration" not in error
 
 
 def test_intent_dedicated_fulfillment_beats_incidental():
@@ -1603,8 +1605,8 @@ def test_engineer_natural_text_acceptance_path(tmp_path):
     # 2) البدائل: مرشحو الإيفاء الثلاثة بإثبات حوامل المخرجات + المقارنة
     assert ep["alternatives"]["kind"] == "design-alternatives-compared"
     names = {c["name"] for c in ep["alternatives"]["candidates"]}
-    assert names == {"RepositoryAnalysis", "RepositoryDNAGeneration",
-                    "RepositoryProcessingPipeline"}
+    # المُوفِيان الفعليان للمفاهيم الأربعة (RDNG مخرجه dict بلا dependencies)
+    assert names == {"RepositoryAnalysis", "RepositoryProcessingPipeline"}
     ra_row = next(c for c in ep["alternatives"]["candidates"]
                  if c["name"] == "RepositoryAnalysis")
     assert "RepositoryDNA.frameworks" in ra_row["fulfillment_evidence"]["frameworks"]
@@ -1631,10 +1633,12 @@ def test_engineer_natural_text_acceptance_path(tmp_path):
     executed = interface.execute_approved(result.approval_id)
     assert executed.status is IntelligenceStatus.COMPLETED, executed.error
     assert executed.result is not None          # مخرج فعلي (DNA أو uro)
-    # التنفيذ سُجل بمدة مقيسة مسندة إلى القدرة
-    log_entry = interface._execution_log[-1]
-    assert log_entry["capability"] == ep["alternatives"]["selection"]["selected"]
-    assert log_entry["state"] == "completed" and log_entry["duration_ms"] > 0
+    # التنفيذ سُجل في rt.missions (المالك) بإسناد القدرة — لا نسخة موازية
+    assert len(interface._kernel_runtime.missions) == 1
+    recorded = interface._kernel_runtime.missions[-1]
+    attribution = interface._mission_attribution[recorded.mission_id]
+    assert attribution["capability"] == ep["alternatives"]["selection"]["selected"]
+    assert recorded.state.value == "completed" and recorded.duration_ms > 0
 
 
 def test_engineer_natural_text_second_request_closes_cost_gap(tmp_path):
@@ -1707,12 +1711,16 @@ def test_research_multi_source_per_source_evidence_no_merge(tmp_path):
     by_path = {s["path"]: s for s in snapshot["sources"]}
     assert by_path[str(py_repo)]["comparison"].best.candidate_id == "py"
     assert by_path[str(js_repo)]["comparison"].best.candidate_id == "js"
-    # التعارض: Python مكتشف في الأول دون الثاني — ادعاءان متنافسان معروضان
-    conflicts = snapshot["cross_source"]["conflicts"]
-    subjects = {c["subject"] for c in conflicts}
+    # اختلاف المستودعات اختلاف موثق لا تعارض: Python مكتشف في الأول دون
+    # الثاني — ملاحظتان لكل مصدر (غياب الدليل ليس إثبات عدم)، والتعارض
+    # الحقيقي (موضوع وسياق واحد) فارغ معلل
+    differences = snapshot["cross_source"]["differences"]
+    subjects = {d["subject"] for d in differences}
     assert "stack: python" in subjects
-    py_conflict = next(c for c in conflicts if c["subject"] == "stack: python")
-    assert len(py_conflict["claims"]) == 2          # مصدر لكل ادعاء
+    py_diff = next(d for d in differences if d["subject"] == "stack: python")
+    assert len(py_diff["observations"]) == 2         # مصدر لكل ملاحظة
+    assert snapshot["cross_source"]["conflicts"] == []
+    assert "اختلاف موثق لا تعارض" in snapshot["cross_source"]["note"]
     # فجوة اتساع البحث مغلقة — البحث متعدد المصادر قائم
     assert "research-breadth" not in result.gaps
 
@@ -1783,3 +1791,165 @@ def test_research_multi_source_agreement_is_observation_not_merge(tmp_path):
             "claim": "مكتشف في كل المصادر"} in cross["agreements"]
     # ومع ذلك: النتيجة بلا comparison مدمجة — كل مقارنة داخل مصدرها
     assert result.comparison is None
+
+
+# ===============================================================
+# اختبارات المراجعة النهائية (سجل العمل 0050): النفي صفر تنفيذ،
+# وعدّاد الاستدعاءات، والسؤال يقود المقارنة نفسها، وتعديل كل مكوّن مشتق
+# ===============================================================
+
+def test_verbal_negation_is_zero_execution(tmp_path):
+    """«لا أريد فحص أمن المستودع» — نفي فعلي نطاقه الجملة: لا تنفيذ إطلاقاً
+    (صفر مهمام في rt.missions وصفر استدعاء نواة عبر الحارس)."""
+    repo = _natrepo(tmp_path, "negrepo")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        natural_text=f"لا أريد فحص أمن المستودع {repo}"))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "نفي فعلي" in (result.error or "")
+    assert interface._kernel_runtime.missions == []      # صفر تنفيذ
+    assert interface._core_wrapper.invocations == 0       # صفر استدعاء نواة
+
+
+def test_engineer_natural_text_call_counter_single_execution(tmp_path):
+    """عدّاد الاستدعاءات الإنتاجية (عبر الحارس): صفر قبل الاعتماد، وصفر بعد
+    الاعتماد وحده، وواحد بعد التنفيذ، ويبقى واحداً بعد محاولة الإعادة
+    (الإعادة تُرفض — إجازة تُستهلك مرة)."""
+    repo = _natrepo(tmp_path, "countrepo")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text=f"افحص أمن المستودع {repo}"))
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL
+    guard = interface._core_wrapper
+    assert guard.invocations == 0                      # قبل الاعتماد: صفر
+    approved = interface.approve(result.approval_id, "م")
+    assert approved.status is IntelligenceStatus.APPROVED
+    assert guard.invocations == 0                      # الاعتماد وحده: صفر
+    executed = interface.execute_approved(result.approval_id)
+    assert executed.status is IntelligenceStatus.COMPLETED
+    assert guard.invocations == 1                      # تنفيذ واحد فقط
+    again = interface.execute_approved(result.approval_id)
+    assert again.status is IntelligenceStatus.FAILED     # الإعادة مرفوضة
+    assert guard.invocations == 1                      # ما زال واحداً
+
+
+def test_engineer_natural_text_every_derived_component_mutation_rejected(tmp_path):
+    """تعديل كل مكوّن مشتق (متطلبات/بدائل/مخاطر/تكلفة/معمارية) بعد العرض
+    يُرفض عند بوابتي الاعتماد والتنفيذ — بصمة عميقة لا تعرف الاستثناءات."""
+    repo = _natrepo(tmp_path, "mutrepo")
+    interface = IntelligenceInterface()
+    base = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text=f"افحص أمن المستودع {repo}"))
+    assert base.status is IntelligenceStatus.AWAITING_APPROVAL
+    ep = base.engineering_plan
+
+    # بوابة الاعتماد: تعديل المخاطر المشتقة — يُرفض
+    interface.approve(base.approval_id, "م") if False else None
+    ep["risks"].append({"risk": "مزيف"})
+    rejected = interface.approve(base.approval_id, "م")
+    assert rejected.status is IntelligenceStatus.FAILED
+    assert "تغيّر" in (rejected.error or "")
+
+    # بوابة التنفيذ: تعديل كل مكوّن بعد اعتماد سليم — يُرفض
+    for component, mutate in (
+            ("requirements", lambda e: e["requirements"].append(
+                {"ref": "x", "value": "مزيف"})),
+            ("alternatives", lambda e: e["alternatives"]["selection"].update(
+                {"selected": "مزيف"})),
+            ("risks", lambda e: e["risks"].append({"risk": "مزيف"})),
+            ("cost", lambda e: e["cost"].update({"median_ms": 1})),
+            ("architecture", lambda e: e["architecture_design"].update(
+                {"kind": "fabricated"}))):
+        fresh = IntelligenceInterface()
+        r = fresh.run(IntelligenceRequest(
+            mode=IntelligenceMode.ENGINEER,
+            natural_text=f"افحص أمن المستودع {repo}"))
+        assert fresh.approve(r.approval_id, "م").status is IntelligenceStatus.APPROVED
+        mutate(r.engineering_plan)
+        rejected_exec = fresh.execute_approved(r.approval_id)
+        assert rejected_exec.status is IntelligenceStatus.FAILED, component
+        assert "اختلاف المحتوى" in (rejected_exec.error or ""), component
+        assert fresh._core_wrapper.invocations == 0, component
+
+
+def test_research_question_drives_comparison_result(tmp_path):
+    """السؤال يقود المقارنة نفسها (لا العرض فقط): مستودع بPython وFlask —
+    سؤال الأطر يجعل مرشح Flask يتقدم، وسؤال اللغات يجعل مرشح Python يتقدم:
+    تغيير السؤال يغيّر أدلة المقارنة ونتيجتها حيث توجد قرينة مميزة."""
+    repo = tmp_path / "mixrepo"
+    _write_repo(repo, {"app.py": "import flask\n", "requirements.txt": "flask>=2\n"})
+    interface = IntelligenceInterface()
+    candidates = [
+        EngineeringCandidate(id="lang", name="LangApp",
+                             technologies=["Python"]),
+        EngineeringCandidate(id="fw", name="FwApp", technologies=["Flask"]),
+    ]
+    on_fw = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH, evidence_path=str(repo),
+        question="ما أطر هذا المستودع؟", candidates=candidates))
+    on_lang = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH, evidence_path=str(repo),
+        question="ما لغات هذا المستودع؟", candidates=candidates))
+    assert on_fw.status is IntelligenceStatus.COMPLETED
+    assert on_lang.status is IntelligenceStatus.COMPLETED
+    assert on_fw.comparison.best.candidate_id == "fw"     # قرينة الأطر
+    assert on_lang.comparison.best.candidate_id == "lang"  # قرينة اللغات
+    # الحزمة المستخدمة في كل مقارنة موسومة في اللقطة — الاستبعاد معلن
+    assert "flask" in on_fw.evidence_snapshot["detected_stack"]
+    assert "flask" not in on_lang.evidence_snapshot["detected_stack"]
+    assert "python" in on_lang.evidence_snapshot["detected_stack"]
+
+
+def test_intent_fulfillment_actual_values_for_each_alternative(tmp_path):
+    """تأسيس الإيفاء بالقيم الفعلية لا بوجود المفاتيح: كل مُوفٍ في مثال
+    القبول يُنفَّذ على مستودع معلوم المحتوى وتُفحص قيم الأطر والاعتماديات
+    واللغات وأدلتها — RDNG لا يُوفّي dependencies (dict بلا المفتاح)."""
+    import subprocess
+    repo = tmp_path / "fulrepo"
+    _write_repo(repo, {"app.py": "import json\nimport flask\n",
+                      "requirements.txt": "flask>=2.0\nrequests\n"})
+    subprocess.run(["git", "init", "-q"], cwd=str(repo), check=True)
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "i"], cwd=str(repo), check=True, env=env)
+    interface = IntelligenceInterface()
+    registry = interface._capability_resolver.capability_registry
+    registered = {c.name: c for c in registry.list_all()}
+    # RA: RepositoryDNA فعلي بقيم حقيقية
+    dna = registered["RepositoryAnalysis"].execute({"url": str(repo)})
+    assert "Flask" in dna.frameworks and "Python" in dna.languages
+    assert "flask" in dna.dependencies and "requests" in dna.dependencies
+    # RPP: uro بقيم حقيقية
+    rpp = registered["RepositoryProcessingPipeline"].execute(
+        {"repo_path": str(repo)})
+    uro = rpp["universal_repository_object"]
+    assert "Flask" in uro["frameworks"] and "Python" in uro["all_languages"]
+    assert {"flask", "requests"} <= {d["name"] for d in uro["dependencies"]}
+    # RDNG: dict بلا dependencies — لا يُوفّي المفهوم (تأسيس جدول الإيفاء)
+    rdng = registered["RepositoryDNAGeneration"].execute({"url": str(repo)})
+    assert "Flask" in rdng["frameworks"] and "Python" in rdng["languages"]
+    assert "dependencies" not in rdng
+    assert "RepositoryDNAGeneration" not in _intent.FULFILLMENT["dependencies"]
+
+
+def test_instant_provider_selection_gap_closed_with_evidence(tmp_path):
+    """فجوة knowledge-driven-provider-selection مغلقة بدليل: المزود يُختار
+    عبر دليل القرار بسجل معلل (provider_selected في decision_records)."""
+    repo = _natrepo(tmp_path, "providrepo")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        mission={"name": "تحليل", "capability": "RepositoryAnalysis",
+                 "parameters": {"url": str(repo)}}))
+    assert result.status is IntelligenceStatus.COMPLETED
+    assert "knowledge-driven-provider-selection" not in result.gaps
+    # سجل اختيار المزود معلل موجود في سجلات القرار
+    provider_records = [r for r in (result.decision_records or [])
+                       if getattr(r, "kind", "") == "provider"
+                       or "provider" in str(getattr(r, "requested_name", ""))]
+    assert provider_records or any(
+        "provider" in str(r).lower() for r in (result.decision_records or []))

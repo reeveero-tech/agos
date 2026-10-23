@@ -41,8 +41,12 @@ class IntelligenceStatus(Enum):
 
 # الفجوات المسماة لكل نمط (ADR-0009) — تُرد في كل مخرج، لا تُختلق
 INSTANT_GAPS = [
-    "intent-interpretation",            # لا مفسر قصد حر: الطلب النصي الخالي من مواصفة المهمة يفشل صراحةً
-    "knowledge-driven-provider-selection",  # المفاضلة بسياسات معلنة (ADR-0006) لا بقاعدة معرفة/خبرة
+    # تفسير النية أُغلق للمسار المفسر (0047) — يُرد فقط حيث تعذّر التفسير
+    # أو فشل (فشل مسمّى)، لا آلياً في كل نتيجة
+    "intent-interpretation",
+    # اختيار المزود أُغلق (سجل العمل 0050): المزود يُختار في المسار الحي
+    # عبر دليل القرار نفسه بسجل معلل (provider_selected في decision_records
+    # — مختبر)، لا اختياراً صامتاً
 ]
 ENGINEER_GAPS = [
     # مكونات خطة Engineer الآن إسقاط موثق المصدر لما هو كائن (سجل العمل
@@ -56,10 +60,12 @@ ENGINEER_GAPS = [
     "engineering-plan-architecture",          # المعمارية القائمة تحليل لما هو كائن لا تصميم
 ]
 RESEARCH_GAPS = [
-    # اتساع البحث أُغلق (سجل العمل 0049): البحث متعدد المصادر عبر
-    # evidence_paths بإثبات لكل مصدر لكل مرشح — لا اتحاد، والتعارض
-    # ادعاءان متنافسان على الموضوع والسياق نفسه، وغياب دليل مصدر مسمّى،
-    # والسؤال يقود جمع الأدلة (المفاهيم المفسرة ← فئات الحقائق)
+    # اتساع البحث أُغلق (سجل العمل 0049 + تصحيح 0050): البحث متعدد المصادر
+    # عبر evidence_paths بإثبات لكل مصدر لكل مرشح — لا اتحاد؛ واختلاف
+    # المستودعات اختلاف موثق لا تعارض (التعارض الحقيقي يتطلب الموضوع
+    # والسياق نفسيهما وادعاءين متنافسين مسندين)؛ وغياب دليل مصدر مسمّى؛
+    # والسؤال يقود جمع الأدلة **والمقارنة** (مفاهيمه ← فئات الحقائق ←
+    # حزمة المقارنة نفسها — تغيير السؤال يغيّر النتيجة حيث توجد قرينة)
     "ari-benchmarks",                    # تسليم ARI متطلب موثق مؤجل (غياب التسليم وحده المثبت)
     "success-and-experience-data",       # لا بيانات نجاح/تجارب سابقة
 ]
@@ -139,22 +145,31 @@ def _evidence_facts(evidence: Any) -> Dict[str, Any]:
     }
 
 
-def _detected_stack_names(evidence: Any) -> tuple:
+def _detected_stack_names(evidence: Any,
+                           fact_categories: Optional[List[str]] = None) -> tuple:
     """أسماء حزمة المستودع المكتشفة (مطبَّعة) — من الحقول المعتمدة أعلاه.
     المطابقة غير حساسة لحالة الأحرف؛ والتطبيع وإزالة التكرار قبل التقاطع
-    فلا تحسّن التكرارات أو اختلاف الحالة الدرجة."""
+    فلا تحسّن التكرارات أو اختلاف الحالة الدرجة.
+
+    ``fact_categories`` (سجل العمل 0050): حزمة المقارنة تُبنى من فئات
+    سؤال البحث فقط — السؤال يقود **المقارنة** لا العرض وحده؛ وما خارج
+    الفئات يُستبعد من الحزمة (استبعاد موسوم في اللقطة لا حذف صامت)."""
     names = set()
-    for language in _evidence_facts(evidence)["languages"]:
-        names.add(str(language).strip().lower())
-    stack = getattr(evidence, "stack", None)
-    for attr in ("frameworks", "runtimes"):
-        for item in (getattr(stack, attr, None) or []):
+    include_languages = fact_categories is None or "languages" in fact_categories
+    include_frameworks = fact_categories is None or "frameworks" in fact_categories
+    if include_languages:
+        for language in _evidence_facts(evidence)["languages"]:
+            names.add(str(language).strip().lower())
+    if include_frameworks:
+        stack = getattr(evidence, "stack", None)
+        for item in (getattr(stack, "frameworks", None) or []):
             names.add(str(item).strip().lower())
     return tuple(sorted(names))
 
 
 def compare_candidates(candidates: List[EngineeringCandidate],
-                       evidence: Any) -> ComparisonResult:
+                       evidence: Any,
+                       fact_categories: Optional[List[str]] = None) -> ComparisonResult:
     """السياسة المتخصصة المعلنة (ADR-0009): **مواءمة حزمة المستودع** — ليست
     تفويضاً لخط القرار ولا توصية «أفضل تصميم» عموماً.
 
@@ -163,8 +178,12 @@ def compare_candidates(candidates: List[EngineeringCandidate],
     الإدراج **بين ذوي مواءمة مثبتة فقط**؛ والتقنية غير المكتشفة ليست فشلاً
     بل قيمة أدنى معللة؛ والمرشح بلا تقنيات معلنة يُستبعد بمسوّى مسمّى.
     **تقاطع الجميع صفراً: لا توصية** — اختيار الأول هنا لا يصنع توصية مسندة.
-    """
-    stack = set(_detected_stack_names(evidence))
+
+    ``fact_categories`` (سجل العمل 0050): السؤال يقود المقارنة — الحزمة
+    تُبنى من فئات سؤال البحث فقط، فتغيير السؤال يغيّر أدلة المقارنة
+    ونتيجتها حيث توجد قرينة مميّزة (مختبر)."""
+    
+    stack = set(_detected_stack_names(evidence, fact_categories))
     declared: Dict[str, List[str]] = {}
     comparisons: List[CandidateComparison] = []
     for index, candidate in enumerate(candidates):
@@ -256,6 +275,9 @@ class _VerifyingCore:
         self._inner = inner
         # العمل الموافق عليه: (صاحب الدالة، الدالة نفسها، المعاملات)
         self.expected: Any = None
+        #: عدّاد الاستدعاءات التي عبرت إلى النواة الإنتاجية فعلاً (سجل
+        #: العمل 0050) — يُثبت صفر تنفيذ قبل الإجازة وواحدية التنفيذ
+        self.invocations: int = 0
 
     @staticmethod
     def _work_identity(func):
@@ -277,6 +299,7 @@ class _VerifyingCore:
                 return InvocationOutcome(error=RuntimeError(
                     "المعاملات المارّة إلى النواة ليست المعاملات الموافق "
                     "عليها (ADR-0009): رُفض تنفيذ بمعاملات لم تُعتمد"))
+        self.invocations += 1          # استدعاء عبر إلى النواة الإنتاجية فعلاً
         return self._inner.invoke_sync(func, *args, **kwargs)
 
 
@@ -306,7 +329,7 @@ def _mission_field(mission_spec: Any, field: str) -> str:
 def _engineering_plan(mission: Any, plan: Any,
                        decision_records: List[Any],
                        interpreted: Optional[Dict[str, Any]] = None,
-                       execution_log: Optional[List[Dict[str, Any]]] = None
+                       measured_executions: Optional[List[Dict[str, Any]]] = None
                        ) -> Dict[str, Any]:
     """مكونات خطة Engineer — إسقاط موثق المصدر لما هو كائن فعلاً (R-W1-006).
 
@@ -325,7 +348,7 @@ def _engineering_plan(mission: Any, plan: Any,
     if interpreted is not None:
         return _interpreted_engineering_plan(
             mission, plan, decision_records, interpreted,
-            execution_log or [])
+            measured_executions or [])
     # المتطلبات: مواصفة المرسل منقولة حرفياً بوسم مصدرها — ليست تحليل متطلبات
     requirements: List[Dict[str, Any]] = []
     for ref, value in (("mission.name", getattr(mission, "name", "")),
@@ -378,7 +401,7 @@ def _engineering_plan(mission: Any, plan: Any,
 def _interpreted_engineering_plan(
         mission: Any, plan: Any, decision_records: List[Any],
         interpreted: Dict[str, Any],
-        execution_log: List[Dict[str, Any]]) -> Dict[str, Any]:
+        measured_executions: List[Dict[str, Any]]) -> Dict[str, Any]:
     """مكونات خطة المسار المفسر — اشتقاق موثق الأسناد من نية مفسرة قبل
     الاختيار (سجل العمل 0048). لا تحقق دائري: المتطلبات من نص المستخدم،
     والبدائل من جدول الإيفاء المُثبت بالمخرجات، والمقارنة من دليل القرار
@@ -414,6 +437,7 @@ def _interpreted_engineering_plan(
     projected = (comparison.to_dict() if hasattr(comparison, "to_dict")
                  else {"record_type": type(comparison).__name__})
     candidate_rows = []
+    contracts = interpreted.get("contracts", {})
     for name in interpreted["alternatives"]:
         fulfill_carriers = {}
         for concept in interpretation.required_concepts:
@@ -422,8 +446,12 @@ def _interpreted_engineering_plan(
                 fulfill_carriers[concept] = entry[0]
         eval_row = next((e for e in projected.get("candidates", [])
                          if e.get("name") == name), None)
+        contract = contracts.get(name, {})
         candidate_rows.append({
             "name": name,
+            "design_approach": contract.get("description", ""),
+            # مهارات معلنة مطلوبة — تبعيات لا مراحل مثبتة
+            "required_skills_declared": contract.get("skills", []),
             "fulfillment_evidence": fulfill_carriers,   # حامل المخرج الفعلي
             "evaluation": eval_row,                    # درجة دليل القرار
         })
@@ -433,8 +461,15 @@ def _interpreted_engineering_plan(
         "required_skills": interpreted["required_skills"],
         "skill_source": "CONCEPT_SKILLS المعلن — اشتقاق من المفاهيم لا من قدرة",
         "candidates": candidate_rows,
-        "selection": {"selected": selected,
-                      "tie_break": projected.get("tie_break")},
+        "selection": {
+            "selected": selected,
+            "tie_break": projected.get("tie_break"),
+            "note": "درجات دليل القرار هنا قياس **علاقة مهارات** (تغطية "
+                    "المهارات المطلوبة المشتقة من المفاهيم) لا مفاضلة "
+                    "تصميمية — لا يُقدَّم عدد المهارات بوصفه تحقيقاً أفضل "
+                    "لهدف المستخدم؛ التصميمان معروضان بمفاضلاتهما "
+                    "والمعتمِد يرى ويرفض أو يميّز (مثلاً «بصمة DNA»)",
+        },
         "record": projected,
         "note": "مرشحو الإيفاء المثبت بالمخرجات قورنوا بدليل القرار القائم",
     }
@@ -462,34 +497,41 @@ def _interpreted_engineering_plan(
         "mitigation_verification": "المعتمِد يرى mission.parameters في الخطة "
                                    "قبل الإجازة",
         "probability": None})
-    measured = [e["duration_ms"] for e in execution_log
-                if e.get("capability") == selected
-                and e.get("state") == "completed"]
-    if not measured:
+    completed = [e for e in measured_executions
+                if e.get("state") == "completed"]
+    if not completed:
         risks.append({
             "risk": "لا تاريخ تنفيذ مقيس لهذه القدرة — عدم يقين في المدة، "
                     "ليس دليل فشل",
-            "evidence": "سجل التنفيذات المسند لا يحوي تنفيذاً مكتملاً لهذه "
-                        "القدرة",
+            "evidence": "سجل التنفيذات (rt.missions بإسناد المعرّف) لا يحوي "
+                        "تنفيذاً مكتملاً لهذه القدرة",
             "impact": "تقدير المدة يبقى معلناً لا مقيساً",
             "mitigation": "أول تنفيذ يُقاس ويُسند إلى القدرة فيغلق الفجوة",
-            "mitigation_verification": "المدة المقيسة تظهر في سجل التنفيذات "
+            "mitigation_verification": "المدة المقيسة تظهر في سجل rt.missions "
                                        "بعد التنفيذ",
             "probability": None})
 
     # ---- التكلفة: مدة تنفيذ مقيسة من سجل التنفيذات، وإلا معلنة حرفياً ----
-    if measured:
-        ordered = sorted(measured)
+    if completed:
+        ordered = sorted(e["duration_ms"] for e in completed)
         n = len(ordered)
         median = ordered[n // 2] if n % 2 else (ordered[n // 2 - 1]
                                               + ordered[n // 2]) // 2
+        modes = sorted({e["mode"] for e in completed})
+        sources = sorted({e.get("source", "") for e in completed})
         cost = {
             "n": n, "median_ms": median,
             "observed_min_ms": ordered[0], "observed_max_ms": ordered[-1],
             "unit": "measured-execution-duration",
-            "conditions": {"capability": selected, "state": "completed"},
-            "note": "مدة تنفيذ مقيسة (وسائط وعينة مدى ملحوظ) — لا تكلفة مالية "
-                    "ولا ادعاء شمول",
+            "conditions": {"capability": selected, "state": "completed",
+                           "modes": modes, "record_source": sources},
+            "unmeasured_conditions": {
+                "environment": "غير مقيس — مجهول معلن",
+                "load": "غير مقيس — مجهول معلن",
+            },
+            "note": "مدة تنفيذ مقيسة (وسائط وعينة مدى ملحوظ) — لا تكلفة "
+                    "مالية ولا ادعاء شمول؛ البيئة والحمل مجهولان معلنان "
+                    "لا يُدّعى قياسهما",
             "source": "measured",
         }
     else:
@@ -501,30 +543,46 @@ def _interpreted_engineering_plan(
                     "(engineering-plan-cost-estimate)",
         }
 
-    # ---- المعمارية: مقترح مشتق من المتطلبات وعقد المختار — لا وصف منفذ ----
-    selected_skills = []
-    for concept in interpretation.required_concepts:
-        selected_skills.extend(intent_module.CONCEPT_SKILLS.get(concept, []))
+    # ---- المعمارية: مقترح مشتق من عقد المختار ومتطلبات ما قبل الاختيار ----
+    contract = interpreted.get("contracts", {}).get(selected, {})
+    carriers = {
+        concept: intent_module.FULFILLMENT.get(concept, {}).get(
+            selected, ([], False))[0]
+        for concept in interpretation.required_concepts}
     architecture_design = {
         "kind": "proposal",
         "derived_from": "requirements (before selection) + chosen contract",
+        "declared_design": contract.get("description", ""),
         "components": [
-            {"component": skill,
-             "responsibility": "مرحلة معلنة في عقد القدرة المختارة",
-             "supports_concepts": [c for c in interpretation.required_concepts
-                                    if skill in intent_module.CONCEPT_SKILLS.get(c, [])]}
-            for skill in dict.fromkeys(selected_skills)],
-        "output_fulfillment": {
-            concept: intent_module.FULFILLMENT.get(concept, {}).get(
-                selected, ([], False))[0]
-            for concept in interpretation.required_concepts},
+            {
+                "component": "استنساخ وقراءة المصدر",
+                "responsibility": "جلب المصدر المستخرج نصياً وقراءته بأمان",
+                "interface": "url → حقائق التحليل المشترك (خط ADR-0005)",
+                "boundaries": "خدمة التحليل المعتمدة — لا كاشف موازٍ",
+                "declared_dependencies": [
+                    s for s in contract.get("skills", [])
+                    if s in ("CloneRepository", "ReadRepository")],
+            },
+            {
+                "component": "إسقاط مخرجات المفاهيم",
+                "responsibility": "إنتاج كل مخرج مطلوب في حامله المثبت",
+                "interface": "حقائق التحليل → حوامل المخرج (أدناه)",
+                "boundaries": "عقد مخرج القدرة المختارة — لا ادعاء مراحل "
+                             "داخلية غير معلنة",
+                "declared_dependencies": [
+                    s for s in contract.get("skills", [])
+                    if s not in ("CloneRepository", "ReadRepository")],
+            },
+        ],
+        "output_fulfillment": carriers,
         "data_flow": [
             "المصدر المستخرج نصياً (url)",
-            "المراحل المعلنة في عقد المختار (skills)",
-            "المخرج المثبت حاملاً للمفاهيم (fulfillment carriers)",
+            "استنساخ وقراءة آمنة (خط ADR-0005 المعتمد)",
+            "إسقاط المفاهيم إلى حواملها المثبتة في مخرج المختار",
         ],
-        "note": "مقترح معماري مشتق — ليس وصف المنفذ القائم؛ العقد المختار "
-                "مصدر المراحل", 
+        "note": "مقترح معماري مشتق من عقد المختار ومتطلبات ما قبل الاختيار "
+                "— ليس وصف المنفذ القائم؛ skills المعلنة تبعيات معلنة لا "
+                "مراحل تنفيذ مرتبة مثبتة",
     }
 
     return {
@@ -724,11 +782,11 @@ class IntelligenceInterface:
         self._mission_engine = mission_engine
         self._kernel_runtime = kernel_runtime   # مالك سجل المهام القائم (rt.missions)
         self._capability_resolver = capability_resolver
-        #: سجل تنفيذات مسند (سجل العمل 0048): كل تنفيذ تقوده الواجهة يُسجل
-        #: بقدرته وحالته ومدته المقيسة — المدة من المنفذ (Instant/Engineer
-        #: يمران عبر MissionExecutor) لا من ساعة الواجهة؛ وهو إسنادُ قدرةٍ
-        #: فوق سجل rt.missions القائم (المالك) لا مخزن موازٍ له
-        self._execution_log: List[Dict[str, Any]] = []
+        #: خريطة إسناد (سجل العمل 0050): mission_id → {capability, mode} —
+        #: إسناد قدرةٍ إلى سجل rt.missions **القائم المالك** (المدة والمهام
+        #: منه لا من نسخة موازية)؛ وعند غياب runtime (محركات محقونة) تُسجل
+        #: المدة المقيسة من المنفذ داخل الإسناد نفسه (احتياط موثق)
+        self._mission_attribution: Dict[str, Dict[str, Any]] = {}
         self._core_wrapper = core_wrapper      # حد التحقق عند الاستدعاء (أو None)
         if approval is None:
             from approval import ApprovalRuntime
@@ -838,14 +896,13 @@ class IntelligenceInterface:
         if interpreted:
             # الفجوة أُغلقت للمسار المفسر — لا تُرد فجوة آلية غاب مسبباها
             gaps = [g for g in gaps if g != "intent-interpretation"]
-        # إسناد القدرة إلى المدة المقيسة من المنفذ (لا ساعة واجهة)
-        self._execution_log.append({
-            "mission_id": outcome.mission_id,
+        # إسناد القدرة إلى مهمة سجل rt.missions (المالك) — المدة تُقرأ منه
+        self._mission_attribution[outcome.mission_id] = {
             "capability": _mission_field(mission_spec, "capability"),
             "mode": "instant",
             "state": outcome.state.value,
-            "duration_ms": outcome.duration_ms,
-            "measured_by": "mission-executor"})
+            "duration_ms": outcome.duration_ms,   # احتياط عند غياب runtime
+        }
         return IntelligenceResult(
             mode=IntelligenceMode.INSTANT,
             status=IntelligenceStatus.COMPLETED if completed
@@ -922,7 +979,10 @@ class IntelligenceInterface:
             source=self._human_source(), requester="intelligence-interface")
         engineering_plan = _engineering_plan(
             mission, plan, decision_records,
-            interpreted=interpreted_ctx, execution_log=self._execution_log)
+            interpreted=interpreted_ctx,
+            measured_executions=(
+                self._measured_executions(_mission_field(mission_spec, "capability"))
+                if interpreted_ctx is not None else None))
         # فجوات المسار المفسر: ما اشتُق فعلاً يُغلق، وما لا قياس له يبقى مسمى
         gaps = list(ENGINEER_GAPS)
         if interpreted_ctx is not None:
@@ -970,6 +1030,12 @@ class IntelligenceInterface:
         مقارنة دليل القرار ← الفائز — لا اشتقاق متطلبات من قدرة مختارة."""
         from intelligence import intent as intent_module
         interpretation = intent_module.interpret(natural_text)
+        if interpretation.verbal_negation:
+            return None, None, ("نفي فعلي (لا/ليس) نطاقه الجملة — لا آلية "
+                                "محدودة تحسم ما نُفي بالضبط، فالطلب لا "
+                                "يُنفَّذ (غموض مسمّى: intent-interpretation). "
+                                "المنفيات قيود تُعرض للمعتمِد لا متطلبات "
+                                "تُحذف صامتة.")
         if interpretation.interrogative:
             return None, None, ("طلب استفهامي — سؤال لا أمر تنفيذ؛ يُوجَّه "
                                 "للبحث لا للتنفيذ (فجوة مسماة: "
@@ -1016,16 +1082,25 @@ class IntelligenceInterface:
                  "engineering-plan-design-alternatives",
                  "engineering-plan-risks",
                  "engineering-plan-architecture"]
-        durations = [e["duration_ms"] for e in self._execution_log
-                    if e.get("capability") == selected
-                    and e.get("state") == "completed"]
-        if durations:
+        measured = [e for e in self._measured_executions(selected)
+                   if e["state"] == "completed"]
+        if measured:
             closed.append("engineering-plan-cost-estimate")
+        # عقود البدائل من السجل الحي — تصميم كل بديل ومهاراته المعلنة
+        registry = self._capability_resolver.capability_registry
+        registered_objects = {c.name: c for c in registry.list_all()}
+        contracts = {
+            name: {"description": str(getattr(registered_objects[name],
+                                              "description", "") or ""),
+                   "skills": list(getattr(registered_objects[name],
+                                          "skills", []) or [])}
+            for name in alternatives if name in registered_objects}
         interpreted_ctx = {
             "natural_text": natural_text,
             "interpretation": interpretation,
             "alternatives": list(alternatives),
             "required_skills": list(required_skills),
+            "contracts": contracts,
             "comparison": comparison,
             "selected": selected,
             "closed_gaps": closed,
@@ -1156,20 +1231,24 @@ class IntelligenceInterface:
         wrapper = self._core_wrapper
         wrapper.expected = self._bound_work.get(approval_id)
         try:
-            outcome = self._mission_engine.run(bound_content)  # السلسلة كاملة
+            # المسار الحي المعتمد (سجل العمل 0050): المرور عبر
+            # KernelRuntime.run فيُسجَّل في rt.missions (المالك القائم
+            # لسجل التنفيذات) — والحارس محفوظ (المحرك المسوَّر نفسه)
+            if self._kernel_runtime is not None:
+                outcome = self._kernel_runtime.run(bound_content)
+            else:
+                outcome = self._mission_engine.run(bound_content)  # السلسلة كاملة
         finally:
             wrapper.expected = None
         from mission_engine import MissionState
         completed = outcome.state is MissionState.COMPLETED
-        # إسناد القدرة إلى المدة المقيسة من المنفذ (سجل العمل 0048) —
-        # المدة قياس المنفذ لا ساعة الواجهة
-        self._execution_log.append({
-            "mission_id": outcome.mission_id,
+        # إسناد القدرة إلى مهمة سجل rt.missions (المالك) — المدة تُقرأ منه
+        self._mission_attribution[outcome.mission_id] = {
             "capability": str(getattr(mission, "capability", "") or ""),
             "mode": "engineer",
             "state": outcome.state.value,
-            "duration_ms": outcome.duration_ms,
-            "measured_by": "mission-executor"})
+            "duration_ms": outcome.duration_ms,   # احتياط عند غياب runtime
+        }
         return IntelligenceResult(
             mode=IntelligenceMode.ENGINEER,
             status=IntelligenceStatus.COMPLETED if completed
@@ -1218,7 +1297,9 @@ class IntelligenceInterface:
                 if question_interpretation else []),
             "fact_categories_gathered": fact_categories,
             "detected": self._gathered_facts(facts, fact_categories),
-            "detected_stack": list(_detected_stack_names(shared)),
+            # حزمة المقارنة كما استخدمتها المقارنة فعلاً (بفئات السؤال إن وجدت)
+            "detected_stack": list(_detected_stack_names(
+                shared, fact_categories or None)),
         }
         if not request.candidates:
             return IntelligenceResult(
@@ -1227,7 +1308,9 @@ class IntelligenceInterface:
                 error="لا مرشحين للمقارنة — لا توصية بلا مرشحين",
                 evidence_snapshot=evidence_snapshot,
                 gaps=list(RESEARCH_GAPS) + ["no-candidates"])
-        comparison = compare_candidates(request.candidates, shared)
+        # السؤال يقود المقارنة: الحزمة بفئات سؤال البحث (سجل العمل 0050)
+        comparison = compare_candidates(
+            request.candidates, shared, fact_categories=fact_categories or None)
         if comparison.best is None:
             # تقاطع الجميع صفراً — المقارنة محفوظة، ولا توصية بلا مواءمة
             return IntelligenceResult(
@@ -1261,10 +1344,12 @@ class IntelligenceInterface:
                 shared = self._analyze(path)
                 facts = _evidence_facts(shared)
                 entry["detected"] = self._gathered_facts(facts, fact_categories)
-                entry["detected_stack"] = list(_detected_stack_names(shared))
+                entry["detected_stack"] = list(_detected_stack_names(
+                    shared, fact_categories or None))
                 if request.candidates:
                     entry["comparison"] = compare_candidates(
-                        request.candidates, shared)
+                        request.candidates, shared,
+                        fact_categories=fact_categories or None)
                 else:
                     entry["comparison"] = None
                     entry["error"] = "لا مرشحين للمقارنة لهذا المصدر"
@@ -1305,6 +1390,34 @@ class IntelligenceInterface:
             evidence_snapshot=snapshot,
             gaps=list(RESEARCH_GAPS))
 
+    def _measured_executions(self, capability: str) -> List[Dict[str, Any]]:
+        """التنفيذات المقيسة لقدرة — **من سجل rt.missions القائم (المالك)**
+        بإسناد المعرّف (خريطة الإسناد)، لا نسخة موازية؛ وعند غياب runtime
+        (محرك محقون) يُقرأ احتياط الإسناد الموثق نفسه. المدة قياس المنفذ."""
+        records: List[Dict[str, Any]] = []
+        if self._kernel_runtime is not None:
+            for m in self._kernel_runtime.missions:
+                attribution = self._mission_attribution.get(m.mission_id)
+                if not attribution:
+                    continue
+                records.append({
+                    "capability": attribution["capability"],
+                    "mode": attribution["mode"],
+                    "state": m.state.value,
+                    "duration_ms": m.duration_ms,
+                    "source": "rt.missions",
+                })
+        else:
+            for mission_id, attribution in self._mission_attribution.items():
+                records.append({
+                    "capability": attribution["capability"],
+                    "mode": attribution["mode"],
+                    "state": attribution["state"],
+                    "duration_ms": attribution.get("duration_ms", 0),
+                    "source": "attribution-fallback",
+                })
+        return [r for r in records if r["capability"] == capability]
+
     def _question_focus(self, question: Optional[str]):
         """تركيز السؤال: مفاهيمه بالمفسر المعلن ← فئات الحقائق المجمعة
         (جدول معلن) — السؤال يقود جمع الأدلة؛ بلا سؤال أو بلا فئة معروفة
@@ -1335,12 +1448,16 @@ class IntelligenceInterface:
     def _cross_source_view(self, sources: List[Dict[str, Any]]
                            ) -> Dict[str, Any]:
         """عرض تبادلي بين المصادر — لا اتحاد: الاتفاق ملاحظة معروضة،
-        والتعارض ادعاءان متنافسان على الموضوع والسياق نفسه (لا يُدمجان)."""
+        واختلاف المستودعات اختلاف موثق لا تعارض. التعارض الحقيقي يتطلب
+        الموضوع والسياق نفسيهما (المستودع والمراجعة نفسها) وادعاءين
+        متنافسين مسندين — وما لا نملكه هنا (مصادر مختلفة المستودعات) لا
+        يُصنع تعارضاً؛ وغياب الدليل في مصدر ليس إثبات عدم الوجود."""
         agreements: List[Dict[str, Any]] = []
-        conflicts: List[Dict[str, Any]] = []
+        differences: List[Dict[str, Any]] = []
         ok_sources = [s for s in sources if "detected_stack" in s]
         if not ok_sources:
-            return {"agreements": agreements, "conflicts": conflicts,
+            return {"agreements": agreements, "differences": differences,
+                    "conflicts": [],
                     "note": "لا مصادر محلّلة للعرض التبادلي"}
         all_names: Dict[str, List[str]] = {}
         for s in ok_sources:
@@ -1349,18 +1466,24 @@ class IntelligenceInterface:
         for name, paths in all_names.items():
             if len(paths) == len(ok_sources):
                 agreements.append({"subject": f"stack: {name}",
-                                  "claim": "مكتشف في كل المصادر"})
+                                   "claim": "مكتشف في كل المصادر"})
             else:
-                conflicts.append({
+                differences.append({
                     "subject": f"stack: {name}",
-                    "claims": [
-                        {"source": p, "claim": "مكتشف" if p in paths
-                         else "غير مكتشف"}
+                    "observations": [
+                        {"source": p, "observation": "مكتشف" if p in paths
+                         else "غير مكتشف — غياب دليل لا إثبات عدم"}
                         for p in [s["path"] for s in ok_sources]]})
-        return {"agreements": agreements, "conflicts": conflicts,
-                "note": "لا اتحاد — كل مصدر بدليله؛ التعارض ادعاءان متنافسان"}
+        return {
+            "agreements": agreements,
+            "differences": differences,
+            "conflicts": [],
+            "note": "اختلاف المستودعات اختلاف موثق لا تعارض — التعارض "
+                    "يتطلب الموضوع والسياق نفسيهما وادعاءين متنافسين "
+                    "مسندين (مستودع ومراجعة واحدة)؛ ومصادر مختلفة "
+                    "المستودعات لا تناقض بعضها ببعض.",
+        }
 
-    # ---------- أدوات داخلية ----------
     def _analyze(self, path: str) -> Any:
         """خط ADR-0005 — التحليل المشترك عبر الخدمة المعتمدة (بلا كاشف موازٍ)."""
         from capabilities.analysis_service import ScanPolicy, get_analysis_service
