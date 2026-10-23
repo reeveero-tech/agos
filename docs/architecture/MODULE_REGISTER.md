@@ -118,7 +118,7 @@
 | L4 | `agos-kernel/evolution` | evolution | 4 | 1264 | 44 | yes | no | no | L1 | R-W1-008, R-W5-006 |
 | L4 | `agos-kernel/expansion` | evolution | 2 | 182 | 1 | yes | no | no | L1 | R-W5-007 |
 | L4 | `agos-kernel/experience` | learning | 2 | 156 | 0 | yes | no | yes | L1 | R-W5-001 |
-| L4 | `agos-kernel/intelligence` | intelligence | 16 | 4330 | 0 | yes | no | yes | L1 | R-W1-006, R-W2-006 |
+| L4 | `agos-kernel/intelligence` | intelligence | 17 | 5131 | 0 | yes | no | yes | L1 | R-W1-006, R-W2-006 |
 | L4 | `agos-kernel/knowledge` | knowledge | 6 | 1051 | 0 | yes | no | yes | L1 | R-W1-005, R-W2-008 |
 | L4 | `agos-kernel/laboratory` | evolution | 2 | 353 | 4 | yes | no | yes | L1 | R-W5-006 |
 | L4 | `agos-kernel/learning` | learning | 2 | 186 | 0 | yes | no | yes | L1 | R-W5-001 |
@@ -130,9 +130,9 @@
 | L4 | `agos-kernel/recommendation` | optimization | 2 | 175 | 0 | yes | no | yes | L1 | R-W5-004 |
 | L4 | `cognition` | cognition | 6 | 373 | 8 | yes | no | no | L1 | R-W1-010, R-W3-016 |
 | L4 | `cognitive` | cognition | 11 | 617 | 6 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
-| L4 | `intelligence` | intelligence | 6 | 410 | 8 | yes | no | no | L1 | R-F-005, R-W1-006, R-W3-019 |
+| L4 | `intelligence` | intelligence | 6 | 435 | 8 | yes | no | yes | L1 | R-F-005, R-W1-006, R-W3-019 |
 | L4 | `research` | evolution | 6 | 337 | 5 | yes | no | no | L1 | R-W5-007 |
-| L5 | `agos-kernel/civilization` | civilization | 100 | 24450 | 120 | yes | yes | yes | L3 | R-F-003, R-W1-009, R-W3-014 |
+| L5 | `agos-kernel/civilization` | civilization | 100 | 24445 | 120 | yes | yes | yes | L3 | R-F-003, R-W1-009, R-W3-014 |
 | L5 | `civilization` | civilization | 5 | 553 | 16 | yes | no | yes | L1 | R-F-005, R-W1-009, R-W3-014 |
 | L5 | `consolidation` | governance | 1 | 66 | 1 | yes | no | no | L1 | R-W1-001 |
 | L5 | `constitution` | governance | 2 | 264 | 1 | yes | no | no | L1 | R-W1-022 |

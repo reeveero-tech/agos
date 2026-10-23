@@ -57,20 +57,15 @@ class EngineeringIntelligencePipeline:
     
     Converts raw repositories into structured Engineering Intelligence Packages.
     
-    Pipeline stages:
+    Pipeline stages (المسجَّلة فعلاً في ``_setup_stages`` — تصحيح موثق R-W1-006:
+    كان التوثيق يزعم 13 مرحلة والمسجل 7):
     1. Repository Fingerprint
     2. Technology Detection
     3. Language Detection
-    4. Framework Detection
-    5. Dependency Resolution
-    6. Repository Structure Analysis
-    7. Architecture Analysis
-    8. Code Graph Construction
-    9. Knowledge Graph Enrichment
-    10. Policy Evaluation
-    11. Evidence Generation
-    12. Repository DNA
-    13. Engineering Intelligence Package
+    4. Dependency Resolution
+    5. Architecture Analysis
+    6. Code Graph Construction
+    7. Evidence Generation
     """
     
     VERSION = "1.0"

@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 534,
-  "lines": 98963,
-  "functions": 6079,
+  "files": 535,
+  "lines": 99784,
+  "functions": 6115,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 251,
-  "import_ok": 532,
+  "import_ok": 533,
   "import_fail": 0
  },
  "packages": {
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24450,
+   "lines": 24445,
    "functions": 1316,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -584,14 +584,14 @@
    "import_fail": 0
   },
   "agos-kernel/intelligence": {
-   "files": 16,
-   "lines": 4330,
-   "functions": 141,
+   "files": 17,
+   "lines": 5131,
+   "functions": 175,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 4,
-   "import_ok": 16,
+   "import_ok": 17,
    "import_fail": 0
   },
   "agos-kernel/interfaces": {
@@ -1377,8 +1377,8 @@
   },
   "intelligence": {
    "files": 6,
-   "lines": 410,
-   "functions": 55,
+   "lines": 435,
+   "functions": 57,
    "stub_functions": 8,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1983,7 +1983,11 @@
     "K:approval.runtime"
    ],
    "imported_by": [
+    "K:intelligence.interface",
     "K:test_civilization"
+   ],
+   "tested_by_external": [
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -2013,6 +2017,9 @@
     "K:approval",
     "K:civilization.runtime",
     "K:platform_runtime.runtime"
+   ],
+   "tested_by_external": [
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -2484,6 +2491,7 @@
     "K:capabilities.rpp",
     "K:civilization.capabilities.repository_analysis",
     "K:civilization.capabilities.repository_dna",
+    "K:intelligence.interface",
     "K:intelligence.repository.analyzer",
     "S:rie.application",
     "S:rie.infrastructure"
@@ -4190,7 +4198,7 @@
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py",
    "module": "civilization.intelligence_pipeline.pipeline",
    "root": "kernel",
-   "lines": 354,
+   "lines": 349,
    "syntax_ok": true,
    "classes": 2,
    "functions": 9,
@@ -5910,6 +5918,7 @@
    ],
    "imported_by": [
     "K:decision",
+    "K:intelligence.interface",
     "K:pipeline",
     "K:resolvers"
    ],
@@ -7442,13 +7451,15 @@
    "resolved_imports": [],
    "imported_by": [
     "K:bootstrapper",
+    "K:intelligence.interface",
     "K:pipeline",
     "K:test_validation"
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
-    "tests/test_execution_unification.py"
+    "tests/test_execution_unification.py",
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -7572,7 +7583,8 @@
     "K:test_civilization"
    ],
    "tested_by_external": [
-    "tests/test_execution_unification.py"
+    "tests/test_execution_unification.py",
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -7634,11 +7646,13 @@
    "imported_by": [
     "K:civilization.capability_runtime.runtime",
     "K:execution.parallel",
+    "K:intelligence.interface",
     "K:pipeline",
     "K:test_execution_implementation"
    ],
    "tested_by_external": [
-    "tests/test_execution_unification.py"
+    "tests/test_execution_unification.py",
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -8529,6 +8543,66 @@
    "import_status": "OK"
   },
   {
+   "path": "agos/agos-kernel/intelligence/interface.py",
+   "module": "intelligence.interface",
+   "root": "kernel",
+   "lines": 801,
+   "syntax_ok": true,
+   "classes": 11,
+   "functions": 34,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "dataclasses",
+    "enum",
+    "typing",
+    "hashlib",
+    "json",
+    "events",
+    "mission_engine",
+    "pipeline",
+    "registry.capability",
+    "registry.provider",
+    "resolvers",
+    "mission_engine",
+    "mission_engine",
+    "mission_engine",
+    "copy",
+    "mission_engine",
+    "capabilities.analysis_service",
+    "copy",
+    "mission_engine",
+    "mission_engine",
+    "context",
+    "approval",
+    "approval",
+    "agos_kernel.execution.engine",
+    "agos_kernel.execution.engine"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:intelligence.interface",
+   "resolved_imports": [
+    "K:approval",
+    "K:capabilities.analysis_service",
+    "K:context",
+    "K:events",
+    "K:execution.engine",
+    "K:mission_engine",
+    "K:pipeline",
+    "K:registry.capability",
+    "K:registry.provider",
+    "K:resolvers"
+   ],
+   "imported_by": [
+    "S:intelligence"
+   ],
+   "tested_by_external": [
+    "tests/test_intelligence_unification.py"
+   ],
+   "import_status": "OK"
+  },
+  {
    "path": "agos/agos-kernel/intelligence/knowledge.py",
    "module": "intelligence.knowledge",
    "root": "kernel",
@@ -9290,6 +9364,7 @@
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_execution_unification.py",
+    "tests/test_intelligence_unification.py",
     "tests/test_kernel_facade.py",
     "tests/test_mission_unification.py"
    ],
@@ -9320,7 +9395,8 @@
     "K:mission"
    ],
    "imported_by": [
-    "K:bootstrapper"
+    "K:bootstrapper",
+    "K:intelligence.interface"
    ],
    "import_status": "OK"
   },
@@ -9344,11 +9420,13 @@
    "id": "K:mission_engine",
    "resolved_imports": [],
    "imported_by": [
-    "K:bootstrapper"
+    "K:bootstrapper",
+    "K:intelligence.interface"
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
     "tests/test_decision_unification.py",
+    "tests/test_intelligence_unification.py",
     "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
@@ -9671,12 +9749,14 @@
     "K:resolvers"
    ],
    "imported_by": [
-    "K:bootstrapper"
+    "K:bootstrapper",
+    "K:intelligence.interface"
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
-    "tests/test_execution_unification.py"
+    "tests/test_execution_unification.py",
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -10220,6 +10300,7 @@
    "imported_by": [
     "K:bootstrapper",
     "K:decision",
+    "K:intelligence.interface",
     "K:resolvers"
    ],
    "tested_by_external": [
@@ -10253,6 +10334,7 @@
    "imported_by": [
     "K:bootstrapper",
     "K:decision",
+    "K:intelligence.interface",
     "K:resolvers"
    ],
    "tested_by_external": [
@@ -10353,13 +10435,15 @@
    ],
    "imported_by": [
     "K:bootstrapper",
+    "K:intelligence.interface",
     "K:pipeline"
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
-    "tests/test_execution_unification.py"
+    "tests/test_execution_unification.py",
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -15145,23 +15229,30 @@
    "path": "agos/intelligence/__init__.py",
    "module": "intelligence",
    "root": "src",
-   "lines": 2,
+   "lines": 27,
    "syntax_ok": true,
    "classes": 0,
-   "functions": 0,
+   "functions": 2,
    "stub_functions": 0,
    "abstract_functions": 0,
-   "imports": [],
+   "imports": [
+    "agos_kernel.intelligence.interface"
+   ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:intelligence",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:intelligence.interface"
+   ],
    "imported_by": [
     "S:intelligence.ai_execution",
     "S:intelligence.ontology",
     "S:intelligence.platform",
     "S:intelligence.protocol",
     "S:intelligence.tool_cognition"
+   ],
+   "tested_by_external": [
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -16708,6 +16799,42 @@
     "K:diagnostics",
     "K:diagnostics.runtime",
     "K:shared"
+   ]
+  },
+  {
+   "path": "tests/test_intelligence_unification.py",
+   "imports": [
+    "agos.intelligence",
+    "agos_kernel.execution",
+    "agos_kernel.execution.engine",
+    "agos_kernel.intelligence.interface",
+    "approval",
+    "approval.runtime",
+    "events",
+    "flask",
+    "intelligence.interface",
+    "mission",
+    "mission_engine",
+    "os",
+    "pathlib",
+    "pipeline",
+    "resolvers",
+    "sys",
+    "tempfile"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:approval",
+    "K:approval.runtime",
+    "K:events",
+    "K:execution",
+    "K:execution.engine",
+    "K:intelligence.interface",
+    "K:mission",
+    "K:mission_engine",
+    "K:pipeline",
+    "K:resolvers",
+    "S:intelligence"
    ]
   },
   {
