@@ -9,7 +9,7 @@
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 533
-- **lines**: 99784
+- **lines**: 99796
 - **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
@@ -25,7 +25,7 @@
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_runtime` | 1 | 139 | 16 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/api` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
-| `agos-kernel/approval` | 2 | 184 | 11 | 0 | 0 | 2 | 0 | 0 |
+| `agos-kernel/approval` | 2 | 196 | 11 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/architecture` | 1 | 220 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/audit` | 1 | 148 | 10 | 3 | 0 | 1 | 0 | 0 |
 | `agos-kernel/benchmark` | 3 | 347 | 17 | 1 | 0 | 3 | 0 | 0 |

@@ -130,9 +130,18 @@ class ApprovalRuntime:
         return True
     
     def check_policy(self, request_type: str, evidence: Dict[str, Any]) -> bool:
-        """Check if request should be auto-approved by policy."""
+        """Check if request should be auto-approved by policy.
+
+        R-Q-011 (سجل العمل 0042): القاعدة تطابق نوع الطلب من
+        ``conditions["request_type"]`` — مطابقة حرفية أو ``"*"`` للجميع،
+        ثم ``auto_approve`` يقرر. ``evidence`` مقبول في التوقيع للتوافق
+        ولا يُشترط في هذا العقد (حدّ مسمّى موثق لا إنكار). كان الكود
+        يقرأ ``rule.request_type`` وهو حقل غير موجود في ``ApprovalRule``
+        فيفشل بعالقاعدة واحدة (موثق في سجل العمل 0040 §6).
+        """
         for rule in self.rules.values():
-            if rule.request_type == request_type or rule.request_type == "*":
+            rule_type = rule.conditions.get("request_type")
+            if rule_type == request_type or rule_type == "*":
                 if rule.auto_approve:
                     return True
         return False
@@ -167,7 +176,10 @@ class ApprovalRuntime:
             "total_requests": total,
             "approved": approved,
             "rejected": rejected,
-            "pending": len(self.requests),
+            # R-Q-011: المعلق = غير المحسوم فعلاً — الطلب يبقى في ``requests``
+            # (فلا يفقد ``get_request`` أثره) لكنه لا يُعدّ معلقاً بعد قراره.
+            "pending": sum(1 for r in self.requests.values()
+                            if r.status is ApprovalStatus.PENDING),
             "approval_rate": approved / total if total > 0 else 0,
         }
     

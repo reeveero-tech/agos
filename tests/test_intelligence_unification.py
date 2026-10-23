@@ -166,27 +166,60 @@ def test_approval_lifecycle_current_shape():
 def test_approval_policy_and_analytics_current_shape():
     rt = ApprovalRuntime()
     from approval.runtime import ApprovalRule
+    # R-Q-011 (سجل العمل 0042): القاعدة تطابق النوع من
+    # ``conditions["request_type"]`` (حرفي أو "*") — كان الكود يقرأ
+    # ``rule.request_type`` غير الموجود في ``ApprovalRule`` فيفشل بعالقاعدة
+    # واحدة (موثق في سجل العمل 0040 §6) — الآن عقد معلن وسلوك مختبر.
     rt.add_rule(ApprovalRule(id="r1", name="auto",
-                             conditions={"type": "t.*"}, auto_approve=True))
-    # توصيف خلل كامن في القائم: ``check_policy`` يقرأ ``rule.request_type``
-    # و``ApprovalRule`` لا يملك هذا الحقل أصلاً — AttributeError عند وجود
-    # أي قاعدة (لا يُستعمل من واجهة ADR-0009؛ موثق في سجل العمل).
-    try:
-        rt.check_policy("t.any", {})
-        raised = False
-    except AttributeError:
-        raised = True
-    assert raised is True
+                             conditions={"request_type": "t.x"},
+                             auto_approve=True))
+    rt.add_rule(ApprovalRule(id="r2", name="wild",
+                             conditions={"request_type": "*"},
+                             auto_approve=False))
+    # المطابقة الحرفية مع auto_approve → موافقة آلية.
+    assert rt.check_policy("t.x", {}) is True
+    # النوع غير المطابق لا يوافق آلياً (القاعدة النجمية بلا auto_approve).
+    assert rt.check_policy("t.y", {}) is False
+    # evidence مقبول في التوقيع ولا يغيّر القرار (حدّ مسمّى في العقد).
+    assert rt.check_policy("t.x", {"k": "v"}) is True
+    # بلا قواعد → لا موافقة آلية.
+    assert ApprovalRuntime().check_policy("t.x", {}) is False
 
     req = rt.create_request("t.x", "وصف")
     rt.approve(req.id, "a")
     analytics = rt.get_analytics()
     assert analytics["total_requests"] == 1
     assert analytics["approved"] == 1
-    # توصيف: approve لا يزيل الطلب من self.requests — فالعداد «pending»
-    # يعد كل الطلبات الباقية في القاموس حتى المُحسومة (الشكل الحالي).
-    assert analytics["pending"] == 1
+    # R-Q-011: المعلق = غير المحسوم فعلاً — المقرَّر يبقى في ``requests``
+    # (فلا يفقد ``get_request`` أثره) لكنه لا يُعدّ معلقاً بعد قراره.
+    assert analytics["pending"] == 0
     assert analytics["approval_rate"] == 1.0
+    assert rt.get_request(req.id) is req
+
+
+def test_approval_pending_counts_only_undecided_requests():
+    """R-Q-011: analytics["pending"] يعد غير المحسوم فقط في كل مسارات
+    القرار — approve/reject/skip كلها تُخرج الطلب من العد بلا إزالته
+    من ``requests`` (فبقاء ``get_request`` مضموناً)."""
+    rt = ApprovalRuntime()
+    a = rt.create_request("t.a", "أ")
+    b = rt.create_request("t.b", "ب")
+    c = rt.create_request("t.c", "ج")
+    assert rt.get_analytics()["pending"] == 3
+
+    assert rt.approve(a.id, "x") is True
+    assert rt.reject(b.id, "y", "سبب") is True
+    assert rt.skip(c.id, reason="تخطي") is True
+
+    assert rt.get_analytics()["pending"] == 0
+    # الطلبات الثلاثة ما زالت قابلة للاسترجاع بعد قراراتها.
+    assert rt.get_request(a.id) is a
+    assert rt.get_request(b.id) is b
+    assert rt.get_request(c.id) is c
+    # وطلبات جديدة تُعدّ معلقة مرة أخرى.
+    d = rt.create_request("t.d", "د")
+    assert rt.get_analytics()["pending"] == 1
+    assert rt.get_request(d.id) is d
 
 
 def test_approval_request_is_mutable_today():

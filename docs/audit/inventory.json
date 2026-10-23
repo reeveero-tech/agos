@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 535,
-  "lines": 99784,
+  "lines": 99796,
   "functions": 6115,
   "stub_functions": 790,
   "hardcoded_paths": 0,
@@ -90,7 +90,7 @@
   },
   "agos-kernel/approval": {
    "files": 2,
-   "lines": 184,
+   "lines": 196,
    "functions": 11,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1995,7 +1995,7 @@
    "path": "agos/agos-kernel/approval/runtime.py",
    "module": "approval.runtime",
    "root": "kernel",
-   "lines": 178,
+   "lines": 190,
    "syntax_ok": true,
    "classes": 5,
    "functions": 11,
