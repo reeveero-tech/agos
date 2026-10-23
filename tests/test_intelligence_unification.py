@@ -2128,9 +2128,12 @@ def test_cross_source_unverified_member_does_not_hide_verified_conflict():
 
 def test_research_context_unverified_when_file_changes_during_analysis(
         tmp_path, monkeypatch):
-    """فحص النظافة قبل القراءة لا يثبت اللقطة (0058): تغيير الملف عند دخول
-    التحليل بعد الفحص القبلي — الناتج يُعرض غير متحقق ولا يُسنَد إلى H
-    (لا يجوز تحليل المحتوى المعدّل وإسناده إلى المراجعة)."""
+    """اللقطة المستقلة من المراجعة (0059 — تصحيح 0058؛ اسم الاختبار من
+    0057 محفوظ حاكماً): تغيير ملف المصدر الأصلي عند دخول التحليل ثم
+    استعادة بايتاته بعد قراءة المحلل وقبل عودته — المحلل يقرأ لقطة H
+    المستقلة فعلاً فيصح الإسناد إليها (يُثبت المحتوى المقروء: flask
+    الملتزم لا django التغيير)؛ ومصدر بلا git يُحلَّل حياً فيبقى سياقه
+    غير متحقق دائماً (لا ترقية بفحوص حالة)."""
     repo = _natrepo(tmp_path / "tourepo", "tourepo")
     (repo / "app.py").write_text("import flask\n", encoding="utf-8")
     (repo / "requirements.txt").write_text("flask>=2\n", encoding="utf-8")
@@ -2144,12 +2147,19 @@ def test_research_context_unverified_when_file_changes_during_analysis(
                           capture_output=True, text=True, check=True
                           ).stdout.strip()
     original = IntelligenceInterface._analyze
+    original_bytes = (repo / "requirements.txt").read_bytes()
 
     def _change_then_analyze(self, path):
-        # تغيير غير ملتزم عند دخول التحليل — بعد الفحص القبلي وقبل القراءة
-        (Path(path) / "app.py").write_text(
-            "import django\n", encoding="utf-8")
-        return original(self, path)
+        # تغيير ملف المصدر الأصلي (لا مسار اللقطة المحلَّلة) عند دخول
+        # التحليل — ثم استعادة بايتاته بعد قراءة المحلل وقبل عودته (خدعة
+        # الفحصين في 0058 لا تنفع هنا: المحلل يقرأ لقطة المراجعة، فلو قرأ
+        # الحية لرأى django)
+        (repo / "requirements.txt").write_text(
+            "django>=4\n", encoding="utf-8")
+        try:
+            return original(self, path)
+        finally:
+            (repo / "requirements.txt").write_bytes(original_bytes)
 
     monkeypatch.setattr(
         IntelligenceInterface, "_analyze", _change_then_analyze)
@@ -2167,10 +2177,37 @@ def test_research_context_unverified_when_file_changes_during_analysis(
              "evidence": "أخرى بسياق H مع تغيير أثناء التحليل"},
         ]))
     cross = result.evidence_snapshot["cross_source"]
-    # غير متحقق: لا إسناد إلى H — لا تعارض مثبت بل تناقض دعاوى منفصل
-    assert cross["conflicts"] == []
-    assert len(cross["caller_claims_contradictions"]) == 1
-    assert "غير متحقق" in cross["caller_claims_contradictions"][0]["context"]
+    # إثبات المحتوى المقروء: المحلل قرأ لقطة H (flask الملتزم) لا الحية
+    # (django التغيير) — فيصح الإسناد إلى H والتعارض المُحقَّق معلن
+    src0 = result.evidence_snapshot["sources"][0]
+    assert "flask" in src0["detected_stack"]
+    assert "django" not in src0["detected_stack"]
+    assert "المراجعة" in str(src0["analysis_scope"])
+    assert len(cross["conflicts"]) == 1
+    assert {c["source_id"] for c in cross["conflicts"][0]["claims"]} == {0, 1}
+
+    # والمصدر بلا git يُحلَّل حياً — سياقه غير متحقق دائماً مهما تغير
+    live = tmp_path / "liverepo"
+    live.mkdir()
+    (live / "app.py").write_text("import flask\n", encoding="utf-8")
+    (live / "requirements.txt").write_text("flask>=2\n", encoding="utf-8")
+    live_result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(live), str(live)],
+        source_claims=[
+            {"source_id": 0, "path": str(live), "property": "flask",
+             "value": True, "context": "أي سياق",
+             "evidence": "دعوى مصدر حي بلا git"},
+            {"source_id": 1, "path": str(live), "property": "flask",
+             "value": False, "context": "أي سياق",
+             "evidence": "أخرى مصدر حي بلا git"},
+        ]))
+    cross_l = live_result.evidence_snapshot["cross_source"]
+    assert cross_l["conflicts"] == []      # تحليل الشجرة الحية غير متحقق
+    assert len(cross_l["caller_claims_contradictions"]) == 1
+    assert "غير متحقق" in str(
+        cross_l["caller_claims_contradictions"][0]["context"])
 
 
 def test_cross_source_real_conflict_same_path_different_stacks():
@@ -2388,13 +2425,14 @@ def test_source_claims_conflict_reaches_research_result(tmp_path):
     assert cross_nc["conflicts"] == []
     assert len(cross_nc["caller_claims_contradictions"]) == 1
 
-    # (5) HEAD ليس لقطة التحليل (0057): تغيير غير ملتزم بعد الالتزام يبقي
-    # HEAD كما هو لكنه يغيّر ما يقرأه المحلل — دعويان بسياق يساوي HEAD لا
-    # يُعلن متحققاً اعتماداً على HEAD وحده (الشجرة الوسخة تبطل الربط)
+    # (5) اللقطة المستقلة من المراجعة (0059 — تصحيح 0058): تغيير غير ملتزم
+    # في الشجرة الحية لا يصل إلى المحلل — التحليل لمحتوى المراجعة نفسها
+    # (يُعلن ذلك في analysis_scope) والإسناد إليها مثبت؛ ويُثبت المحتوى
+    # المقروء: كشف اللقطة flask (المحتوى الملتزم) لا django (التغيير المحلي)
     dirty = tmp_path / "dirtyrepo"
     shutil.copytree(repo, dirty)
-    (dirty / "app.py").write_text("import django\n", encoding="utf-8")
-    # بلا التزام — الشجرة وسخة
+    (dirty / "requirements.txt").write_text("django>=4\n", encoding="utf-8")
+    # بلا التزام — الشجرة الحية وسخة؛ التحليل للقطة المراجعة
     dirty_result = interface.run(IntelligenceRequest(
         mode=IntelligenceMode.RESEARCH,
         question="ما إطار هذا المستودع؟",
@@ -2408,9 +2446,14 @@ def test_source_claims_conflict_reaches_research_result(tmp_path):
              "evidence": "أخرى بسياق HEAD مع شجرة وسخة"},
         ]))
     cross_d = dirty_result.evidence_snapshot["cross_source"]
-    assert cross_d["conflicts"] == []      # لا يُعلن السياق متحققاً
-    assert len(cross_d["caller_claims_contradictions"]) == 1
-    assert "غير متحقق" in cross_d["caller_claims_contradictions"][0]["context"]
+    # إثبات المحتوى المقروء: اللقطة (flask الملتزم) لا الحية (django المحلي)
+    src0 = dirty_result.evidence_snapshot["sources"][0]
+    assert "flask" in src0["detected_stack"]
+    assert "django" not in src0["detected_stack"]
+    assert "المراجعة" in str(src0["analysis_scope"])
+    # والإسناد إلى المراجعة مثبت — التعارض المُحقَّق معلن
+    assert len(cross_d["conflicts"]) == 1
+    assert cross_d["caller_claims_contradictions"] == []
 
     # (6) مسار الدعوى لا يطابق مصدرها (0058 — تصحيح 0057): إسناد دعوى
     # لمصدر آخر بموضوع من نص المرسل غير مُثبت — تُرفض رفضاً مسمى ولا

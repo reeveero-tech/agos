@@ -414,20 +414,14 @@ _VERIFIED_PRODUCER_PATHS: Dict[str, Dict[str, Any]] = {
 
 
 def _git_head(path: str) -> Optional[str]:
-    """مراجعة المحتوى عند لحظة الفحص إن كان مستودع git بشجرة نظيفة —
-    **فحص حالة واحد لا يثبت لقطة** (سجل العمل 0058 — تصحيح 0057):
-    النظافة قبل القراءة وحدها لا تثبت أن المحلل قرأ محتوى المراجعة؛
-    الربط المثبت يتم بحصر نافذة القراءة: فحص قبل القراءة وفحص بعدها
-    عند المراجعة نفسها — تطابقهما يثبت أن القراءة كانت لمحتوى المراجعة،
-    وأي تغيير يدوم خلال النافذة (يظهر في الفحص البعدي) يُبطل الإسناد
-    ويُعرض غير متحقق. لا بصمة وصفية بديلة."""
+    """معرّف المراجعة إن كان مستودع git بمراجعات — يُؤخذ منه **لقطة
+    مستقلة** تُحلَّل (سجل العمل 0059 — تصحيح 0058): تطابق فحوص الحالة
+    قبل القراءة وبعدها لا يثبت اللقطة (تعديل ثم استعادة البايتات يخدعه)؛
+    فالربط المثبت الوحيد قراءة لقطة مستقلة مأخوذة من معرّف المراجعة
+    نفسه (git archive) — المحلل يقرأ محتوى المراجعة بمعزل عن أي تغييرات
+    محلية في الشجرة الحية. لا بصمة وصفية بديلة."""
     import subprocess
     try:
-        status = subprocess.run(
-            ["git", "-C", str(path), "status", "--porcelain"],
-            capture_output=True, text=True, timeout=10)
-        if status.returncode != 0 or status.stdout.strip():
-            return None          # شجرة وسخة أو ليس مستودع — لا ربط مثبت
         out = subprocess.run(
             ["git", "-C", str(path), "rev-parse", "HEAD"],
             capture_output=True, text=True, timeout=10)
@@ -436,6 +430,34 @@ def _git_head(path: str) -> Optional[str]:
     except Exception:
         pass
     return None
+
+
+def _materialize_revision(path: str, revision: str) -> Optional[str]:
+    """لقطة مستقلة من مراجعة محددة (سجل العمل 0059): git archive للمراجعة
+    يُستخرج إلى دليل مؤقت — المحلل يقرأها فهي محتوى المراجعة نفسه بمعزل
+    عن أي تغييرات محلية في الشجرة الحية؛ لا تغيّر هوية المصدر الأصلية
+    (المسار الأصلي يبقى في السجل)؛ والدليل المؤقت يُنظف بعد التحليل."""
+    import io
+    import shutil
+    import subprocess
+    import tarfile
+    import tempfile
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(path), "archive", "--format=tar", revision],
+            capture_output=True, timeout=60)
+        if out.returncode != 0 or not out.stdout:
+            return None
+        tmp = tempfile.mkdtemp(prefix="agos-rev-snapshot-")
+        try:
+            with tarfile.open(fileobj=io.BytesIO(out.stdout)) as tar:
+                tar.extractall(tmp, filter="data")
+            return tmp
+        except Exception:
+            shutil.rmtree(tmp, ignore_errors=True)
+            return None
+    except Exception:
+        return None
 
 
 def _design_tradeoffs(name: str, required_concepts: List[str]) -> List[str]:
@@ -1628,17 +1650,30 @@ class IntelligenceInterface:
                 "origin": "caller-provided"}
         for source_id, path in enumerate(request.evidence_paths):
             entry: Dict[str, Any] = {"path": path, "source_id": source_id}
-            # فحص قبل القراءة (سجل العمل 0058): النظافة وحدها لا تثبت
-            # اللقطة — يُفحص قبل القراءة ويُفحص بعدها، وتطابقهما عند
-            # المراجعة نفسها يحصر نافذة القراءة فيثبت أن المحلل قرأ محتوى
-            # المراجعة؛ وأي تغيير يدوم خلالها يُبطل الإسناد
-            head_before = _git_head(path)
+            # لقطة مستقلة من المراجعة إن أمكن (سجل العمل 0059 — تصحيح
+            # 0058): المحلل يقرأ محتوى المراجعة نفسه (git archive) بمعزل
+            # عن التغييرات المحلية — الإسناد إليها مثبت؛ وإلا فالتحليل
+            # للشجرة الحية القابلة للتغيير والسياق غير متحقق دائماً (لا
+            # يُرقَّى بفحوص حالة أياً كانت)
+            revision = _git_head(path)
+            snapshot_dir: Optional[str] = None
+            if revision is not None:
+                snapshot_dir = _materialize_revision(path, revision)
+            if snapshot_dir is not None:
+                analyzed_path = snapshot_dir
+                entry["analysis_scope"] = (
+                    f"لقطة مستقلة من المراجعة {revision} — التحليل لمحتوى "
+                    "المراجعة لا التغييرات المحلية")
+            else:
+                analyzed_path = path
+                entry["analysis_scope"] = (
+                    "تحليل الشجرة الحية بلا معرّف مراجعة — السياق غير متحقق")
             entry["explicit_claims"] = claims_by_source.get(source_id, {})
             if invalid_claims:
                 entry["invalid_source_claims"] = [
                     c for c in invalid_claims if c["source_id"] == source_id]
             try:
-                shared = self._analyze(path)
+                shared = self._analyze(analyzed_path)
                 digest, reliable = _analysis_content_digest(shared)
                 entry["content_digest"] = digest
                 entry["content_identity_reliable"] = reliable
@@ -1656,12 +1691,14 @@ class IntelligenceInterface:
             except Exception as exc:                               # noqa: BLE001
                 entry["error"] = f"تعذر تحليل المصدر: {exc}"
                 failed_sources.append(path)
-            # الفحص البعدي (سجل العمل 0058): إن تغيرت الشجرة أو المراجعة
-            # أثناء القراءة فلا ربط مثبت — الناتج يُعرض غير متحقق ولا
-            # يُسنَد إلى محتوى معدّل
-            entry["actual_context"] = (
-                head_before if head_before is not None
-                and _git_head(path) == head_before else None)
+            finally:
+                # الإسناد: فقط للقطة المراجعة المستقلة — تحليل الشجرة
+                # الحية غير متحقق دائماً (سجل العمل 0059)
+                entry["actual_context"] = (
+                    revision if snapshot_dir is not None else None)
+                if snapshot_dir is not None:
+                    import shutil
+                    shutil.rmtree(snapshot_dir, ignore_errors=True)
             sources.append(entry)
         cross = self._cross_source_view(sources)
         snapshot = {
