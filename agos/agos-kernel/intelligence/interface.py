@@ -1558,6 +1558,7 @@ class IntelligenceInterface:
         sources: List[Dict[str, Any]] = []
         failed_sources: List[str] = []
         claims_by_source: Dict[Any, Dict[str, Dict[str, Any]]] = {}
+        invalid_claims: List[Dict[str, Any]] = []
         for claim in (request.source_claims or []):
             sid = claim.get("source_id")
             if sid is None:      # بلا معرّف مصدر: أوّل مصدر بمساره
@@ -1566,13 +1567,34 @@ class IntelligenceInterface:
                         str(claim.get("path", "")))
                 except ValueError:
                     continue       # دعوى بلا مصدر — لا تُطابق صامتاً
+            value = claim.get("value")
+            evidence = str(claim.get("evidence", "") or "")
+            # تحقق صارم (سجل العمل 0055): قيمة منطقية صريحة فقط — غيابها
+            # ليس إنكاراً (لا إكراه bool)؛ والدليل غير الفارغ شرط الإسناد؛
+            # والدعاوى caller-provided (من الطلب) لا تحقق منها المحلل
+            if not isinstance(value, bool) or not evidence:
+                invalid_claims.append({
+                    "source_id": sid,
+                    "property": str(claim.get("property", "")),
+                    "reason": ("قيمة غير منطقية صريحة — غياب القيمة ليس "
+                               "إنكاراً ولا يُستنتج"
+                               if not isinstance(value, bool) else
+                               "دليل فارغ — الدعوى غير مسندة")})
+                continue
             claims_by_source.setdefault(sid, {})[
                 str(claim.get("property", ""))] = {
-                "value": bool(claim.get("value", False)),
-                "evidence": str(claim.get("evidence", ""))}
+                "value": value,
+                "evidence": evidence,
+                # سياق الدعوى كما قدّمه المرسل (caller-provided) — لا يُصنع
+                # من التحليل ولا يُفترض؛ وتساويه شرط قابلية المقارنة
+                "context": str(claim.get("context", "") or ""),
+                "origin": "caller-provided"}
         for source_id, path in enumerate(request.evidence_paths):
             entry: Dict[str, Any] = {"path": path, "source_id": source_id}
             entry["explicit_claims"] = claims_by_source.get(source_id, {})
+            if invalid_claims:
+                entry["invalid_source_claims"] = [
+                    c for c in invalid_claims if c["source_id"] == source_id]
             try:
                 shared = self._analyze(path)
                 digest, reliable = _analysis_content_digest(shared)
@@ -1731,50 +1753,91 @@ class IntelligenceInterface:
         # لا تُدَّعى موثوقة إلا بتجزئة فعلية للمحتوى (سياستنا لا تهشّ —
         # فالسياق غير قابل للإثبات حالياً ويسمّى كذلك)
         conflicts = []
-        # التعارض (سجل العمل 0054 — تصحيح 0053): الدعوى الصريحة تحمل هويتها
-        # (المسار والخاصية والقيمة والدليل) — دعويان متنافيتان عن الخاصية
-        # نفسها لمسار واحد = تعارض، بغض النظر عن الكشف التحليلي؛ والمصدر
-        # الصامت عن الخاصية لا يُسقط تعارض المدّعيين (لا يشارك في المقارنة
-        # أصلاً)؛ والدعاوى تصل من مدخل الواجهة (source_claims)
+        incomparable = []
+        # التعارض (سجل العمل 0055 — تصحيح 0054): الدعوى الصريحة تحمل
+        # هويتها (المسار والخاصية والقيمة والدليل) **وسياقها كما قدّمه
+        # المرسل** — دعويان متنافيتان عن الخاصية نفسها لمسار واحد
+        # **بسياق معلن متطابق** = تعارض؛ والسياقات المختلفة (مراجعة قديمة
+        # مقابل جديدة) أو الغائبة تجعل الدعويين غير قابلين للمقارنة —
+        # تُحفظان بتسمية ذلك ولا يُعلن تعارض مثبت؛ والمصدر الصامت عن
+        # الخاصية لا يشارك في المقارنة فلا يُسقط تعارض المدّعيين؛ والدعاوى
+        # caller-provided (من الطلب) — لا تحقق منها المحلل
         claims_by_key: Dict[tuple, List[Dict[str, Any]]] = {}
         for src in ok_sources:
             for prop, claim in (src.get("explicit_claims") or {}).items():
                 claims_by_key.setdefault((src["path"], prop), []).append({
-                    "src": src, "value": bool(claim.get("value")),
-                    "evidence": str(claim.get("evidence", ""))})
+                    "src": src,
+                    "value": claim.get("value"),
+                    "evidence": str(claim.get("evidence", "")),
+                    "context": str(claim.get("context", "") or ""),
+                    "origin": str(claim.get("origin", "caller-provided"))})
         for (path, prop), entries in sorted(claims_by_key.items()):
             if len(entries) < 2:
+                continue
+            contexts = {e["context"] for e in entries}
+            if "" in contexts or len(contexts) > 1:
+                # سياق غائب أو مختلف (مثل مراجعتين مختلفتين) — الدعويان
+                # محفوظتان ولا يُعلن تعارض مثبت
+                incomparable.append({
+                    "subject": f"explicit-claim: {prop}",
+                    "path": path,
+                    "claims": [
+                        {"source_id": e["src"].get("source_id"),
+                         "claim": "أثبت" if e["value"] else "أنكر صراحةً",
+                         "evidence": e["evidence"],
+                         "context": e["context"]}
+                        for e in entries],
+                    "note": "دعويان عن الخاصية نفسها بمسار واحد بسياقين "
+                            "مختلفين أو غائبين (مثل مراجعتين مختلفتين) — "
+                            "غير قابلتين للمقارنة؛ لا يُعلن تعارض مثبت "
+                            "والدعويان محفوظتان بتسمية ذلك",
+                })
                 continue
             values = {e["value"] for e in entries}
             if len(values) < 2:
                 continue          # لا تنافي — كل المدّعين متفقون
+            shared_context = next(iter(contexts))
             conflicts.append({
                 "subject": f"explicit-claim: {prop}",
-                "context": f"المسار نفسه ({path}) — الخاصية نفسها",
+                "context": f"المسار نفسه ({path}) — الخاصية نفسها — "
+                           f"السياق المعلن من المرسل: {shared_context}",
                 "claims": [
                     {"source_id": e["src"].get("source_id"),
                      "path": e["src"]["path"],
                      "claim": "أثبت" if e["value"] else "أنكر صراحةً",
-                     "evidence": e["evidence"]}
+                     "evidence": e["evidence"],
+                     "origin": e["origin"]}
                     for e in entries],
-                "note": "دعويان صريحتان متنافيتان عن الخاصية نفسها "
-                        "لمسار واحد — يُعرضان بقيمة كل دعوى ودليلها "
-                        "وهوية مصدرها للفصل، لا يُدجان ولا يُحسمان هنا؛ "
-                        "والمصدر الصامت عن الخاصية لا يُسقط تعارضهما",
+                "note": "دعويان صريحتان متنافيتان عن الخاصية نفسها لمسار "
+                        "واحد بسياق معلن متطابق — يُعرضان بقيمة كل دعوى "
+                        "ودليلها وهوية مصدرها للفصل، لا يُدجان ولا "
+                        "يُحسمان هنا؛ والدعويان caller-provided (من الطلب) "
+                        "لا تحقق منهما المحلل؛ والمصدر الصامت عن الخاصية "
+                        "لا يُسقط تعارضهما",
             })
+        invalid_total = sum(
+            len(e.get("invalid_source_claims") or []) for e in ok_sources)
         return {
             "agreements": agreements,
             "differences": differences,
             "conflicts": conflicts,
+            "incomparable_claims": incomparable,
+            "invalid_source_claims_named": invalid_total,
             "note": "اختلاف المستودعات وقوائم الكشف اختلاف موثق لا "
                     "تعارض — القوائم ليست ادعاءات حصرية (عنصران قد يصحان "
                     "معاً)؛ التعارض الوحيد المثبت: دعويان صريحتان متنافيتان "
                     "عن الخاصية نفسها لمسار واحد، تصلان من مدخل الواجهة "
-                    "(source_claims) بقيمة كل دعوى ودليلها؛ والتحليل "
-                    "الحالي لا ينتج ادعاءات صريحة أصلاً (لا إثبات ولا إنكار "
-                    "مسند) فلا تعارض يُستنتج من الكشف — والتحليل لا يهشّ "
-                    "المحتوى (hash_predicate=None) فتوافق سياقه غير قابل "
-                    "للإثبات (بيانات وصفية بلا تجزئة) ويسمّى كذلك",
+                    "(source_claims) بقيمة كل دعوى ودليلها وسياقها "
+                    "المعلن من المرسل — وتساوي السياق شرط قابلية "
+                    "المقارنة (السياقات المختلفة تُحفظ في "
+                    "incomparable_claims بلا تعارض مثبت)؛ والدعاوى "
+                    "caller-provided لا يتحقق منها المحلل؛ والدعوى بلا "
+                    "قيمة منطقية صريحة أو بلا دليل تُرفض وتُسمّى (لا "
+                    "يُستنتج نفي من غياب قيمة)؛ والتحليل الحالي لا ينتج "
+                    "ادعاءات صريحة أصلاً فلا تعارض يُستنتج من الكشف — "
+                    "والتحليل لا يهشّ المحتوى (hash_predicate=None) فتوافق "
+                    "سياقه غير قابل للإثبات (بيانات وصفية بلا تجزئة) "
+                    "ويسمّى كذلك",
         }
 
     def _analyze(self, path: str) -> Any:
