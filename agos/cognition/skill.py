@@ -27,11 +27,19 @@ class SkillRegistry:
         return [s for s in self._skills.values() if query.lower() in s.name.lower()]
 
 class SkillComposer:
+    """Compose skills into executable plans.
+
+    عيب معاد إنتاجه وثّقه ADR-0012 وصُلح هنا (سجل العمل 0076): كان النسيج
+    يبني سجلين مستقلين (سجل التسجيل العام وسجل المؤلف الخاص) فكانت
+    المهارة المسجلة عبر الواجهة العامة لا يجدها compose — الآن سجل واحد
+    يُمرر صراحة ويُشاركه النسيج والمؤلف.
+    """
+
     def compose(self, skill_ids: List[str]) -> List[Skill]:
         return [self._registry.get(sid) for sid in skill_ids if self._registry.get(sid)]
     
-    def __init__(self):
-        self._registry = SkillRegistry()
+    def __init__(self, registry=None):
+        self._registry = registry if registry is not None else SkillRegistry()
 
 class SkillBenchmark:
     def benchmark(self, skill_id: str) -> Dict[str, Any]:
@@ -53,8 +61,10 @@ class UniversalSkillFabric:
     """
     def __init__(self):
         self.version = "10.0.0"
+        # سجل واحد يُشاركه التسجيل العام والمؤلف — كان سجلين مستقلين فلا
+        # يجد compose مهارة سُجلت عبر الواجهة العامة (عيب ADR-0012 — 0076)
         self.registry = SkillRegistry()
-        self.composer = SkillComposer()
+        self.composer = SkillComposer(self.registry)
         self.benchmark = SkillBenchmark()
     
     def register_skill(self, name: str, version: str) -> Skill:

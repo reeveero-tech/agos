@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 537
-- **functions**: 6162
+- **functions**: 6166
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 102041
+- **lines**: 102084
 - **not_imported_by_others**: 251
 - **stub_functions**: 780
 - **syntax_errors**: 0
@@ -67,7 +67,7 @@
 | `agos-kernel/federation` | 5 | 2034 | 190 | 98 | 0 | 5 | 0 | 4 |
 | `agos-kernel/finalization` | 1 | 1142 | 37 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/framework_packs` | 1 | 135 | 6 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/governance` | 3 | 961 | 46 | 0 | 0 | 3 | 0 | 0 |
+| `agos-kernel/governance` | 3 | 976 | 48 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 18 | 6757 | 204 | 0 | 0 | 18 | 0 | 5 |
@@ -130,7 +130,7 @@
 | `cloud_experience` | 1 | 102 | 5 | 0 | 0 | 1 | 0 | 1 |
 | `cloud_session` | 1 | 95 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `cloud_workspace` | 1 | 103 | 9 | 1 | 0 | 1 | 0 | 1 |
-| `cognition` | 6 | 373 | 45 | 8 | 0 | 6 | 0 | 5 |
+| `cognition` | 6 | 401 | 47 | 8 | 0 | 6 | 0 | 5 |
 | `cognitive` | 11 | 617 | 58 | 6 | 0 | 11 | 0 | 10 |
 | `consolidation` | 1 | 66 | 5 | 1 | 0 | 1 | 0 | 1 |
 | `constitution` | 2 | 264 | 21 | 1 | 0 | 2 | 0 | 0 |

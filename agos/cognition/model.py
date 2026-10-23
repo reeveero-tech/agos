@@ -21,6 +21,11 @@ class WorldGraph:
     def add_edge(self, from_id: str, to_id: str, relation: str) -> None:
         self._edges.append((from_id, to_id, relation))
     
+    def edges(self) -> List[tuple]:
+        """الحواف المعلنة (نسخة) — إفصاح عام لعلاقات الرسم يستهلكه محرك
+        العلاقات بدل قراءة الحقل الخاص من كائن آخر (عيب ADR-0012 — 0076)."""
+        return list(self._edges)
+    
     def get_entity(self, entity_id: str) -> Entity:
         return self._nodes.get(entity_id)
 
@@ -29,8 +34,21 @@ class StateEngine:
         return {"status": "active"}
 
 class RelationshipEngine:
+    """يحل علاقات الكيان من الرسم المقيّد إن رُبط به.
+
+    عيب معاد إنتاجه وثّقه ADR-0012 وصُلح هنا (سجل العمل 0076): كان يقرأ
+    ``self._edges`` غير الموجودة عليه فكان **كل استدعاء عام** يرفع
+    AttributeError — الآن يقرأ حواف الرسم المقيّد عبر الإفصاح العام
+    ``edges()``؛ وبلا رسم مقيّد لا حواف تُبحث فالناتج قائمة فارغة صادقة.
+    """
+
+    def __init__(self, graph: "WorldGraph" = None):
+        self._graph = graph
+
     def find_relationships(self, entity_id: str) -> List[tuple]:
-        return [(e[0], e[1], e[2]) for e in self._edges if e[0] == entity_id or e[1] == entity_id]
+        edges = self._graph.edges() if self._graph is not None else []
+        return [(e[0], e[1], e[2]) for e in edges
+                if e[0] == entity_id or e[1] == entity_id]
 
 class PredictionEngine:
     def predict(self, entity_id: str) -> Dict[str, Any]:

@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102041,
-  "functions": 6162,
+  "lines": 102084,
+  "functions": 6166,
   "stub_functions": 780,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 961,
-   "functions": 46,
+   "lines": 976,
+   "functions": 48,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1245,8 +1245,8 @@
   },
   "cognition": {
    "files": 6,
-   "lines": 373,
-   "functions": 45,
+   "lines": 401,
+   "functions": 47,
    "stub_functions": 8,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8155,10 +8155,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 371,
+   "lines": 386,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 14,
+   "functions": 16,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -13583,10 +13583,10 @@
    "path": "agos/cognition/model.py",
    "module": "cognition.model",
    "root": "src",
-   "lines": 68,
+   "lines": 86,
    "syntax_ok": true,
    "classes": 6,
-   "functions": 10,
+   "functions": 12,
    "stub_functions": 2,
    "abstract_functions": 0,
    "imports": [
@@ -13600,13 +13600,16 @@
     "S:cognition"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/cognition/skill.py",
    "module": "cognition.skill",
    "root": "src",
-   "lines": 72,
+   "lines": 82,
    "syntax_ok": true,
    "classes": 5,
    "functions": 10,
@@ -13623,6 +13626,9 @@
     "S:cognition"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16704,6 +16710,18 @@
     "K:providers",
     "S:rie.application",
     "S:rie.infrastructure"
+   ]
+  },
+  {
+   "path": "tests/test_cognition_unification.py",
+   "imports": [
+    "agos.cognition.model",
+    "agos.cognition.skill"
+   ],
+   "scripts": [],
+   "resolved": [
+    "S:cognition.model",
+    "S:cognition.skill"
    ]
   },
   {

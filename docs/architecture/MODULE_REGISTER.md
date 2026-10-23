@@ -63,7 +63,7 @@
 | L2 | `agos-kernel/distributed` | cloud | 2 | 316 | 0 | yes | no | yes | L1 | R-W4-008 |
 | L2 | `agos-kernel/execution` | execution | 5 | 1641 | 0 | yes | yes | yes | L4 | R-W3-003 |
 | L2 | `agos-kernel/finalization` | quality | 1 | 1142 | 0 | yes | no | no | L1 | R-W5-002 |
-| L2 | `agos-kernel/governance` | governance | 3 | 961 | 0 | yes | no | yes | L1 | R-W1-007, R-W3-015 |
+| L2 | `agos-kernel/governance` | governance | 3 | 976 | 0 | yes | no | yes | L1 | R-W1-007, R-W3-015 |
 | L2 | `agos-kernel/hardening` | quality | 1 | 404 | 0 | yes | no | no | L1 | R-F-007, R-Q-007 |
 | L2 | `agos-kernel/healing` | healing | 2 | 195 | 4 | yes | no | yes | L1 | R-W3-013 |
 | L2 | `agos-kernel/longrunning` | mission | 1 | 1 | 0 | yes | no | no | L1 | R-W3-003 |
@@ -128,7 +128,7 @@
 | L4 | `agos-kernel/optimization` | optimization | 2 | 221 | 0 | yes | no | yes | L1 | R-W5-004 |
 | L4 | `agos-kernel/prediction` | optimization | 2 | 164 | 0 | yes | no | yes | L1 | R-W5-004 |
 | L4 | `agos-kernel/recommendation` | optimization | 2 | 175 | 0 | yes | no | yes | L1 | R-W5-004 |
-| L4 | `cognition` | cognition | 6 | 373 | 8 | yes | no | no | L1 | R-W1-010, R-W3-016 |
+| L4 | `cognition` | cognition | 6 | 401 | 8 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
 | L4 | `cognitive` | cognition | 11 | 617 | 6 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
 | L4 | `intelligence` | intelligence | 6 | 435 | 8 | yes | no | yes | L1 | R-F-005, R-W1-006, R-W3-019 |
 | L4 | `research` | evolution | 6 | 337 | 5 | yes | no | no | L1 | R-W5-007 |
