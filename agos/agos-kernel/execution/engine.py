@@ -1,5 +1,6 @@
 """AGOS Execution Engine - Production Implementation."""
 import asyncio
+import inspect
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -57,6 +58,19 @@ class ExecutionResult:
     trace: List[Dict] = field(default_factory=list)
     metrics: Dict[str, float] = field(default_factory=dict)
     evidence: List[str] = field(default_factory=list)
+
+
+@dataclass
+class InvocationOutcome:
+    """نتيجة استدعاء متزامن واحد (ADR-0008 — R-W1-003): النجاح يُعرف بخلوّ
+    الخطأ — القيم ``None``/``False``/``0`` نجاحات مشروعة، لا صدقُ القيمة."""
+    value: Any = None
+    error: Optional[Exception] = None
+
+    @property
+    def ok(self) -> bool:
+        """النجاح = غياب الخطأ (لا صدق القيمة)."""
+        return self.error is None
 
 
 class ExecutionPolicy:
@@ -144,6 +158,37 @@ class ExecutionEngine:
         self._metrics: Dict[str, List[float]] = {}
         self._traces: Dict[str, List[Dict]] = {}
     
+    def invoke_sync(self, func, *args, **kwargs) -> InvocationOutcome:
+        """الواجهة المتزامنة للنواة المشتركة (ADR-0008): استدعاء واحد بلا مهلة
+        ولا إعادة — سياسة المسار الحي محفوظة. تلتقط أخطاء العمل العادية
+        (``Exception`` فقط — استثناءات التحكم كـKeyboardInterrupt تمر كما هي)،
+        والعمل غير المتزامن مرفوض صراحةً دون تشغيله (لا جسر asyncio.run هنا —
+        استخدم ``execute`` غير المتزامن له)."""
+        if inspect.iscoroutinefunction(func):
+            return InvocationOutcome(
+                error=TypeError(
+                    "invoke_sync يرفض الدوال غير المتزامنة (ADR-0008) — "
+                    "استخدم ExecutionEngine.execute"))
+        try:
+            result = func(*args, **kwargs)
+        except Exception as e:  # noqa: BLE001 — أخطاء العمل العادية فقط
+            return InvocationOutcome(error=e)
+        if inspect.isawaitable(result):
+            # كوروتين غير منفّذ ليس نجاحاً — لا إغلاق اعتباطي لكل awaitable
+            # (لا دلالة إغلاق موحدة): الكوروتين الفعلي وحده يُغلق لمنع تحذير
+            # عدم الانتظار، وأي خطأ إغلاق عادي يبقى داخل عقد المخرج، وبقية
+            # awaitables تُرفض بوضوح دون تشغيلها (BaseException يمر كما هو).
+            if inspect.iscoroutine(result):
+                try:
+                    result.close()
+                except Exception as close_error:  # noqa: BLE001 — عقد المخرج
+                    return InvocationOutcome(error=close_error)
+            return InvocationOutcome(
+                error=TypeError(
+                    "invoke_sync لا يعيد كوروتيناً غير منفّذ (ADR-0008) — "
+                    "استخدم ExecutionEngine.execute"))
+        return InvocationOutcome(value=result)
+
     def create_policy(self, name: str, **kwargs) -> ExecutionPolicy:
         """Create an execution policy."""
         policy = ExecutionPolicy()

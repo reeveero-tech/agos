@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 534,
-  "lines": 98756,
-  "functions": 6074,
+  "lines": 98963,
+  "functions": 6079,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -24,7 +24,7 @@
   },
   "agos-kernel": {
    "files": 23,
-   "lines": 5545,
+   "lines": 5548,
    "functions": 191,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24442,
+   "lines": 24450,
    "functions": 1316,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -453,8 +453,8 @@
   },
   "agos-kernel/execution": {
    "files": 5,
-   "lines": 1466,
-   "functions": 87,
+   "lines": 1641,
+   "functions": 92,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -794,7 +794,7 @@
   },
   "agos-kernel/pipeline": {
    "files": 1,
-   "lines": 179,
+   "lines": 192,
    "functions": 4,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1333,7 +1333,7 @@
   },
   "execution": {
    "files": 11,
-   "lines": 552,
+   "lines": 556,
    "functions": 55,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1344,7 +1344,7 @@
   },
   "fabric": {
    "files": 6,
-   "lines": 765,
+   "lines": 769,
    "functions": 67,
    "stub_functions": 8,
    "hardcoded_paths": 0,
@@ -3554,7 +3554,7 @@
    "path": "agos/agos-kernel/civilization/capability_runtime/runtime.py",
    "module": "civilization.capability_runtime.runtime",
    "root": "kernel",
-   "lines": 504,
+   "lines": 512,
    "syntax_ok": true,
    "classes": 16,
    "functions": 19,
@@ -3568,16 +3568,21 @@
     "uuid",
     "json",
     "agos_kernel.civilization.capability_runtime.contract",
-    "time"
+    "time",
+    "agos_kernel.execution.engine"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.capability_runtime.runtime",
    "resolved_imports": [
-    "K:civilization.capability_runtime.contract"
+    "K:civilization.capability_runtime.contract",
+    "K:execution.engine"
    ],
    "imported_by": [
     "K:civilization.capability_runtime"
+   ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -5661,6 +5666,9 @@
    "imported_by": [
     "K:civilization.workflow_runtime"
    ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -5904,6 +5912,9 @@
     "K:decision",
     "K:pipeline",
     "K:resolvers"
+   ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -7436,7 +7447,8 @@
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
-    "tests/test_decision_unification.py"
+    "tests/test_decision_unification.py",
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -7559,6 +7571,9 @@
    "imported_by": [
     "K:test_civilization"
    ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -7588,20 +7603,24 @@
     "K:execution",
     "K:platform_runtime.runtime"
    ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/execution/engine.py",
    "module": "execution.engine",
    "root": "kernel",
-   "lines": 443,
+   "lines": 488,
    "syntax_ok": true,
-   "classes": 8,
-   "functions": 27,
+   "classes": 9,
+   "functions": 29,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "asyncio",
+    "inspect",
     "uuid",
     "dataclasses",
     "datetime",
@@ -7613,7 +7632,13 @@
    "id": "K:execution.engine",
    "resolved_imports": [],
    "imported_by": [
+    "K:civilization.capability_runtime.runtime",
+    "K:execution.parallel",
+    "K:pipeline",
     "K:test_execution_implementation"
+   ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -7650,10 +7675,10 @@
    "path": "agos/agos-kernel/execution/parallel.py",
    "module": "execution.parallel",
    "root": "kernel",
-   "lines": 324,
+   "lines": 454,
    "syntax_ok": true,
    "classes": 9,
-   "functions": 21,
+   "functions": 24,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -7662,17 +7687,24 @@
     "dataclasses",
     "datetime",
     "enum",
-    "typing"
+    "typing",
+    "agos_kernel.execution.engine",
+    "agos_kernel.execution.engine"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:execution.parallel",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:execution.engine"
+   ],
    "imported_by": [
     "K:civilization.runtime",
     "K:execution",
     "K:platform_runtime.runtime",
     "K:test_civilization"
+   ],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -9257,6 +9289,7 @@
    "tested_by_external": [
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
+    "tests/test_execution_unification.py",
     "tests/test_kernel_facade.py",
     "tests/test_mission_unification.py"
    ],
@@ -9610,7 +9643,7 @@
    "path": "agos/agos-kernel/pipeline/__init__.py",
    "module": "pipeline",
    "root": "kernel",
-   "lines": 179,
+   "lines": 192,
    "syntax_ok": true,
    "classes": 4,
    "functions": 4,
@@ -9624,7 +9657,8 @@
     "context",
     "events",
     "mission",
-    "resolvers"
+    "resolvers",
+    "agos_kernel.execution.engine"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -9632,6 +9666,7 @@
    "resolved_imports": [
     "K:context",
     "K:events",
+    "K:execution.engine",
     "K:mission",
     "K:resolvers"
    ],
@@ -9640,7 +9675,8 @@
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
-    "tests/test_decision_unification.py"
+    "tests/test_decision_unification.py",
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -10322,7 +10358,8 @@
    "tested_by_external": [
     "tests/test_bootstrap.py",
     "tests/test_decision_explanation.py",
-    "tests/test_decision_unification.py"
+    "tests/test_decision_unification.py",
+    "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
   },
@@ -12003,7 +12040,7 @@
    "path": "agos/agos-kernel/test_civilization.py",
    "module": "test_civilization",
    "root": "kernel",
-   "lines": 389,
+   "lines": 392,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -13195,6 +13232,9 @@
    "id": "S:cloud_execution",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -14440,7 +14480,7 @@
    "path": "agos/execution/fabric.py",
    "module": "execution.fabric",
    "root": "src",
-   "lines": 78,
+   "lines": 82,
    "syntax_ok": true,
    "classes": 3,
    "functions": 6,
@@ -14458,6 +14498,9 @@
     "S:execution"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -14651,7 +14694,7 @@
    "path": "agos/fabric/execution.py",
    "module": "fabric.execution",
    "root": "src",
-   "lines": 100,
+   "lines": 104,
    "syntax_ok": true,
    "classes": 5,
    "functions": 11,
@@ -14670,6 +14713,9 @@
     "S:fabric"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_execution_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16569,6 +16615,47 @@
     "K:intelligence.repository.analyzer",
     "K:vertical_slices.repo_discovery.slice",
     "S:rie.application"
+   ]
+  },
+  {
+   "path": "tests/test_execution_unification.py",
+   "imports": [
+    "agos.cloud_execution",
+    "agos.execution.fabric",
+    "agos.fabric.execution",
+    "agos_kernel.civilization.capability_runtime.runtime",
+    "agos_kernel.civilization.workflow_runtime.workflow",
+    "agos_kernel.execution",
+    "agos_kernel.execution.compiler",
+    "agos_kernel.execution.engine",
+    "agos_kernel.execution.parallel",
+    "asyncio",
+    "context",
+    "dataclasses",
+    "events",
+    "mission",
+    "pathlib",
+    "pipeline",
+    "pytest",
+    "resolvers",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:civilization.capability_runtime.runtime",
+    "K:civilization.workflow_runtime.workflow",
+    "K:context",
+    "K:events",
+    "K:execution",
+    "K:execution.compiler",
+    "K:execution.engine",
+    "K:execution.parallel",
+    "K:mission",
+    "K:pipeline",
+    "K:resolvers",
+    "S:cloud_execution",
+    "S:execution.fabric",
+    "S:fabric.execution"
    ]
   },
   {

@@ -258,20 +258,83 @@ class ParallelExecutor:
         self.resource_coordinator = ResourceCoordinator()
         self.execution_batches: List[ExecutionBatch] = []
     
+    def _begin_attempt(self, task: ExecutionTask) -> None:
+        """إعادة ضبط حقول المحاولة الجارية موحدة (ADR-0008 — R-W1-003): قبل أي
+        تحليل أو منع أو عودة مبكرة — لا بقايا من محاولة سابقة عند إعادة
+        الاستخدام (نجاح قديم، خطأ قديم، طوابع بدء/إكمال قديمة)."""
+        task.result = None
+        task.error = None
+        task.started_at = None
+        task.completed_at = None
+
+    def _invoke_original(self, core, task: ExecutionTask,
+                         results: Dict[str, ExecutionStatus],
+                         failed: set) -> None:
+        """استدعاء المهمة الأصلية عبر النواة المشتركة (ADR-0008 — R-W1-003):
+        حقول المحاولة أعيد ضبطها موحدة عند دخول الطريقتين؛ النتيجة/الخطأ
+        يُكتبان على المهمة الأصلية نفسها؛ التابعة لا تعمل بعد فشل سابقتها؛
+        وغياب func فشل صريح لا نجاح."""
+        blocked = [d for d in task.dependencies if d in failed]
+        if blocked:
+            task.status = ExecutionStatus.FAILED
+            task.error = f"تبعية فاشلة: {blocked[0]}"
+            results[task.id] = ExecutionStatus.FAILED
+            failed.add(task.id)
+            return
+        if not callable(task.func):
+            task.status = ExecutionStatus.FAILED
+            task.error = "لا عمل قابل للتنفيذ (func غائبة)"
+            results[task.id] = ExecutionStatus.FAILED
+            failed.add(task.id)
+            return
+        task.started_at = datetime.now()
+        outcome = core.invoke_sync(task.func, *task.args, **task.kwargs)
+        if outcome.error is not None:
+            task.status = ExecutionStatus.FAILED
+            task.error = str(outcome.error)
+            results[task.id] = ExecutionStatus.FAILED
+            failed.add(task.id)
+            return
+        task.status = ExecutionStatus.COMPLETED
+        task.result = outcome.value
+        task.completed_at = datetime.now()
+        results[task.id] = ExecutionStatus.COMPLETED
+
     def execute(self, tasks: List[ExecutionTask]) -> Dict[str, ExecutionStatus]:
-        """Execute tasks with parallelism."""
+        """تنفيذ المهام (ADR-0008 — R-W1-003): تحليل التبعيات والدورات الحقيقي
+        محفوظ، والعمل يُستدعى فعلياً عبر النواة المشتركة مرتبطاً بالمهمة
+        **الأصلية** بالهوية. الجاهزية **إيجابية** من نتائج هذا الاستدعاء — لا
+        من سجل المجدول (المجدول سجل حالة لـget_stats فقط). التنفيذ **تسلسلي**
+        موثّق بلا ادعاء توازٍ. كل مهمة تنال مخرجاً صريحاً (لا صمت)."""
+        from agos_kernel.execution.engine import get_engine
+        core = get_engine()
+        by_id = {t.id: t for t in tasks}
+        results: Dict[str, ExecutionStatus] = {}
+        failed: set = set()
+
+        # إعادة ضبط حقول المحاولة موحدة قبل أي تحليل أو منع أو عودة مبكرة
+        for task in tasks:
+            self._begin_attempt(task)
+
         # Analyze dependencies
         cycles = self.dependency_analyzer.find_cycles(tasks)
         if cycles:
-            return {t.id: ExecutionStatus.FAILED for t in tasks}
-        
+            for task in tasks:
+                task.status = ExecutionStatus.FAILED
+                task.error = f"دورة تبعيات: {cycles[0]}"
+                results[task.id] = ExecutionStatus.FAILED
+                failed.add(task.id)
+                self._sync_scheduled_copy(task)
+            return results
+
         # Detect conflicts
         conflicts = self.conflict_detector.detect_conflicts(tasks)
         if conflicts:
             # Resolve by serializing conflicting tasks
             pass
-        
-        # Get parallel batches
+
+        # سجل المجدول (لـget_stats) — بهوية المهمة الأصلية (R-Q-001)؛ الجاهزية
+        # لا تُحتسب منه
         for task in tasks:
             self.scheduler.add_task(
                 name=task.name,
@@ -279,33 +342,100 @@ class ParallelExecutor:
                 resources=task.resources,
                 task_id=task.id,   # R-Q-001: هوية المهمة الأصلية — وإلا انكسرت التبعيات
             )
-        
-        batches = self.scheduler.get_parallel_batches()
-        
-        # Execute batches
-        results = {}
-        for batch in batches:
-            # In a real implementation, tasks would execute in parallel
-            for task in batch:
-                task.status = ExecutionStatus.COMPLETED
-                task.completed_at = datetime.now()
-                results[task.id] = ExecutionStatus.COMPLETED
-        
-        return results
-    
-    def execute_pipeline(self, tasks: List[ExecutionTask]) -> Dict[str, ExecutionStatus]:
-        """Execute tasks in pipeline mode."""
-        # Pipeline mode: output of one task feeds into the next
-        results = {}
-        
-        for task in tasks:
-            if all(dep in results and results[dep] == ExecutionStatus.COMPLETED for dep in task.dependencies):
-                task.status = ExecutionStatus.COMPLETED
-                results[task.id] = ExecutionStatus.COMPLETED
+
+        # الجاهزية **إيجابية**: تُحتمل من نتائج الاستدعاء الحالي وحده — التبعية
+        # تعتبر مقضية فقط إذا كانت في نتائج هذا الاستدعاء بحالة COMPLETED.
+        # لا اعتماد على سجل المجدول القديم (إعادة استخدام المنفذ عبر استدعاءات
+        # سابقة لا تُشغّل تابعة بصمت اعتماداً على اكتمال قديم). التنفيذ تسلسلي
+        # موثّق بلا ادعاء توازٍ.
+        pending = list(tasks)
+        while True:
+            progressed = False
+            for task in list(pending):
+                absent = [d for d in task.dependencies if d not in by_id]
+                if absent:
+                    task.error = f"تبعية غير متاحة: {absent[0]}"
+                    task.status = ExecutionStatus.FAILED
+                    results[task.id] = ExecutionStatus.FAILED
+                    failed.add(task.id)
+                    self._sync_scheduled_copy(task)
+                    progressed = True
+                    continue
+                unmet = [d for d in task.dependencies
+                         if results.get(d) is not ExecutionStatus.COMPLETED]
+                if unmet:
+                    continue  # ليست جاهزة بعد — قد تكملها دورة تالية
+                self._invoke_original(core, task, results, failed)
+                self._sync_scheduled_copy(task)
+                progressed = True
+            pending = [t for t in pending if t.id not in results]
+            if not pending or not progressed:
+                break
+
+        # ما تبقى بعد توقف التقدم: تبعية فاشلة (أو دورة مستحيلة) — فشل صريح لا صمت
+        for task in pending:
+            blocked = [d for d in task.dependencies
+                       if results.get(d) is not ExecutionStatus.COMPLETED]
+            if not blocked:
+                task.error = "لم تُجدول"
+            elif results.get(blocked[0]) is ExecutionStatus.FAILED:
+                task.error = f"تبعية فاشلة: {blocked[0]}"
             else:
+                task.error = f"تبعية لم تكتمل: {blocked[0]}"
+            task.status = ExecutionStatus.FAILED
+            results[task.id] = ExecutionStatus.FAILED
+            failed.add(task.id)
+            self._sync_scheduled_copy(task)
+
+        return results
+
+    def _sync_scheduled_copy(self, original: ExecutionTask) -> None:
+        """مزامنة نسخة المجدول (المرجع الداخلي لـget_stats) مع نتيجة الأصل —
+        الحالة والحقول الزمنية والنتيجة والخطأ، بعد جميع مسارات الخروج."""
+        copy = self.scheduler.tasks.get(original.id)
+        if copy is not None:
+            copy.status = original.status
+            copy.result = original.result
+            copy.error = original.error
+            copy.started_at = original.started_at
+            copy.completed_at = original.completed_at
+
+    def execute_pipeline(self, tasks: List[ExecutionTask]) -> Dict[str, ExecutionStatus]:
+        """وضع الأنبوب (ADR-0008 — R-W1-003): تسلسل صادق عبر النواة المشتركة —
+        مخرج كل مهمة على أصلها، والتبعية الفاشلة تمنع التابعة، وغياب func فشل
+        صريح. لا ادعاء إكمال بلا استدعاء."""
+        from agos_kernel.execution.engine import get_engine
+        core = get_engine()
+        by_id = {t.id: t for t in tasks}
+        results: Dict[str, ExecutionStatus] = {}
+        failed: set = set()
+
+        # إعادة ضبط حقول المحاولة موحدة — حتى لمهام سجلها execute سابقاً
+        for task in tasks:
+            self._begin_attempt(task)
+
+        for task in tasks:
+            if task.id in results:
+                continue
+            # تحقق إيجابي قبل استدعاء العمل: كل تبعية يجب أن تكون اكتملت بنجاح
+            # **في نطاق هذا الاستدعاء** — وجودها في by_id أو غيابها من failed
+            # لا يكفي؛ فالتابعة التي تمر قبل سابقتها لا تعمل.
+            missing = [d for d in task.dependencies if d not in by_id]
+            unmet = [d for d in task.dependencies
+                     if results.get(d) is not ExecutionStatus.COMPLETED]
+            if missing or unmet:
+                if missing:
+                    task.error = f"تبعية غير متاحة: {missing[0]}"
+                else:
+                    task.error = f"تبعية لم تكتمل: {unmet[0]}"
                 task.status = ExecutionStatus.FAILED
                 results[task.id] = ExecutionStatus.FAILED
-        
+                failed.add(task.id)
+                self._sync_scheduled_copy(task)
+                continue
+            self._invoke_original(core, task, results, failed)
+            self._sync_scheduled_copy(task)
+
         return results
     
     def get_stats(self) -> Dict[str, Any]:

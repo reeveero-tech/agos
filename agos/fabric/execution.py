@@ -78,10 +78,14 @@ class ExecutionFabric:
         return True
     
     def execute(self, graph_id: str) -> Dict[str, Any]:
+        """عدم تنفيذ صريح (ADR-0008 — R-W1-003): لا عمل قابل للتنفيذ هنا —
+        سلطة التنفيذ الموحدة في ``ExecutionEngine``؛ لا «executed» ولا عدّ
+        عقد مكتملة عن عمل لم يُستدعَ."""
         return {
-            "status": "executed",
+            "status": "not_executed",
             "graph_id": graph_id,
-            "nodes_completed": len(self._graphs.get(graph_id, ExecutionGraph(graph_id="")).nodes)
+            "reason": "لا عمل قابل للتنفيذ — سلطة التنفيذ الموحدة في "
+                      "ExecutionEngine (ADR-0008)",
         }
     
     def rollback(self, graph_id: str) -> bool:

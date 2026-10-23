@@ -105,12 +105,12 @@ class WorkflowRuntime:
         return workflow
     
     def execute_workflow(self, workflow_id: str) -> Dict:
+        """عدم تنفيذ صريح (ADR-0008 — R-W1-003): لا عمل قابل للتنفيذ هنا —
+        لا ادعاء اكتمال ولا تغيير حالة صوري (الحالة تبقى كما هي)."""
         workflow = self.registry.get(workflow_id)
         if workflow:
-            workflow.state = WorkflowState.RUNNING
-            # Simulate execution
-            workflow.state = WorkflowState.COMPLETED
-        return {'workflow_id': workflow_id, 'status': 'completed' if workflow else 'not_found'}
+            return {'workflow_id': workflow_id, 'status': 'not_executed'}
+        return {'workflow_id': workflow_id, 'status': 'not_found'}
     
     def get_workflow_report(self) -> Dict:
         return {'total_workflows': len(self.registry.workflows)}

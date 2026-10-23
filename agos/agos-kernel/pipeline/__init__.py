@@ -62,10 +62,16 @@ class ExecutionResult:
 class ExecutionPipeline:
     """Executes missions through the full pipeline."""
     
-    def __init__(self, event_bus: EventBus, capability_resolver: CapabilityResolver, provider_resolver: ProviderResolver):
+    def __init__(self, event_bus: EventBus, capability_resolver: CapabilityResolver, provider_resolver: ProviderResolver, execution_engine=None):
         self.event_bus = event_bus
         self.capability_resolver = capability_resolver
         self.provider_resolver = provider_resolver
+        # ADR-0008 (R-W1-003): النواة المشتركة لاستدعاء العمل — الربط
+        # الافتراضي هو المحرك العالمي؛ التواقيع الموضعية القائمة محفوظة (G2).
+        if execution_engine is None:
+            from agos_kernel.execution.engine import get_engine
+            execution_engine = get_engine()
+        self.execution_engine = execution_engine
     
     def execute(self, mission: Mission) -> ExecutionResult:
         """Execute a mission through the full pipeline."""
@@ -133,7 +139,14 @@ class ExecutionPipeline:
             ))
             
             capability = capability_selection.capability
-            execution_result = capability.execute(mission.parameters)
+            # ADR-0008 (R-W1-003): استدعاء القدرة عبر النواة المشتركة — سياسة
+            # الاستدعاء الواحد محفوظة؛ الفشل يعود إلى مسار الاستثناء نفسه
+            # (الرسالة والسلوك وأدلة القرار محفوظة حرفياً).
+            outcome = self.execution_engine.invoke_sync(
+                capability.execute, mission.parameters)
+            if outcome.error is not None:
+                raise outcome.error
+            execution_result = outcome.value
             
             step.status = ExecutionStatus.COMPLETED
             step.completed_at = datetime.now(timezone.utc)

@@ -191,14 +191,22 @@ class CapabilityExecutor:
         instance: CapabilityInstance,
         context: CapabilityContext
     ) -> Dict:
-        """Execute capability logic."""
-        # This would call the actual capability handler
-        # For now, return mock result
-        return {
-            'status': 'executed',
-            'capability': instance.contract.name,
-            'inputs_received': len(context.inputs),
-        }
+        """تنفيذ منطق القدرة عبر النواة المشتركة (ADR-0008 — R-W1-003): إن وُجد
+        حامل قابل للاستدعاء فالعمل يُستدعى فعلياً عبر النواة ونتيجته تعود؛
+        وإن غاب فاستثناء صريح يترجمه الغلاف إلى فشل — لا نجاح وهمياً. عقد
+        ``handler(context)`` **معتمد** في ADR-0008 عقداً إضافياً جديداً (لا
+        عقد قائماً في الشجرة يثبت توقيعاً): المخرج dict يمر كما هو وغير dict
+        يُلف في ``{"result": ...}``، والفشل يُترجم صراحةً."""
+        from agos_kernel.execution.engine import get_engine
+        handler = getattr(instance, "handler", None)
+        if not callable(handler):
+            raise RuntimeError(
+                "لا حامل قابل للاستدعاء (handler غائبة) — لا ادعاء تنفيذ (ADR-0008)")
+        outcome = get_engine().invoke_sync(handler, context)
+        if outcome.error is not None:
+            raise outcome.error
+        return (outcome.value if isinstance(outcome.value, dict)
+                else {"result": outcome.value})
 
 
 class CapabilitySandbox:

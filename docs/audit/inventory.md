@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 534
-- **functions**: 6074
+- **functions**: 6079
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 532
-- **lines**: 98756
+- **lines**: 98963
 - **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
@@ -19,7 +19,7 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 23 | 5545 | 191 | 0 | 0 | 22 | 0 | 22 |
+| `agos-kernel` | 23 | 5548 | 191 | 0 | 0 | 22 | 0 | 22 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -34,7 +34,7 @@
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 13 | 5411 | 278 | 27 | 0 | 13 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24442 | 1316 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization` | 100 | 24450 | 1316 | 120 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -58,7 +58,7 @@
 | `agos-kernel/event_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/events` | 1 | 75 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/evolution` | 4 | 1264 | 96 | 44 | 0 | 4 | 0 | 4 |
-| `agos-kernel/execution` | 5 | 1466 | 87 | 0 | 0 | 5 | 0 | 0 |
+| `agos-kernel/execution` | 5 | 1641 | 92 | 0 | 0 | 5 | 0 | 0 |
 | `agos-kernel/execution-context` | 1 | 248 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/execution_context` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/expansion` | 2 | 182 | 15 | 1 | 0 | 2 | 0 | 1 |
@@ -89,7 +89,7 @@
 | `agos-kernel/optimization` | 2 | 221 | 10 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/orchestrator` | 2 | 362 | 26 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/organization` | 2 | 183 | 10 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/pipeline` | 1 | 179 | 4 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/pipeline` | 1 | 192 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/platform_runtime` | 2 | 263 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
@@ -138,8 +138,8 @@
 | `ecosystem` | 7 | 249 | 28 | 0 | 0 | 7 | 0 | 6 |
 | `enterprise` | 6 | 357 | 46 | 6 | 0 | 6 | 0 | 5 |
 | `evolution` | 6 | 405 | 48 | 17 | 0 | 6 | 0 | 5 |
-| `execution` | 11 | 552 | 55 | 0 | 0 | 11 | 0 | 10 |
-| `fabric` | 6 | 765 | 67 | 8 | 0 | 6 | 0 | 4 |
+| `execution` | 11 | 556 | 55 | 0 | 0 | 11 | 0 | 10 |
+| `fabric` | 6 | 769 | 67 | 8 | 0 | 6 | 0 | 4 |
 | `foundation` | 11 | 849 | 96 | 4 | 0 | 11 | 0 | 10 |
 | `governance` | 4 | 437 | 31 | 14 | 0 | 4 | 0 | 3 |
 | `intelligence` | 6 | 410 | 55 | 8 | 0 | 6 | 0 | 5 |

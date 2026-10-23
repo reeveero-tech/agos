@@ -59,10 +59,14 @@ class UniversalExecutionFabric:
         self.tracker = ExecutionTracker()
     
     def execute(self, mission: str, intent: str, goals: List[str]) -> ExecutionUnit:
+        """عدم تنفيذ صريح (ADR-0008 — R-W1-003): لا عمل قابل للتنفيذ هنا —
+        وحدة غير منفّذة لا «مكتملة» صورية."""
         unit = ExecutionUnit(
             unit_id=f"exec_{datetime.now().timestamp()}",
             pipeline_step="Execution Units",
-            status="completed"
+            status="not_executed",
+            evidence=["لا عمل قابل للتنفيذ — سلطة التنفيذ الموحدة في "
+                      "ExecutionEngine (ADR-0008)"],
         )
         self.tracker.track(unit)
         return unit

@@ -90,13 +90,16 @@ def test_parallel_executor():
     
     executor = ParallelExecutor(max_workers=5)
     
-    # Create tasks
+    # Create tasks — ADR-0008 (R-W1-003): عمل حقيقي قابل للاستدعاء (غياب func
+    # فشل صريح لا نجاح) — السلسلة تظل تختبر عقد التبعيات نفسه
     tasks = []
     for i in range(3):
         from agos_kernel.execution.parallel import ExecutionTask
         task = ExecutionTask(
             id=f"task-{i}",
             name=f"Task {i}",
+            func=lambda tag: f"done-{tag}",
+            args=(f"task-{i}",),
             dependencies=[] if i == 0 else [f"task-{i-1}"],
         )
         tasks.append(task)
