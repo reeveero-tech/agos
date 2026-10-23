@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 536,
-  "lines": 100630,
-  "functions": 6134,
+  "lines": 100777,
+  "functions": 6138,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 5965,
-   "functions": 194,
+   "lines": 6112,
+   "functions": 198,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8578,10 +8578,10 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 1271,
+   "lines": 1418,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 42,
+   "functions": 46,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8601,6 +8601,7 @@
     "decision_pipeline",
     "decision_pipeline",
     "mission_engine",
+    "intelligence",
     "capabilities.analysis_service",
     "copy",
     "mission_engine",

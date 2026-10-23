@@ -56,7 +56,10 @@ ENGINEER_GAPS = [
     "engineering-plan-architecture",          # المعمارية القائمة تحليل لما هو كائن لا تصميم
 ]
 RESEARCH_GAPS = [
-    "research-breadth",                  # تحليل مستودع واحد، لا بحث متعدد المستودعات
+    # اتساع البحث أُغلق (سجل العمل 0049): البحث متعدد المصادر عبر
+    # evidence_paths بإثبات لكل مصدر لكل مرشح — لا اتحاد، والتعارض
+    # ادعاءان متنافسان على الموضوع والسياق نفسه، وغياب دليل مصدر مسمّى،
+    # والسؤال يقود جمع الأدلة (المفاهيم المفسرة ← فئات الحقائق)
     "ari-benchmarks",                    # تسليم ARI متطلب موثق مؤجل (غياب التسليم وحده المثبت)
     "success-and-experience-data",       # لا بيانات نجاح/تجارب سابقة
 ]
@@ -212,6 +215,10 @@ class IntelligenceRequest:
     #: جدول إيفاء مُثبت بالمخرجات) — الحقل أُضيف **بعد** الحقول القائمة
     #: كلها فالمنشئ الموضعي القديم لا يتأثر (سجل العمل 0047)
     natural_text: Optional[str] = None
+    #: مصادر أدلة متعددة (Research، سجل العمل 0049): بحث متعدد المصادر —
+    #: إثبات لكل مصدر لكل مرشح (لا اتحاد)؛ أُضيف في النهاية حفظاً
+    #: للتوافق الموضعي
+    evidence_paths: Optional[List[str]] = None
 
 
 @dataclass
@@ -1174,7 +1181,26 @@ class IntelligenceInterface:
             gaps=list(ENGINEER_GAPS))
 
     # ---------- Research ----------
+    #: فئات الحقائق المقابلة للمفاهيم (جدول معلن — السؤال يقود الجمع)
+    _CONCEPT_FACT_CATEGORIES = {
+        "frameworks": "frameworks",
+        "languages": "languages",
+        "repository-analysis": None,   # فعل عام — لا فئة واحدة
+    }
+
     def _run_research(self, request: IntelligenceRequest) -> IntelligenceResult:
+        """Research — المقارنة في دليل القرار نفسه (سياسة واحدة) لا محرك
+        ترتيب موازٍ، والفجوات مسماة، والأدلة من الخط المعتمد (ADR-0005).
+
+        البحث متعدد المصادر (سجل العمل 0049): ``evidence_paths`` — إثبات
+        **لكل مصدر لكل مرشح** (لا اتحاد)؛ التعارض ادعاءان متنافسان على
+        الموضوع والسياق نفسه؛ وغياب دليل مصدر مسمّى (لا نتيجة مزعومة)؛
+        والسؤال يقود جمع الأدلة (مفاهيمه المفسرة ← فئات الحقائق بجدول
+        معلن — تغيير السؤال يغيّر الأدلة المجمعة، مختبر)."""
+        if request.evidence_paths:
+            return self._run_research_multi_source(request)
+        question_interpretation, fact_categories = self._question_focus(
+            request.question)
         if not request.evidence_path:
             return IntelligenceResult(
                 mode=IntelligenceMode.RESEARCH,
@@ -1183,9 +1209,15 @@ class IntelligenceInterface:
                 gaps=list(RESEARCH_GAPS) + ["no-evidence-source"])
         # أدلة حقيقية من الخط المعتمد (ADR-0005) — لا نتائج بحث مزعومة
         shared = self._analyze(request.evidence_path)
+        facts = _evidence_facts(shared)
         evidence_snapshot = {
             "evidence_path": request.evidence_path,
-            "detected": _evidence_facts(shared),   # الحقائق وأدلة اكتشافها الفعلية
+            "question": request.question or "",
+            "question_concepts": (
+                question_interpretation.required_concepts
+                if question_interpretation else []),
+            "fact_categories_gathered": fact_categories,
+            "detected": self._gathered_facts(facts, fact_categories),
             "detected_stack": list(_detected_stack_names(shared)),
         }
         if not request.candidates:
@@ -1212,6 +1244,121 @@ class IntelligenceInterface:
             comparison=comparison,
             evidence_snapshot=evidence_snapshot,
             gaps=list(RESEARCH_GAPS))
+
+    def _run_research_multi_source(
+            self, request: IntelligenceRequest) -> IntelligenceResult:
+        """بحث متعدد المصادر — إثبات لكل مصدر لكل مرشح (لا اتحاد): كل مصدر
+        يُحلّل ويُقارن على حدة؛ والتعارض ادعاءان متنافسان على الموضوع
+        والسياق نفسه (عرض تبادلي)؛ وغياب دليل مصدر مسمّى لا نتيجة مزعومة؛
+        ولا توصية مدمجة — اتفاق المصادر ملاحظة معروضة لا دمج أدلة."""
+        question_interpretation, fact_categories = self._question_focus(
+            request.question)
+        sources: List[Dict[str, Any]] = []
+        failed_sources: List[str] = []
+        for path in request.evidence_paths:
+            entry: Dict[str, Any] = {"path": path}
+            try:
+                shared = self._analyze(path)
+                facts = _evidence_facts(shared)
+                entry["detected"] = self._gathered_facts(facts, fact_categories)
+                entry["detected_stack"] = list(_detected_stack_names(shared))
+                if request.candidates:
+                    entry["comparison"] = compare_candidates(
+                        request.candidates, shared)
+                else:
+                    entry["comparison"] = None
+                    entry["error"] = "لا مرشحين للمقارنة لهذا المصدر"
+            except Exception as exc:                               # noqa: BLE001
+                entry["error"] = f"تعذر تحليل المصدر: {exc}"
+                failed_sources.append(path)
+            sources.append(entry)
+        cross = self._cross_source_view(sources)
+        snapshot = {
+            "sources": sources,
+            "cross_source": cross,
+            "question": request.question or "",
+            "question_concepts": (
+                question_interpretation.required_concepts
+                if question_interpretation else []),
+            "fact_categories_gathered": fact_categories,
+        }
+        if failed_sources:
+            return IntelligenceResult(
+                mode=IntelligenceMode.RESEARCH,
+                status=IntelligenceStatus.FAILED,
+                error="غياب دليل مصدر مسمّى (لا نتيجة مزعومة): "
+                      + ", ".join(failed_sources),
+                evidence_snapshot=snapshot,
+                gaps=list(RESEARCH_GAPS))
+        bests = [s["comparison"].best for s in sources
+                 if s.get("comparison") is not None]
+        # لا توصية مدمجة: اتفاق المصادر على الأفضل ملاحظة تُعرض؛ والخلط
+        # أو غياب مواءمة مصدر يجعلها غير متاحة
+        agreed = (len(bests) == len(sources) and len(sources) > 0
+                  and all(b is not None for b in bests)
+                  and len({b.candidate_id for b in bests}) == 1)
+        status = (IntelligenceStatus.COMPLETED if agreed
+                  else IntelligenceStatus.RECOMMENDATION_UNAVAILABLE)
+        return IntelligenceResult(
+            mode=IntelligenceMode.RESEARCH,
+            status=status,
+            evidence_snapshot=snapshot,
+            gaps=list(RESEARCH_GAPS))
+
+    def _question_focus(self, question: Optional[str]):
+        """تركيز السؤال: مفاهيمه بالمفسر المعلن ← فئات الحقائق المجمعة
+        (جدول معلن) — السؤال يقود جمع الأدلة؛ بلا سؤال أو بلا فئة معروفة
+        تبقى الأدلة كاملة (موسومة لا مختصرة صامتة)."""
+        if not question:
+            return None, []
+        from intelligence import intent as intent_module
+        interpretation = intent_module.interpret(question)
+        categories: List[str] = []
+        for concept in interpretation.required_concepts:
+            category = self._CONCEPT_FACT_CATEGORIES.get(concept)
+            if category and category not in categories:
+                categories.append(category)
+        return interpretation, categories
+
+    def _gathered_facts(self, facts: Dict[str, Any],
+                        fact_categories: List[str]) -> Dict[str, Any]:
+        """الحقائق المجمعة وفق فئات سؤال البحث — لا قصّ صامت: ما استُبعد
+        يُسمّى؛ وبلا فئات تُرد الحقائق كاملة كما هي (توافق الشكل القائم)."""
+        if not fact_categories:
+            return dict(facts)   # الأدلة كاملة — السؤال غائب أو بلا فئة معروفة
+        gathered = {c: facts.get(c) for c in fact_categories if c in facts}
+        excluded = [c for c in facts if c not in fact_categories]
+        return {"categories": gathered,
+                "excluded_by_question": excluded,
+                "note": "جُمعت فئات سؤال البحث فقط — الاستبعاد مسمّى"}
+
+    def _cross_source_view(self, sources: List[Dict[str, Any]]
+                           ) -> Dict[str, Any]:
+        """عرض تبادلي بين المصادر — لا اتحاد: الاتفاق ملاحظة معروضة،
+        والتعارض ادعاءان متنافسان على الموضوع والسياق نفسه (لا يُدمجان)."""
+        agreements: List[Dict[str, Any]] = []
+        conflicts: List[Dict[str, Any]] = []
+        ok_sources = [s for s in sources if "detected_stack" in s]
+        if not ok_sources:
+            return {"agreements": agreements, "conflicts": conflicts,
+                    "note": "لا مصادر محلّلة للعرض التبادلي"}
+        all_names: Dict[str, List[str]] = {}
+        for s in ok_sources:
+            for name in s["detected_stack"]:
+                all_names.setdefault(name, []).append(s["path"])
+        for name, paths in all_names.items():
+            if len(paths) == len(ok_sources):
+                agreements.append({"subject": f"stack: {name}",
+                                  "claim": "مكتشف في كل المصادر"})
+            else:
+                conflicts.append({
+                    "subject": f"stack: {name}",
+                    "claims": [
+                        {"source": p, "claim": "مكتشف" if p in paths
+                         else "غير مكتشف"}
+                        for p in [s["path"] for s in ok_sources]]})
+        return {"agreements": agreements, "conflicts": conflicts,
+                "note": "لا اتحاد — كل مصدر بدليله؛ التعارض ادعاءان متنافسان"}
 
     # ---------- أدوات داخلية ----------
     def _analyze(self, path: str) -> Any:

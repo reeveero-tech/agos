@@ -1672,3 +1672,114 @@ def test_engineer_natural_text_interrogative_and_guards(tmp_path):
         mode=IntelligenceMode.ENGINEER, natural_text="افحص أمن المستودع"))
     assert missing.status is IntelligenceStatus.FAILED
     assert "المدخل المطلوب غائب" in (missing.error or "")
+
+
+# ===============================================================
+# البحث متعدد المصادر (سجل العمل 0049): إثبات لكل مصدر لكل مرشح —
+# لا اتحاد، والتعارض ادعاءان متنافسان، والغياب مسمّى، والسؤال يقود الجمع
+# ===============================================================
+
+def test_research_multi_source_per_source_evidence_no_merge(tmp_path):
+    """مصدران بمكدسين مختلفين: كل مصدر بدليله ومقارنته — لا اتحاد؛ والتعارض
+    ادعاءان متنافسان على الموضوع والسياق نفسه (عرض تبادلي)؛ وفجوة اتساع
+    البحث مغلقة (البحث متعدد المصادر قائم)."""
+    py_repo = tmp_path / "pyrepo"
+    _write_repo(py_repo, {"a.py": "x = 1\n"})
+    js_repo = tmp_path / "jsrepo"
+    _write_repo(js_repo, {"a.js": "let x = 1;\n"})
+    interface = IntelligenceInterface()
+    candidates = [
+        EngineeringCandidate(id="py", name="PyApp", technologies=["Python"]),
+        EngineeringCandidate(id="js", name="JsApp", technologies=["JavaScript"]),
+    ]
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="أي مرشح يناسب هذه المستودعات؟",
+        evidence_paths=[str(py_repo), str(js_repo)],
+        candidates=candidates))
+    assert result.status is IntelligenceStatus.RECOMMENDATION_UNAVAILABLE
+    # لا توصية مدمجة — المصدران يختلفان (خلط المواءمة ملاحظة لا دمج)
+    snapshot = result.evidence_snapshot
+    assert len(snapshot["sources"]) == 2
+    for source in snapshot["sources"]:
+        assert source["comparison"].policy_id == "repository-stack-alignment"
+    # كل مصدر بدليله: مقارنة الأول ترشح py والثاني js — على حدة
+    by_path = {s["path"]: s for s in snapshot["sources"]}
+    assert by_path[str(py_repo)]["comparison"].best.candidate_id == "py"
+    assert by_path[str(js_repo)]["comparison"].best.candidate_id == "js"
+    # التعارض: Python مكتشف في الأول دون الثاني — ادعاءان متنافسان معروضان
+    conflicts = snapshot["cross_source"]["conflicts"]
+    subjects = {c["subject"] for c in conflicts}
+    assert "stack: python" in subjects
+    py_conflict = next(c for c in conflicts if c["subject"] == "stack: python")
+    assert len(py_conflict["claims"]) == 2          # مصدر لكل ادعاء
+    # فجوة اتساع البحث مغلقة — البحث متعدد المصادر قائم
+    assert "research-breadth" not in result.gaps
+
+
+def test_research_multi_source_missing_source_is_named(tmp_path):
+    """غياب دليل مصدر مسمّى — لا نتيجة مزعومة ولا إسقاط صامت: المصدر
+    الفاشل يُسمّى في الخطأ، والمصدر السليم تبقى أدلته معروضة."""
+    good = tmp_path / "good"
+    _write_repo(good, {"a.py": "x = 1\n"})
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        evidence_paths=[str(good), str(tmp_path / "nonexistent")],
+        candidates=[EngineeringCandidate(id="py", name="PyApp",
+                                         technologies=["Python"])]))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "nonexistent" in (result.error or "")          # مسمّى بالاسم
+    assert "غياب دليل مصدر" in (result.error or "")
+    # أدلة المصدر السليم محفوظة (لا إسقاط صامت)
+    good_entry = next(s for s in result.evidence_snapshot["sources"]
+                     if s["path"] == str(good))
+    assert good_entry["comparison"].best.candidate_id == "py"
+
+
+def test_research_question_drives_gathered_evidence(tmp_path):
+    """السؤال يقود جمع الأدلة: سؤال الأطر يجمع فئات الأطر فقط، وسؤال اللغات
+    يجمع اللغات فقط — تغيير السؤال يغيّر الأدلة المجمعة (لا قصّ صامت:
+    المستبعد يُسمّى)."""
+    repo = tmp_path / "qrepo"
+    _write_repo(repo, {"a.py": "import flask\n", "requirements.txt": "flask\n"})
+    interface = IntelligenceInterface()
+    on_frameworks = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH, evidence_path=str(repo),
+        question="ما أطر هذا المستودع؟"))
+    on_languages = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH, evidence_path=str(repo),
+        question="ما لغات هذا المستودع؟"))
+    fw = on_frameworks.evidence_snapshot
+    lg = on_languages.evidence_snapshot
+    assert "frameworks" in fw["question_concepts"]
+    assert "languages" in lg["question_concepts"]
+    # الفئات المجمعة تختلف بتغير السؤال
+    assert "frameworks" in fw["fact_categories_gathered"]
+    assert fw["fact_categories_gathered"] != lg["fact_categories_gathered"]
+    assert "languages" in lg["fact_categories_gathered"]
+    # الاستبعاد مسمّى لا صامت
+    assert "languages" in fw["detected"]["excluded_by_question"]
+    assert "frameworks" in lg["detected"]["excluded_by_question"]
+
+
+def test_research_multi_source_agreement_is_observation_not_merge(tmp_path):
+    """مصدران متفقان: الحالة مكتملة والاتفاق ملاحظة معروضة — كل مصدر
+    بدليله ومقارنته (لا اتحاد أدلة ولا توصية مدمجة فوق المصادر)."""
+    repo1 = tmp_path / "r1"
+    _write_repo(repo1, {"a.py": "x = 1\n"})
+    repo2 = tmp_path / "r2"
+    _write_repo(repo2, {"b.py": "y = 2\n"})
+    interface = IntelligenceInterface()
+    candidates = [EngineeringCandidate(id="py", name="PyApp",
+                                       technologies=["Python"])]
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        evidence_paths=[str(repo1), str(repo2)],
+        candidates=candidates))
+    assert result.status is IntelligenceStatus.COMPLETED
+    cross = result.evidence_snapshot["cross_source"]
+    assert {"subject": "stack: python",
+            "claim": "مكتشف في كل المصادر"} in cross["agreements"]
+    # ومع ذلك: النتيجة بلا comparison مدمجة — كل مقارنة داخل مصدرها
+    assert result.comparison is None
