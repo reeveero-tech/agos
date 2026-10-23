@@ -241,6 +241,84 @@ def test_enforcement_pipeline_blocks_on_rejection():
     assert result3["passed"] is True
 
 
+def test_enterprise_policy_runtime_delegates_to_shared_evaluator():
+    """الشريحة الثانية (enterprise.PolicyRuntime — ADR-0010): السماح والمنع
+    وعدم التحقق عبر تفويض المقيم المعتمد — لا True أعمى؛ والنص الحر لا
+    يُحوَّل آلياً إلى شرط تنفيذي."""
+    from agos.enterprise.governance import PolicyRuntime
+    runtime = PolicyRuntime()
+    runtime.create_policy(
+        "versioned-entities", [CONSTITUTION_ARTICLE_5_RULE_ID])
+    # السماح: فحص ناجح لكل القواعد
+    assert runtime.evaluate(
+        "versioned-entities", {"type": "Contracts", "version": "1.0"}) is True
+    assert "سماح مثبت" in runtime.last_reason
+    # المنع: مخالفة معللة (بلا إصدار)
+    assert runtime.evaluate(
+        "versioned-entities", {"type": "Contracts"}) is False
+    assert runtime.last_reason.startswith("violation")
+    # عدم التحقق: مدخل ناقص (بلا نوع منصوص) — لا يُعلن سماحاً
+    assert runtime.evaluate(
+        "versioned-entities", {"version": "1.0"}) is False
+    assert runtime.last_reason.startswith("unverified")
+    # قاعدة نص حر بلا مواصفة — غير قابلة للفحص لا تُحوَّل آلياً
+    runtime.create_policy("free-text", ["يجب أن يكون آمناً"])
+    assert runtime.evaluate("free-text", {"type": "Contracts"}) is False
+    assert "غير قابلة للفحص" in runtime.last_reason
+    # سياسة مجهولة — لا فحص ولا سماح
+    assert runtime.evaluate("unknown-policy", {}) is False
+    assert "سياسة مجهولة" in runtime.last_reason
+    # سياسة بلا قواعد — لا فحص ولا سماح
+    runtime.create_policy("empty", [])
+    assert runtime.evaluate("empty", {"type": "Contracts"}) is False
+    assert "بلا قواعد" in runtime.last_reason
+
+
+def test_enterprise_policy_change_flips_both_paths():
+    """تغيير السياسة يقلب حكم الواجهة المؤسسية والمحرك معاً — مصدر واحد."""
+    from agos.enterprise.governance import PolicyRuntime
+    evaluator = get_shared_evaluator()
+    original_spec = evaluator.get_spec(CONSTITUTION_ARTICLE_5_RULE_ID)
+    enterprise = PolicyRuntime()
+    enterprise.create_policy(
+        "versioned-entities", [CONSTITUTION_ARTICLE_5_RULE_ID])
+    runtime = _runtime_with_article5()
+    entity = {"type": "Contracts", "version": "1.0"}
+    # قبل التغيير: سماح في المسارين
+    assert enterprise.evaluate("versioned-entities", dict(entity)) is True
+    assert runtime.check_compliance(
+        "e1", "contract", entity=dict(entity))["compliant"] is True
+    # تغيير السياسة: حقل إضافي مطلوب
+    changed = dict(original_spec)
+    changed["required_fields"] = ["version", "name"]
+    evaluator.register_spec(CONSTITUTION_ARTICLE_5_RULE_ID, changed)
+    try:
+        # الكيان بلا name — منع في المسارين معاً
+        assert enterprise.evaluate("versioned-entities", dict(entity)) is False
+        assert enterprise.last_reason.startswith("violation")
+        assert runtime.check_compliance(
+            "e1", "contract", entity=dict(entity))["compliant"] is False
+    finally:
+        evaluator.register_spec(
+            CONSTITUTION_ARTICLE_5_RULE_ID, original_spec)
+    # وبعد الاستعادة يعود السماح في المسارين
+    assert enterprise.evaluate("versioned-entities", dict(entity)) is True
+
+
+def test_enterprise_policy_delegation_traced():
+    """تتبع التفويض: تقييم الواجهة المؤسسية يمر بالمقيم المشترك فعلاً."""
+    from agos.enterprise.governance import PolicyRuntime
+    evaluator = get_shared_evaluator()
+    evaluator.evaluation_log.clear()
+    enterprise = PolicyRuntime()
+    enterprise.create_policy(
+        "versioned-entities", [CONSTITUTION_ARTICLE_5_RULE_ID])
+    entity = {"type": "Schemas", "version": "2.0"}
+    assert enterprise.evaluate("versioned-entities", entity) is True
+    # الاستدعاء مسجل في المقيم المشترك — الواجهة المؤسسية مرّت به فعلاً
+    assert (CONSTITUTION_ARTICLE_5_RULE_ID, entity) in evaluator.evaluation_log
+
+
 def test_spec_comes_from_constitution_text():
     """المواصفة تُقرأ من النص الدستوري نفسه لا نسخة مستقلة عنه."""
     spec = get_shared_evaluator().get_spec(

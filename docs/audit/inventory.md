@@ -9,9 +9,9 @@
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 101683
+- **lines**: 101720
 - **not_imported_by_others**: 251
-- **stub_functions**: 790
+- **stub_functions**: 789
 - **syntax_errors**: 0
 
 ## Packages
@@ -136,7 +136,7 @@
 | `constitution` | 2 | 264 | 21 | 1 | 0 | 2 | 0 | 0 |
 | `domain` | 6 | 419 | 49 | 7 | 0 | 6 | 0 | 5 |
 | `ecosystem` | 7 | 249 | 28 | 0 | 0 | 7 | 0 | 6 |
-| `enterprise` | 6 | 357 | 46 | 6 | 0 | 6 | 0 | 5 |
+| `enterprise` | 6 | 394 | 46 | 5 | 0 | 6 | 0 | 5 |
 | `evolution` | 6 | 405 | 48 | 17 | 0 | 6 | 0 | 5 |
 | `execution` | 11 | 556 | 55 | 0 | 0 | 11 | 0 | 10 |
 | `fabric` | 6 | 769 | 67 | 8 | 0 | 6 | 0 | 4 |

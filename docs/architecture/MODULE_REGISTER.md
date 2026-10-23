@@ -155,7 +155,7 @@
 | L6 | `cloud_session` | cloud | 1 | 95 | 0 | yes | no | no | L1 | R-W4-008 |
 | L6 | `cloud_workspace` | cloud | 1 | 103 | 1 | yes | no | no | L1 | R-W4-008 |
 | L6 | `ecosystem` | enterprise | 7 | 249 | 0 | yes | no | yes | L1 | R-F-005, R-W1-015, R-W4-009 |
-| L6 | `enterprise` | enterprise | 6 | 357 | 6 | yes | no | no | L1 | R-F-005, R-W1-015, R-W4-009 |
+| L6 | `enterprise` | enterprise | 6 | 394 | 5 | yes | no | yes | L1 | R-F-005, R-W1-015, R-W4-009 |
 | L6 | `evolution` | evolution | 6 | 405 | 17 | yes | no | no | L1 | R-F-005, R-W1-008, R-W5-006 |
 | L6 | `observatory` | observability | 2 | 125 | 10 | yes | no | no | L1 | R-F-005, R-W1-016, R-W4-011 |
 | L6 | `products` | products-api | 5 | 642 | 15 | yes | no | yes | L1 | R-W4-010 |
