@@ -1965,12 +1965,13 @@ def test_intent_fulfillment_actual_values_for_each_alternative(tmp_path):
 
 
 def test_instant_provider_selection_gap_closed_with_evidence(tmp_path):
-    """فجوة knowledge-driven-provider-selection (محتوى 0050 مصحح في 0051 —
-    الاسم محفوظ بG2): إغلاق 0050 كان بلا دليل؛ الاختيار الحي بسياسات
-    معلنة (ADR-0006) لا بقاعدة معرفة/خبرة — الاختيار الموجه بالمعرفة
-    متطلب محرك المعرفة في رؤية AIE (KnowledgeEngine) خارج نص قبول هذا
-    البند (ADR-0009 يسمي فجوة Instant الوحيدة: تفسير القصد)؛ سجل مزود
-    معلل لا يثبت استهلاك مدخل معرفة فلا يغلقها — الفجوة باقية مسماة."""
+    """فجوة knowledge-driven-provider-selection (محتوى 0050 مصحح 0051
+    وإسناده صُحح 0053 — الاسم محفوظ G2): إغلاق 0050 كان بلا دليل؛
+    الاختيار الحي بسياسات معلنة (ADR-0006) لا بقاعدة معرفة/خبرة —
+    الفجوة مسماة بغيابها الصادق (أصلها تعليق التنفيذ الأصلي نفسه)؛
+    نص قبول البند (ADR-0009) لا يتطلبها ولا يؤجلها صراحةً ولا يُدَّعى
+    إسنادها لأي محرك بغير نص؛ سجل مزود معلل لا يثبت استهلاك مدخل معرفة
+    فلا يغلقها — الفجوة باقية مسماة."""
     repo = _natrepo(tmp_path, "providrepo")
     interface = IntelligenceInterface()
     result = interface.run(IntelligenceRequest(
@@ -2099,43 +2100,90 @@ def test_measured_cost_records_sample_conditions(tmp_path):
 
 
 def test_cross_source_real_conflict_same_path_different_stacks():
-    """آلية التعارض (0052 — تصحيح 0051): المسار وحده لا يثبت السياق —
-    التعارض يشترط المسار نفسه **وهوية محتوى متطابقة** (فهرس التحليل)
-    ونتيجتين مختلفتين؛ كل ادعاء بهوية مصدره (source_id) لا بتكرار المسار؛
-    واختلاف هوية المحتوى (مراجعة تغيّرت) اختلاف لا تعارض؛ وغياب الكشف
-    ليس ادعاءً فلا يولّد تعارضاً."""
-    # سياق متوافق مثبت: المسار نفسه + هوية المحتوى نفسها
+    """آلية التعارض (0053 — تصحيح 0052): قوائم الكشف ليست ادعاءات حصرية
+    (Flask في كشف وDjango في آخر قد يصحان معاً) — فاختلافها اختلاف موثق
+    دائماً ولو تطابقت هوية المحتوى؛ التعارض الوحيد المثبت: ادعاءان صريحان
+    متنافيان (إثبات مقابل إنكار صريح مسند) عن الخاصية نفسها في سياق متوافق
+    مثبت — بهوية مصدر كل ادعاء؛ وهوية غير موثوقة أو غائبة تسمّي السياق
+    غير قابل للإثبات فلا تعارض يُدَّعى."""
+    # كاشف (1): مكدسان مختلفان بهوية موثوقة متطابقة — اختلاف لا تعارض
     e1 = {"path": "samer", "source_id": 0, "content_digest": "d1",
+          "content_identity_reliable": True,
           "detected_stack": ["python", "flask"]}
     e2 = {"path": "samer", "source_id": 1, "content_digest": "d1",
+          "content_identity_reliable": True,
           "detected_stack": ["python", "django"]}
     view = IntelligenceInterface()._cross_source_view([e1, e2])
-    # ادعاء واحد متنافٍ: المكدس الكامل لكل تحليل بهوية مصدره
-    assert len(view["conflicts"]) == 1
-    conflict = view["conflicts"][0]
-    # إثبات السياق معروض: المسار + هوية المحتوى
+    assert view["conflicts"] == []          # لا حصرية ⇒ لا تعارض
+    assert view["differences"] != []         # اختلاف موثق معروض
+    # كاشف (2): ادعاءان صريحان متنافيان (flask: أثبت × أنكر) بسياق مثبت
+    c1 = dict(e1, explicit_claims={"flask": True})
+    c2 = dict(e2, explicit_claims={"flask": False})
+    view_c = IntelligenceInterface()._cross_source_view([c1, c2])
+    assert len(view_c["conflicts"]) == 1
+    conflict = view_c["conflicts"][0]
+    assert "flask" in conflict["subject"]
     assert "samer" in conflict["context"] and "d1" in conflict["context"]
-    claims = conflict["claims"]
     # هوية مصدر كل ادعاء محفوظة — لا تكرار المسار فقط
-    assert {cl["source_id"] for cl in claims} == {0, 1}
-    claim_texts = " | ".join(cl["claim"] for cl in claims)
-    assert "flask" in claim_texts and "django" in claim_texts
-    # مراجعة تغيّرت: المسار نفسه بهوية محتوى مختلفة — اختلاف لا تعارض
+    assert {cl["source_id"] for cl in conflict["claims"]} == {0, 1}
+    # كاشف (3): هوية غير موثوقة (بيانات وصفية بلا تجزئة) — السياق يسمّى
+    # غير قابل للإثبات ولا تعارض حتى مع ادعاءات صريحة متنافية
+    u1 = dict(c1, content_identity_reliable=False, content_digest="dX")
+    u2 = dict(c2, content_identity_reliable=False, content_digest="dX")
+    view_u = IntelligenceInterface()._cross_source_view([u1, u2])
+    assert view_u["conflicts"] == []
+    assert "غير قابل للإثبات" in view_u["note"]
+    # كاشف (4): مراجعة تغيّرت (هوية مختلفة) — اختلاف لا تعارض
     e3 = {"path": "samer", "source_id": 2, "content_digest": "d2",
+          "content_identity_reliable": True,
           "detected_stack": ["python", "django"]}
     view2 = IntelligenceInterface()._cross_source_view([e1, e3])
     assert view2["conflicts"] == []
-    assert view2["differences"] != []
-    # غياب الكشف ليس ادعاءً — لا يولّد تعارضاً
+    # كاشف (5): غياب الكشف ليس ادعاءً — لا يولّد تعارضاً
     e4 = {"path": "samer", "source_id": 3, "content_digest": "d1",
+          "content_identity_reliable": True,
           "detected_stack": []}
     view3 = IntelligenceInterface()._cross_source_view([e1, e4])
     assert view3["conflicts"] == []
-    # مصادر مختلفة المسار: اختلاف موثق لا تعارض
+    # كاشف (6): مصادر مختلفة المسار — اختلاف موثق لا تعارض
     other = {"path": "other", "source_id": 4, "content_digest": "d1",
+             "content_identity_reliable": True,
              "detected_stack": ["python", "flask"]}
     view4 = IntelligenceInterface()._cross_source_view([e1, other])
     assert view4["conflicts"] == []
+
+
+def test_content_digest_reliability_same_length_content_change(tmp_path):
+    """موثوقية هوية المحتوى (0053): بلا تجزئة (سياستنا hash_predicate=None)
+    تتطابق الهوية مع محتوى مختلف بنفس الطول — فلا تُدَّعى موثوقة ولا يثبت
+    بها توافق سياق؛ وبتجزئة فعلية تغيّر المحتوى يغيّر الهوية."""
+    interface = IntelligenceInterface()
+    repo = tmp_path / "digestrepo"
+    _write_repo(repo, {"a.txt": "AAAA\n"})
+    shared = interface._analyze(str(repo))
+    d1, reliable1 = _iface_module._analysis_content_digest(shared)
+    # سياستنا لا تهشّ: الهوية بيانات وصفية (مسار+حجم) — غير موثوقة
+    assert reliable1 is False
+    # محتوى مختلف بنفس الطول: الهوية تتطابق رغم تغير المحتوى — الدليل
+    # على أنها لا تصلح إثبات سياق بلا تجزئة
+    (repo / "a.txt").write_text("BBBB\n", encoding="utf-8")
+    shared2 = interface._analyze(str(repo))
+    d2, reliable2 = _iface_module._analysis_content_digest(shared2)
+    assert d1 == d2                 # نفس المسار والحجم بلا هاش
+    assert reliable2 is False
+    # وبهاش فعلي: الهوية موثوقة ويغيّرها تغيير المحتوى
+    class _Hashed:
+        pass
+    entry = type("E", (), {})()
+    entry.path, entry.size_bytes, entry.is_dir, entry.sha256 = \
+        "a.txt", 5, False, "hash-of-AAAA"
+    shared_h = type("S", (), {})()
+    shared_h.files = [entry]
+    dh1, rh1 = _iface_module._analysis_content_digest(shared_h)
+    entry.sha256 = "hash-of-BBBB"
+    dh2, rh2 = _iface_module._analysis_content_digest(shared_h)
+    assert rh1 is True and rh2 is True
+    assert dh1 != dh2                # تغيّر المحتوى يغيّر الهوية الموثوقة
 
 
 def test_runtimes_restored_without_question(tmp_path):
@@ -2288,3 +2336,73 @@ def test_runtimes_restored_without_question_real_runtime(tmp_path):
     fw_only = _iface_module._detected_stack_names(
         shared, fact_categories={"frameworks"})
     assert "node.js" not in fw_only
+
+
+# ------------------------------------------------------------------ 0053 --
+def test_architecture_not_inherited_for_unverified_capability(tmp_path):
+    """العمارة لا تُورَّث (0053): طلب الأمن (SecurityScan) لا يوصف بمسار
+    منتجي RA/DNA — producers = None بقصور مسمى، وفجوة المعمارية تبقى
+    مسماة لا تُغلق بما لم يُتحقق من مساره."""
+    repo = _natrepo(tmp_path, "secrepo")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + str(repo)))
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL
+    ep = result.engineering_plan
+    assert ep["architecture_design"] is not None
+    # لا توريث: مسار المنتجين غير المتحقق يسمّى قصوره ولا يصفه بمسار DNA
+    assert ep["architecture_design"]["producers"] is None
+    assert ep["architecture_design"]["data_flow"] is None
+    assert "قصور مسمى" in ep["architecture_design"]["note"]
+    note = ep["architecture_design"]["note"]
+    assert "RepositoryAnalysisCapability" not in note
+    assert "RepositoryDNA" not in str(ep["architecture_design"])
+    # والفجوة تبقى مسماة — لا تُغلق بما لم يتحقق
+    assert "engineering-plan-architecture" in result.gaps
+
+
+def test_fulfillment_evidence_values_and_evidence_committed(tmp_path):
+    """أسانيد الإيفاء مكتملة (0053): العينة تُلتزم (git commit) قبل التنفيذ
+    فلا يثبت الاختبار محتوى أقدم غير الموصوف؛ والاعتمادية بمصدرها المتوقع
+    (requirements.txt) واللغات بقياسها الفعلي (language_stats) والدليل
+    متوافق معه — وما لا يحمل المخرج سنده يسمّى قصوره."""
+    repo = _natrepo(tmp_path / "comrepo", "evidrepo2")
+    (repo / "app.py").write_text("import flask\n", encoding="utf-8")
+    (repo / "requirements.txt").write_text("flask>=2\n", encoding="utf-8")
+    # التزام التعديلات قبل التنفيذ — المراجعة المحللة هي الموصوفة
+    import subprocess
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "sample"], cwd=str(repo),
+                   check=True, env=env)
+    interface = IntelligenceInterface()
+    text = "افحص اعتماديات وأطر ولغات المستودع " + str(repo)
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, natural_text=text))
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL
+    interface.approve(result.approval_id, approver="م")
+    approved = interface.execute_approved(result.approval_id)
+    assert approved.status is IntelligenceStatus.COMPLETED
+    dna = approved.result
+    # القيم: كل المفاهيم المطلوبة
+    assert "flask" in [f.lower() for f in dna.frameworks]
+    assert "python" in [str(l).lower() for l in dna.languages]
+    # الاعتمادية بمصدرها المتوقع: سجل الدليل يربطها بالبيان requirements.txt
+    ev = [e for e in (getattr(dna, "framework_evidence", None) or [])
+          if (e.get("dependency") if isinstance(e, dict)
+              else getattr(e, "dependency", "") or "").lower() == "flask"]
+    assert ev, "دليل الاعتمادية غائب"
+    flask_ev = ev[0]
+    manifest = (flask_ev.get("manifest") if isinstance(flask_ev, dict)
+                else getattr(flask_ev, "manifest", ""))
+    assert manifest == "requirements.txt"
+    # اللغات بقياسها الفعلي: language_stats (ملفات/أسطر) من القياس
+    stats = getattr(dna, "language_stats", None) or {}
+    py = stats.get("Python") or {}
+    assert py.get("files", 0) >= 1 and py.get("lines", 0) >= 1
+    # قصور مسمى: DNA لا يحمل سجل دليل منفصلاً لكل لغة (القياس نفسه
+    # هو المتاح) — لا يُدَّعى سند غير موجود
+    assert not any("language_evidence" in str(k)
+                   for k in dir(dna))
