@@ -245,15 +245,13 @@ def freeze_change_spec(
 def shared_evaluator() -> PolicyEvaluator:
     """المقيم المشترك المعتمد — مسار تقييم واحد للجميع (ADR-0010).
 
-    يسجّل مواصفة المادة 5 من مصدرها النصي المعلن (قائمة الأنواع في الدستور
-    تُقرأ من الوثيقة نفسها، لا تُنسخ هنا فينسى تحديثها).
+    يسجّل التشريع المفعّل من إعلانه الواحد (``enacted_constitution_specs``)
+    — المادة 5 من مصدرها النصي المعلن (قائمة الأنواع في الدستور تُقرأ من
+    الوثيقة نفسها، لا تُنسخ هنا فينسى تحديثها).
     """
     evaluator = PolicyEvaluator()
-    from agos.constitution.constitution import VERSIONED_ENTITIES
-    evaluator.register_spec(
-        CONSTITUTION_ARTICLE_5_RULE_ID,
-        constitution_article_5_spec(VERSIONED_ENTITIES),
-    )
+    for rule_id, spec in enacted_constitution_specs().items():
+        evaluator.register_spec(rule_id, spec)
     return evaluator
 
 
@@ -346,25 +344,42 @@ def get_shared_evaluator() -> PolicyEvaluator:
 
 
 # ---------------------------------------------------------------
-# مصدر القواعد المعتمد للمحرك المحلي (الشريحة السابعة — R-W1-007).
-# السلطة معلنة: تشريع الدستور المفعّل في تسجيل المصنع المعتمد
-# (``shared_evaluator``) — لا التسجيلات العابرة وقت الحكم (كمواصفة التجميد
-# المبنية من إعلان عند كل حكم): فقاعدة التشريع الدائم وحدها تحكم الترخيص
-# الافتراضي للمحرك المحلي، وتسجيل وقت الحكم فحصٌ لمدخل محدد لا تشريع دائم
-# يغير سلوك كل استدعاء لاحق.
+# التشريع المفعّل — إعلان واحد يستهلكه المصنع المعتمد ومصدر القواعد
+# الافتراضي معاً (تصحيح الشريحة السابعة — سجل العمل 0075): إضافة تشريع
+# هنا تُحدّث المصنع والمصدر معاً بلا نسختين تنفصل إحداهما عن الأخرى.
+# بناء المواصفة كسول (لا استيراد دستوري عند استيراد الوحدة).
 # ---------------------------------------------------------------
-ENACTED_CONSTITUTION_RULE_IDS = (CONSTITUTION_ARTICLE_5_RULE_ID,)
+_ENACTED_CONSTITUTION_SPEC_BUILDERS = {
+    CONSTITUTION_ARTICLE_5_RULE_ID: lambda: constitution_article_5_spec(
+        _constitution_versioned_entities()),
+}
+
+ENACTED_CONSTITUTION_RULE_IDS = tuple(_ENACTED_CONSTITUTION_SPEC_BUILDERS)
+
+
+def _constitution_versioned_entities() -> List[str]:
+    """قائمة الأنواع المنصوصة من النص الدستوري نفسه — لا نسخة هنا."""
+    from agos.constitution.constitution import VERSIONED_ENTITIES
+    return VERSIONED_ENTITIES
+
+
+def enacted_constitution_specs() -> Dict[str, Dict[str, Any]]:
+    """التشريع المفعّل كاملاً بمواصفاته — الإعلان الواحد الذي يسجله المصنع
+    المعتمد وتُبنى منه قواعد الترخيص الافتراضية."""
+    return {rule_id: build()
+            for rule_id, build in _ENACTED_CONSTITUTION_SPEC_BUILDERS.items()}
 
 
 def default_policy_rules() -> List[Dict[str, Any]]:
-    """قواعد الترخيص الافتراضية للمحرك المحلي — من المصدر المعتمد ومسلّطته
-    المعلنة (ADR-0010 §5 — إغلاق الفجوة المسماة).
+    """قواعد الترخيص الافتراضية للمحرك المحلي — من الإعلان الواحد نفسه الذي
+    يستهلكه المصنع المعتمد (لا نسخة ثانية تنفصل عن المقيم).
 
     القاعدة القابلة للفحص قاموس يحمل ``rule_id`` معرّفَ قاعدة مسجلة؛ والمصدر
-    هنا التشريع المفعّل الذي يسجله المصنع المعتمد نفسه (لا نسخة ثانية
-    تنفصل عن المقيم)، فأي تشريع جديد يضاف للمصنع يظهر هنا بلا واجهة موازية.
-    البوابة (``GovernanceRuntime.authorize_execution``) تستشير هذا المصدر
-    بدل قائمة فارغة يختارها الطلب لنفسه — والسماح يبقى مثبتاً فقط بفحص
-    ناجح لكل القواعد (لا امتثال بلا فحص).
+    هنا التشريع المفعّل المعلن في ``_ENACTED_CONSTITUTION_SPEC_BUILDERS``
+    (تُستورد معرفاته من ``ENACTED_CONSTITUTION_RULE_IDS``)، فأي تشريع جديد
+    يضاف للإعلان يظهر في المصنع والمصدر معاً. البوابة
+    (``GovernanceRuntime.authorize_execution``) تستشير هذا المصدر بدل قائمة
+    فارغة يختارها الطلب لنفسه — والسماح يبقى مثبتاً فقط بفحص ناجح لكل
+    القواعد (لا امتثال بلا فحص).
     """
     return [{"rule_id": rule_id} for rule_id in ENACTED_CONSTITUTION_RULE_IDS]

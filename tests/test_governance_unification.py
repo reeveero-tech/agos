@@ -668,18 +668,27 @@ def test_authorize_execution_empty_policies_denies_with_reason():
 
 
 def test_default_rule_source_is_enacted_constitution_legislation():
-    """مصدر القواعد المعتمد للمحرك المحلي (الشريحة السابعة — إغلاق الفجوة
-    المسماة في ADR-0010 §5): المصدر هو التشريع المفعّل الذي يسجله المصنع
-    المعتمد نفسه (لا نسخة ثانية)، وحد السلطة معلن — التسجيلات العابرة وقت
-    الحكم ليست تشريعاً دائماً؛ والسماح مثبت فقط بفحص ناجح لكل القواعد،
-    والمخالفة وعدم الانطباق كلاهما منع معلل، والتفويض مثبت بوصول المقيم."""
+    """مصدر القواعد المعتمد للمحرك المحلي (الشريحة السابعة + تصحيحها):
+    المصدر إعلان واحد يستهلكه المصنع المعتمد ومصدر الترخيص معاً (تطابق
+    تام مع مصنع جديد — لا نسختين تنفصل إحداهما عن الأخرى)، وحد السلطة معلن
+    — التسجيلات العابرة وقت الحكم ليست تشريعاً دائماً؛ والسماح مثبت فقط
+    بفحص ناجح لكل القواعد، والمخالفة وعدم الانطباق كلاهما منع معلل،
+    والتفويض مثبت بوصول المقيم. حدود ما يثبته هذا الاختبار معلنة: عق
+    بوابة السياسات على عقد كيان منصوص (المدخل الذي تقيّمه القاعدة) —
+    لا مسار مستهلك إنتاجي؛ وربط الترخيص بأنواع أفعال الإنتاج (كـ'mission')
+    فجوة مسماة تبقى مفتوحة: لا تشريع منصوص يرخّصها والتشريع قرار حوكمة
+    معلن لا يُخترع، فالمسار الإنتاجي يبقى مغلقاً على الفشل الصادق."""
     from agos_kernel.governance import policy_evaluator as pe
     from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
         GovernanceRuntime as AutoGovRuntime)
 
-    # المصدر = التشريع المفعّل نفسه الذي يسجله المصنع المعتمد
+    # الإعلان الواحد: مصنع جديد يسجل التشريع كاملاً بالضبط (تطابق تام لا
+    # احتواء) — والمصدر يبنى من الإعلان نفسه
     rules = pe.default_policy_rules()
-    assert rules == [{"rule_id": pe.CONSTITUTION_ARTICLE_5_RULE_ID}]
+    assert rules == [{"rule_id": rid}
+                    for rid in pe.ENACTED_CONSTITUTION_RULE_IDS]
+    fresh = pe.shared_evaluator()
+    assert set(fresh.registered_rule_ids()) == set(pe.ENACTED_CONSTITUTION_RULE_IDS)
     assert set(pe.ENACTED_CONSTITUTION_RULE_IDS) <= set(
         pe.get_shared_evaluator().registered_rule_ids())
 
@@ -694,7 +703,7 @@ def test_default_rule_source_is_enacted_constitution_legislation():
         ev._specs.clear()
         ev._specs.update(specs_before)
 
-    # الترخيص عبر التشريع المفعّل: امتثال مثبت يمر بالبوابات كلها ويدقّق
+    # بوابة السياسات على عقد كيان منصوص: امتثال مثبت يمر البوابات كلها ويدقّق
     rt = AutoGovRuntime()
     log_before = len(ev.evaluation_log)
     res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
