@@ -67,7 +67,7 @@ _REPOSITORY_TERMS = ["مستودع", "المستودع", "repository", "repo"]
 FULFILLMENT: Dict[str, Dict[str, Tuple[List[str], bool]]] = {
     "frameworks": {
         "RepositoryAnalysis": (["RepositoryDNA.frameworks"], False),
-        "RepositoryDNAGeneration": (["RepositoryDNA.frameworks"], False),
+        "RepositoryDNAGeneration": (["مخرج dict: frameworks"], False),
         "RepositoryProcessingPipeline": (
             ["universal_repository_object.frameworks"], False),
     },
@@ -84,7 +84,8 @@ FULFILLMENT: Dict[str, Dict[str, Tuple[List[str], bool]]] = {
     },
     "dna": {
         "RepositoryAnalysis": (["RepositoryDNA (كائن المخرج)"], True),
-        "RepositoryDNAGeneration": (["RepositoryDNA (كائن المخرج)"], True),
+        "RepositoryDNAGeneration": (
+            ["مخرج dict كله (بصمة+بصمة إصبع fingerprint)"], True),
     },
     "security": {
         "SecurityScan": (["مخرج المسح كله (تقرير الأمن)"], True),
@@ -114,7 +115,7 @@ FULFILLMENT: Dict[str, Dict[str, Tuple[List[str], bool]]] = {
     "repository-analysis": {
         # كل قدرة تستهلك مصدر مستودع — مخرجها كله تحليل للمستودع (مخصص)
         "RepositoryAnalysis": (["RepositoryDNA (كائن المخرج)"], True),
-        "RepositoryDNAGeneration": (["RepositoryDNA (كائن المخرج)"], True),
+        "RepositoryDNAGeneration": (["مخرج dict (كائن المخرج)"], True),
         "RepositoryProcessingPipeline": (["uro (كائن المخرج)"], True),
         "SecurityScan": (["مخرج المسح كله"], True),
         "LicenseAnalysis": (["مخرج التحليل كله"], True),
@@ -356,6 +357,16 @@ def build_mission(interpretation: IntentInterpretation,
                       + ". ميّز بالطلب (مثلاً «بصمة DNA») أو استخدم نمط "
                         "engine للمقارنة المعللة.")
     winner = top[0]
+    # القيد المنفي مُلزم (سجل العمل 0051): إن كان المختار يحمل المفهوم
+    # المنفي في مخرجه فلا يمكن إثبات احترام الاستثناء — لا تنفيذ ولا
+    # اختيار صامت يتجاهله (عقد القدرة لا يعلّم تعطيل جزء من مخرجه)
+    for concept in interpretation.negated_concepts:
+        if winner in FULFILLMENT.get(concept, {}):
+            return None, ("القيد المنفي (" + concept + ") لا يمكن إثبات "
+                          "احترامه: المختار (" + winner + ") يحمله في مخرجه "
+                          "وعقده لا يعلّم تعطيله — لا تنفيذ ولا تجاهل صامت "
+                          "(فجوة مسماة: intent-interpretation). ميّز بقدرة "
+                          "لا تحمل المستبعد أو اذكره مطلوباً صراحةً.")
     if winner in NEEDS_REPOSITORY_SOURCE and "url" not in interpretation.artifacts:
         return None, ("المدخل المطلوب غائب: " + winner + " يحتاج مصدر مستودع "
                       "(رابط أو مسار) ولم يُذكر في الطلب (فجوة مسماة: "

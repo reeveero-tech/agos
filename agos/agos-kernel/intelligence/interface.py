@@ -44,9 +44,13 @@ INSTANT_GAPS = [
     # تفسير النية أُغلق للمسار المفسر (0047) — يُرد فقط حيث تعذّر التفسير
     # أو فشل (فشل مسمّى)، لا آلياً في كل نتيجة
     "intent-interpretation",
-    # اختيار المزود أُغلق (سجل العمل 0050): المزود يُختار في المسار الحي
-    # عبر دليل القرار نفسه بسجل معلل (provider_selected في decision_records
-    # — مختبر)، لا اختياراً صامتاً
+    # اختيار المزود بمعرفة/خبرة (أُعيدت بسجل العمل 0051 — إغلاق 0050 كان
+    # بلا دليل): المسار الحي يفاضل بسياسات معلنة (ADR-0006) — الاختيار
+    # الموجه بالمعرفة/الخبرة متطلب محرك المعرفة في رؤية AIE
+    # (aie-intelligence/01-Core-Engines: KnowledgeEngine) خارج نص قبول
+    # هذا البند (ADR-0009 يسمي فجوة Instant الوحيدة: تفسير القصد) —
+    # وجود سجل مزود معلل لا يثبت استهلاك مدخل معرفة
+    "knowledge-driven-provider-selection",
 ]
 ENGINEER_GAPS = [
     # مكونات خطة Engineer الآن إسقاط موثق المصدر لما هو كائن (سجل العمل
@@ -157,12 +161,18 @@ def _detected_stack_names(evidence: Any,
     names = set()
     include_languages = fact_categories is None or "languages" in fact_categories
     include_frameworks = fact_categories is None or "frameworks" in fact_categories
+    include_runtimes = fact_categories is None or "runtimes" in fact_categories
     if include_languages:
         for language in _evidence_facts(evidence)["languages"]:
             names.add(str(language).strip().lower())
+    stack = getattr(evidence, "stack", None)
     if include_frameworks:
-        stack = getattr(evidence, "stack", None)
         for item in (getattr(stack, "frameworks", None) or []):
+            names.add(str(item).strip().lower())
+    if include_runtimes:
+        # السلوك الكامل عند غياب الترشيح (سجل العمل 0051 — انحدار 0050):
+        # runtimes كان متاحاً قبل الترشيح وبقي معه إلا عند استبعاد مقصود
+        for item in (getattr(stack, "runtimes", None) or []):
             names.add(str(item).strip().lower())
     return tuple(sorted(names))
 
@@ -319,6 +329,32 @@ def _plan_fingerprint(plan: Any) -> tuple:
     )
 
 
+def _design_tradeoffs(name: str, required_concepts: List[str]) -> List[str]:
+    """مفاضلات تصميمية معلنة لكل بديل — من عقده وحقائق الكود الفعلية
+    (سجل العمل 0051): لا تقييمات عامة بل ما يميز هذا التصميم للمتطلبات."""
+    if name == "RepositoryAnalysis":
+        return [
+            "يغطي المفاهيم في كائن DNA واحد بحقول معلنة وسجلات أدلة أطر "
+            "(framework_evidence: الاعتمادية/البيان/النطاق) — ويطلب "
+            "GenerateDNA فوق القراءة (تبعية معلنة في عقده)",
+        ]
+    if name == "RepositoryProcessingPipeline":
+        return [
+            "خط 8 مراحل فوق الخط الموحد بحالة مشتركة عبر الاستدعاءات "
+            "(الرسم/اللقطات/الطابور — معلنة في عقده): آثار جانبية مشتركة "
+            "تُقيَّد كمخاطر تصميم",
+            "يحمل أدلة كشف لكل إطار (framework_evidence بمسارات الملفات) "
+            "وسمات أوسع من المطلوب (feature_set/similar/evolution) — أوسع "
+            "من المطلوب وتعقيداً أعلى مقابل أدلة أغنى",
+        ]
+    if name == "RepositoryDNAGeneration":
+        return [
+            "بصمة خفيفة dict مع fingerprint محسوب — لا يحمل dependencies "
+            "(package_managers ليس dependencies) ولا سجلات أدلة",
+        ]
+    return []
+
+
 def _mission_field(mission_spec: Any, field: str) -> str:
     """قراءة حقل من مواصفة مهمة — قاموساً كانت أو كائن Mission."""
     if isinstance(mission_spec, dict):
@@ -452,6 +488,8 @@ def _interpreted_engineering_plan(
             "design_approach": contract.get("description", ""),
             # مهارات معلنة مطلوبة — تبعيات لا مراحل مثبتة
             "required_skills_declared": contract.get("skills", []),
+            "design_tradeoffs": _design_tradeoffs(
+                name, interpretation.required_concepts),
             "fulfillment_evidence": fulfill_carriers,   # حامل المخرج الفعلي
             "evaluation": eval_row,                    # درجة دليل القرار
         })
@@ -464,11 +502,12 @@ def _interpreted_engineering_plan(
         "selection": {
             "selected": selected,
             "tie_break": projected.get("tie_break"),
-            "note": "درجات دليل القرار هنا قياس **علاقة مهارات** (تغطية "
-                    "المهارات المطلوبة المشتقة من المفاهيم) لا مفاضلة "
-                    "تصميمية — لا يُقدَّم عدد المهارات بوصفه تحقيقاً أفضل "
-                    "لهدف المستخدم؛ التصميمان معروضان بمفاضلاتهما "
-                    "والمعتمِد يرى ويرفض أو يميّز (مثلاً «بصمة DNA»)",
+            "policy_id": (projected.get("policy") or {}).get("policy_id"),
+            "note": "تعادل إيفاء حقيقي: كل المرشحين مُثبت إيفاؤهم بحوامل "
+                    "المخرجات فدرجاتهم متساوية — الاختيار بقاعدة معلنة "
+                    "(ترتيب التسجيل المستقر) لا بأفضلية من عدد التبعيات "
+                    "المطلوبة؛ التصميمان معروضان بمفاضلاتهما والمعتمِد "
+                    "يرى ويميّز (مثلاً «بصمة DNA») أو يرفض",
         },
         "record": projected,
         "note": "مرشحو الإيفاء المثبت بالمخرجات قورنوا بدليل القرار القائم",
@@ -497,8 +536,12 @@ def _interpreted_engineering_plan(
         "mitigation_verification": "المعتمِد يرى mission.parameters في الخطة "
                                    "قبل الإجازة",
         "probability": None})
-    completed = [e for e in measured_executions
-                if e.get("state") == "completed"]
+    # عينات مفصولة (سجل العمل 0051): خطة Engineer تُقدَّر من عينات الوضع
+    # نفسه (engineer) — تنفيذ instant لمدخل آخر لا يصير وسيط تقديرها ولا
+    # يغلق فجوتها؛ الشروط المعروفة فعلاً معروضة (الوضع/المدخل/الإصدار)
+    comparable = [e for e in measured_executions
+                  if e.get("state") == "completed" and e.get("mode") == "engineer"]
+    completed = comparable
     if not completed:
         risks.append({
             "risk": "لا تاريخ تنفيذ مقيس لهذه القدرة — عدم يقين في المدة، "
@@ -519,12 +562,17 @@ def _interpreted_engineering_plan(
                                               + ordered[n // 2]) // 2
         modes = sorted({e["mode"] for e in completed})
         sources = sorted({e.get("source", "") for e in completed})
+        inputs = sorted({str(e.get("parameters", {}).get("url", ""))
+                         for e in completed})
+        versions = sorted({e.get("capability_version", "")
+                           for e in completed})
         cost = {
             "n": n, "median_ms": median,
             "observed_min_ms": ordered[0], "observed_max_ms": ordered[-1],
             "unit": "measured-execution-duration",
             "conditions": {"capability": selected, "state": "completed",
-                           "modes": modes, "record_source": sources},
+                           "modes": modes, "record_source": sources,
+                           "inputs": inputs, "capability_versions": versions},
             "unmeasured_conditions": {
                 "environment": "غير مقيس — مجهول معلن",
                 "load": "غير مقيس — مجهول معلن",
@@ -543,7 +591,10 @@ def _interpreted_engineering_plan(
                     "(engineering-plan-cost-estimate)",
         }
 
-    # ---- المعمارية: مقترح مشتق من عقد المختار ومتطلبات ما قبل الاختيار ----
+    # ---- المعمارية: منتجو الحقائق الفعليون (سجل العمل 0051) ----
+    # الحوامل تحدد مكان النتيجة — المكونات المنتجة هي: خط التحليل المشترك
+    # (كاشفات الأطر بسجلات Evidence وأوزان اللغات وتحليل البيانات) ثم
+    # إسقاط المختار فوقه (RA: DNA / RPP: uro وسماته)
     contract = interpreted.get("contracts", {}).get(selected, {})
     carriers = {
         concept: intent_module.FULFILLMENT.get(concept, {}).get(
@@ -557,32 +608,56 @@ def _interpreted_engineering_plan(
             {
                 "component": "استنساخ وقراءة المصدر",
                 "responsibility": "جلب المصدر المستخرج نصياً وقراءته بأمان",
-                "interface": "url → حقائق التحليل المشترك (خط ADR-0005)",
-                "boundaries": "خدمة التحليل المعتمدة — لا كاشف موازٍ",
+                "interface": "url → ملفات وحقائق خام",
+                "boundaries": "خدمة التحليل المعتمدة (ADR-0005) — لا كاشف "
+                             "موازٍ ولا شبكة لمدخل محلي",
                 "declared_dependencies": [
                     s for s in contract.get("skills", [])
                     if s in ("CloneRepository", "ReadRepository")],
             },
             {
-                "component": "إسقاط مخرجات المفاهيم",
-                "responsibility": "إنتاج كل مخرج مطلوب في حامله المثبت",
-                "interface": "حقائق التحليل → حوامل المخرج (أدناه)",
-                "boundaries": "عقد مخرج القدرة المختارة — لا ادعاء مراحل "
-                             "داخلية غير معلنة",
+                "component": "خط التحليل المشترك (ADR-0005)",
+                "responsibility": "منتج الحقائق: أوزان اللغات المقيسة، "
+                                  "كاشف الأطر بسجلات Evidence (مسارات "
+                                  "الملفات)، وتحليل بيانات الاعتماديات",
+                "interface": "ملفات خام → حقائق مشتركة (لغات/أدلة أطر/"
+                             "اعتماديات)",
+                "boundaries": "الخدمة المعتمدة get_analysis_service — "
+                             "القراءة والكشف لا الإسقاط",
+                "declared_dependencies": [],
+            },
+            {
+                "component": "إسقاط المختار فوق الحقائق",
+                "responsibility": "إنتاج كل مخرج مطلوب في حامله المثبت "
+                                  "(إسقاط المختار المعلن في عقده)",
+                "interface": "حقائق مشتركة → حوامل المخرج (أدناه)",
+                "boundaries": "عقد مخرج المختار؛ للحالة المشتركة في RPP "
+                             "(الرسم/اللقطات/الطابور) أثر جانبي معلن "
+                             "يُقيَّد كمخاطر التصميم",
                 "declared_dependencies": [
                     s for s in contract.get("skills", [])
                     if s not in ("CloneRepository", "ReadRepository")],
             },
         ],
         "output_fulfillment": carriers,
+        "producers": {
+            "frameworks": "كاشف الأطر في خط التحليل المشترك (سجلات Evidence) "
+                          "→ إسقاط المختار",
+            "languages": "قياس أوزان اللغات في خط التحليل المشترك → إسقاط "
+                        "المختار",
+            "dependencies": "تحليل بيانات الاعتماديات في خط التحليل المشترك "
+                            "→ إسقاط المختار",
+        },
         "data_flow": [
             "المصدر المستخرج نصياً (url)",
-            "استنساخ وقراءة آمنة (خط ADR-0005 المعتمد)",
-            "إسقاط المفاهيم إلى حواملها المثبتة في مخرج المختار",
+            "استنساخ وقراءة آمنة (خط ADR-0005)",
+            "كشف وتحليل في الخط المشترك (منتج الحقائق وأدلتها)",
+            "إسقاط المختار: الحقائق إلى حواملها المثبتة في مخرجه",
         ],
         "note": "مقترح معماري مشتق من عقد المختار ومتطلبات ما قبل الاختيار "
                 "— ليس وصف المنفذ القائم؛ skills المعلنة تبعيات معلنة لا "
-                "مراحل تنفيذ مرتبة مثبتة",
+                "مراحل تنفيذ مرتبة مثبتة، والحامل يحدد مكان النتيجة لا "
+                "منتجها",
     }
 
     return {
@@ -901,6 +976,7 @@ class IntelligenceInterface:
             "capability": _mission_field(mission_spec, "capability"),
             "mode": "instant",
             "state": outcome.state.value,
+            "parameters": _mission_field(mission_spec, "parameters") or {},
             "duration_ms": outcome.duration_ms,   # احتياط عند غياب runtime
         }
         return IntelligenceResult(
@@ -1063,6 +1139,16 @@ class IntelligenceInterface:
             return None, None, ("تعذر اختيار بين البدائل في دليل القرار — "
                                 "لا اعتماد بلا عمل صالح (" 
                                 + str(getattr(comparison, "status", "")) + ")")
+        # القيد المنفي مُلزم (سجل العمل 0051): لا اختيار صامت يتجاهله —
+        # إن كان المختار يحمل المنفي في مخرجه فلا إثبات لاحترامه فلا تنفيذ
+        violated = [c for c in interpretation.negated_concepts
+                   if selected in intent_module.FULFILLMENT.get(c, {})]
+        if violated:
+            return None, None, ("القيد المنفي (" + ", ".join(violated)
+                                + ") لا يمكن إثبات احترامه: المختار ("
+                                + selected + ") يحمله في مخرجه وعقده لا "
+                                "يعلّم تعطيله — لا تنفيذ ولا تجاهل صامت "
+                                "(فجوة مسماة: intent-interpretation)")
         if selected in intent_module.NEEDS_REPOSITORY_SOURCE \
                 and "url" not in interpretation.artifacts:
             return None, None, ("المدخل المطلوب غائب: " + selected
@@ -1083,7 +1169,7 @@ class IntelligenceInterface:
                  "engineering-plan-risks",
                  "engineering-plan-architecture"]
         measured = [e for e in self._measured_executions(selected)
-                   if e["state"] == "completed"]
+                   if e["state"] == "completed" and e.get("mode") == "engineer"]
         if measured:
             closed.append("engineering-plan-cost-estimate")
         # عقود البدائل من السجل الحي — تصميم كل بديل ومهاراته المعلنة
@@ -1109,26 +1195,48 @@ class IntelligenceInterface:
 
     def _compare_alternatives(self, alternative_names: List[str],
                               required_skills: List[str]):
-        """مقارنة بدائل التصميم عبر **دليل القرار القائم** بسياسته الحية
-        (LIVE_CAPABILITY_POLICY) — المرشحون مرشحو الإيفاء المثبت
-        بالمخرجات فقط (لا السجل كله)، والمهارات المشتقة من المفاهيم
-        بجدول معلن. لا محرك ترتيب موازٍ."""
+        """مقارنة بدائل التصميم عبر **دليل القرار القائم** بسياسة بدائل
+        معلنة (سجل العمل 0051 — تصحيح 0050): كل المرشحين مُثبت إيفاؤهم
+        بحوامل المخرجات الفعلية فدرجاتهم متساوية (تعادل إيفاء حقيقي) —
+        لا معيار علاقة مهارات هنا ولا أفضلية من عدد التبعيات؛ وقاعدة
+        الاختيار معلنة (ترتيب التسجيل المستقر) والمعتمِد يرى التصميمين
+        ويميّز أو يرفض. لا محرك ترتيب موازٍ."""
         import uuid as _uuid
         from decision_pipeline import (DECISION_CORE, DecisionCandidate,
-                                       DecisionRequest, LIVE_CAPABILITY_POLICY)
+                                       DecisionPolicy, DecisionRequest)
         from decision_pipeline import _utc_now_iso
+        policy = DecisionPolicy(
+            policy_id="design-alternatives-fulfillment-tie",
+            version="1.0.0",
+            kind="capability",
+            weights={"skill": 1.0, "priority_weight": 0.0},
+            rules={
+                "capability_scoring": "jaccard-exact-override",
+                "tie_break": "stable-registration-order",
+                "note": "تعادل إيفاء حقيقي: كل المرشحين مُثبت إيفاؤهم "
+                        "بحوامل المخرجات — الدرجات متساوية وقاعدة الاختيار "
+                        "معلنة (ترتيب التسجيل)، لا أفضلية تصميمية من عدد "
+                        "التبعيات المطلوبة",
+            })
         registry = self._capability_resolver.capability_registry
         registered = {c.name: c for c in registry.list_all()}
+        # الترتيب بفهرس التسجيل الفعلي (مررها مرتبة كذلك)
+        registration_index = {c.name: i for i, c in enumerate(
+            registry.list_all())}
+        ordered = sorted(alternative_names,
+                        key=lambda n: registration_index.get(n, 10**9))
         candidates = [DecisionCandidate(
             name=name,
             skills_query=(lambda c=registered[name]: getattr(c, "skills", [])),
             priority_query=(lambda c=registered[name]: getattr(c, "priority", 1.0)),
             ref=registered[name])
-            for name in alternative_names if name in registered]
+            for name in ordered if name in registered]
+        # لا مهارات مطلوبة في الطلب: الإيفاء مثبت بالحوامل لا بالدرجات —
+        # فالتعادل حقيقي لا مصنوع
         return DECISION_CORE.evaluate(
             DecisionRequest(kind="capability", requested_name="",
-                            required_skills=list(required_skills), constraints=[]),
-            candidates, LIVE_CAPABILITY_POLICY,
+                            required_skills=[], constraints=[]),
+            candidates, policy,
             decision_id=f"cap-{_uuid.uuid4()}", timestamp=_utc_now_iso())
 
     def approve(self, approval_id: str, approver: str) -> IntelligenceResult:
@@ -1243,10 +1351,23 @@ class IntelligenceInterface:
         from mission_engine import MissionState
         completed = outcome.state is MissionState.COMPLETED
         # إسناد القدرة إلى مهمة سجل rt.missions (المالك) — المدة تُقرأ منه
+        parameters = getattr(mission, "parameters", None) or {}
+        version = ""
+        registry = getattr(self._capability_resolver, "capability_registry", None)
+        if registry is not None:
+            try:
+                cap_obj = registry.get(
+                    str(getattr(mission, "capability", "") or ""))
+            except (TypeError, KeyError, ValueError):
+                cap_obj = None
+            if cap_obj is not None:
+                version = str(getattr(cap_obj, "version", "") or "")
         self._mission_attribution[outcome.mission_id] = {
             "capability": str(getattr(mission, "capability", "") or ""),
             "mode": "engineer",
             "state": outcome.state.value,
+            "parameters": parameters,
+            "capability_version": version,
             "duration_ms": outcome.duration_ms,   # احتياط عند غياب runtime
         }
         return IntelligenceResult(
@@ -1405,6 +1526,8 @@ class IntelligenceInterface:
                     "mode": attribution["mode"],
                     "state": m.state.value,
                     "duration_ms": m.duration_ms,
+                    "parameters": attribution.get("parameters", {}),
+                    "capability_version": attribution.get("capability_version", ""),
                     "source": "rt.missions",
                 })
         else:
@@ -1414,6 +1537,8 @@ class IntelligenceInterface:
                     "mode": attribution["mode"],
                     "state": attribution["state"],
                     "duration_ms": attribution.get("duration_ms", 0),
+                    "parameters": attribution.get("parameters", {}),
+                    "capability_version": attribution.get("capability_version", ""),
                     "source": "attribution-fallback",
                 })
         return [r for r in records if r["capability"] == capability]
@@ -1474,14 +1599,43 @@ class IntelligenceInterface:
                         {"source": p, "observation": "مكتشف" if p in paths
                          else "غير مكتشف — غياب دليل لا إثبات عدم"}
                         for p in [s["path"] for s in ok_sources]]})
+        # التعارض الحقيقي (سجل العمل 0051): المصدر نفسه (الموضوع والسياق
+        # نفسيهما) بنتيجتين مختلفتين = ادعاءان متنافسان مسندان — يُعرضان
+        # مع إسناد كل ادعاء، لا يُدمان ولا يُحسمان هنا
+        by_path: Dict[str, List[Dict[str, Any]]] = {}
+        for s in ok_sources:
+            by_path.setdefault(s["path"], []).append(s)
+        conflicts = []
+        for path, entries in by_path.items():
+            if len(entries) < 2:
+                continue
+            stacks = {tuple(e["detected_stack"]) for e in entries}
+            if len(stacks) > 1:
+                for name in set().union(*[set(e["detected_stack"])
+                                         for e in entries]):
+                    present = [e for e in entries
+                               if name in e["detected_stack"]]
+                    if 0 < len(present) < len(entries):
+                        conflicts.append({
+                            "subject": f"stack: {name}",
+                            "context": f"المصدر نفسه: {path}",
+                            "claims": [
+                                {"source": path,
+                                 "claim": "مكتشف" if name in e["detected_stack"]
+                                 else "غير مكتشف"}
+                                for e in entries],
+                            "note": "ادعاءان متنافسان عن الموضوع والسياق "
+                                    "نفسيهما — يُعرضان بإسنادهما للفصل "
+                                    "لا يُدجان",
+                        })
         return {
             "agreements": agreements,
             "differences": differences,
-            "conflicts": [],
+            "conflicts": conflicts,
             "note": "اختلاف المستودعات اختلاف موثق لا تعارض — التعارض "
                     "يتطلب الموضوع والسياق نفسيهما وادعاءين متنافسين "
-                    "مسندين (مستودع ومراجعة واحدة)؛ ومصادر مختلفة "
-                    "المستودعات لا تناقض بعضها ببعض.",
+                    "مسندين (المصدر نفسه بنتيجتين مختلفتين)؛ ومصادر "
+                    "مختلفة المستودعات لا تناقض بعضها ببعض.",
         }
 
     def _analyze(self, path: str) -> Any:

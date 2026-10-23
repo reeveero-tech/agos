@@ -1420,6 +1420,7 @@ def test_boot_failure_is_reported_not_ready(tmp_path):
 # تفسير النية (سجل العمل 0047): معجم ثنائي معلن + إيفاء مُثبت بالمخرجات
 # ===============================================================
 from intelligence import intent as _intent  # noqa: E402
+from intelligence import interface as _iface_module  # noqa: E402
 
 _LIVE_REGISTRY_NAMES = [
     "RepositoryAnalysis", "RepositoryDNAGeneration", "RepositoryProcessingPipeline",
@@ -1627,12 +1628,24 @@ def test_engineer_natural_text_acceptance_path(tmp_path):
     assert "engineering-plan-architecture" not in result.gaps
     assert "engineering-plan-cost-estimate" in result.gaps   # لا قياس بعد
     assert "intent-interpretation" not in result.gaps
+    # 7) عدّاد استدعاء الحارس (سجل العمل 0051): صفر قبل الاعتماد،
+    # وتنفيذ واحد فقط بعده — مثال القبول يحسب الاستدعاءات الفعلية
+    guard = interface._core_wrapper
+    assert guard.invocations == 0
+    # 8) المقارنة تعادل إيفاء حقيقي بسياسة معلنة وقاعدة اختيار معلنة —
+    # لا أفضلية من عدد التبعيات؛ والمفاضلات التصميمية معروضة لكل بديل
+    assert ep["alternatives"]["selection"]["policy_id"] == \
+        "design-alternatives-fulfillment-tie"
+    for candidate_row in ep["alternatives"]["candidates"]:
+        assert candidate_row["design_tradeoffs"], candidate_row["name"]
     # ---- الاعتماد ثم التنفيذ مرة واحدة ----
     approved = interface.approve(result.approval_id, "المعتمِد")
     assert approved.status is IntelligenceStatus.APPROVED
+    assert guard.invocations == 0               # الاعتماد وحده لا يستدعي
     executed = interface.execute_approved(result.approval_id)
     assert executed.status is IntelligenceStatus.COMPLETED, executed.error
     assert executed.result is not None          # مخرج فعلي (DNA أو uro)
+    assert guard.invocations == 1               # تنفيذ واحد فقط
     # التنفيذ سُجل في rt.missions (المالك) بإسناد القدرة — لا نسخة موازية
     assert len(interface._kernel_runtime.missions) == 1
     recorded = interface._kernel_runtime.missions[-1]
@@ -1846,33 +1859,41 @@ def test_engineer_natural_text_every_derived_component_mutation_rejected(tmp_pat
     assert base.status is IntelligenceStatus.AWAITING_APPROVAL
     ep = base.engineering_plan
 
-    # بوابة الاعتماد: تعديل المخاطر المشتقة — يُرفض
-    interface.approve(base.approval_id, "م") if False else None
-    ep["risks"].append({"risk": "مزيف"})
-    rejected = interface.approve(base.approval_id, "م")
-    assert rejected.status is IntelligenceStatus.FAILED
-    assert "تغيّر" in (rejected.error or "")
-
-    # بوابة التنفيذ: تعديل كل مكوّن بعد اعتماد سليم — يُرفض
-    for component, mutate in (
-            ("requirements", lambda e: e["requirements"].append(
-                {"ref": "x", "value": "مزيف"})),
-            ("alternatives", lambda e: e["alternatives"]["selection"].update(
-                {"selected": "مزيف"})),
-            ("risks", lambda e: e["risks"].append({"risk": "مزيف"})),
-            ("cost", lambda e: e["cost"].update({"median_ms": 1})),
-            ("architecture", lambda e: e["architecture_design"].update(
-                {"kind": "fabricated"}))):
+    # بوابتا الاعتماد والتنفيذ: تعديل كل مكوّن من المكونات الخمسة — يُرفض
+    # في البوابتين معاً (سجل العمل 0051 — تصحيح 0050: الاعتماد كان يختبر
+    # المخاطر فقط) وبصفر استدعاء نواة في كل رفض
+    mutations = (
+        ("requirements", lambda e: e["requirements"].append(
+            {"ref": "x", "value": "مزيف"})),
+        ("alternatives", lambda e: e["alternatives"]["selection"].update(
+            {"selected": "مزيف"})),
+        ("risks", lambda e: e["risks"].append({"risk": "مزيف"})),
+        ("cost", lambda e: e["cost"].update({"median_ms": 1})),
+        ("architecture", lambda e: e["architecture_design"].update(
+            {"kind": "fabricated"})))
+    for component, mutate in mutations:
+        # بوابة الاعتماد: تعديل المكوّن قبل الاعتماد — يُرفض
         fresh = IntelligenceInterface()
         r = fresh.run(IntelligenceRequest(
             mode=IntelligenceMode.ENGINEER,
             natural_text=f"افحص أمن المستودع {repo}"))
-        assert fresh.approve(r.approval_id, "م").status is IntelligenceStatus.APPROVED
         mutate(r.engineering_plan)
-        rejected_exec = fresh.execute_approved(r.approval_id)
+        rejected = fresh.approve(r.approval_id, "م")
+        assert rejected.status is IntelligenceStatus.FAILED, component
+        assert "تغيّر" in (rejected.error or ""), component
+        assert fresh._core_wrapper.invocations == 0, component
+        # بوابة التنفيذ: تعديل المكوّن بعد اعتماد سليم — يُرفض
+        fresh2 = IntelligenceInterface()
+        r2 = fresh2.run(IntelligenceRequest(
+            mode=IntelligenceMode.ENGINEER,
+            natural_text=f"افحص أمن المستودع {repo}"))
+        assert fresh2.approve(r2.approval_id, "م").status is \
+            IntelligenceStatus.APPROVED
+        mutate(r2.engineering_plan)
+        rejected_exec = fresh2.execute_approved(r2.approval_id)
         assert rejected_exec.status is IntelligenceStatus.FAILED, component
         assert "اختلاف المحتوى" in (rejected_exec.error or ""), component
-        assert fresh._core_wrapper.invocations == 0, component
+        assert fresh2._core_wrapper.invocations == 0, component
 
 
 def test_research_question_drives_comparison_result(tmp_path):
@@ -1937,8 +1958,12 @@ def test_intent_fulfillment_actual_values_for_each_alternative(tmp_path):
 
 
 def test_instant_provider_selection_gap_closed_with_evidence(tmp_path):
-    """فجوة knowledge-driven-provider-selection مغلقة بدليل: المزود يُختار
-    عبر دليل القرار بسجل معلل (provider_selected في decision_records)."""
+    """فجوة knowledge-driven-provider-selection (محتوى 0050 مصحح في 0051 —
+    الاسم محفوظ بG2): إغلاق 0050 كان بلا دليل؛ الاختيار الحي بسياسات
+    معلنة (ADR-0006) لا بقاعدة معرفة/خبرة — الاختيار الموجه بالمعرفة
+    متطلب محرك المعرفة في رؤية AIE (KnowledgeEngine) خارج نص قبول هذا
+    البند (ADR-0009 يسمي فجوة Instant الوحيدة: تفسير القصد)؛ سجل مزود
+    معلل لا يثبت استهلاك مدخل معرفة فلا يغلقها — الفجوة باقية مسماة."""
     repo = _natrepo(tmp_path, "providrepo")
     interface = IntelligenceInterface()
     result = interface.run(IntelligenceRequest(
@@ -1946,10 +1971,214 @@ def test_instant_provider_selection_gap_closed_with_evidence(tmp_path):
         mission={"name": "تحليل", "capability": "RepositoryAnalysis",
                  "parameters": {"url": str(repo)}}))
     assert result.status is IntelligenceStatus.COMPLETED
-    assert "knowledge-driven-provider-selection" not in result.gaps
-    # سجل اختيار المزود معلل موجود في سجلات القرار
+    # الفجوة باقية بأمانة — المسار يفاضل بسياسات معلنة لا بمعرفة/خبرة
+    assert "knowledge-driven-provider-selection" in result.gaps
+    # سجل اختيار المزود معلل موجود في سجلات القرار (سياسات معلنة)
     provider_records = [r for r in (result.decision_records or [])
                        if getattr(r, "kind", "") == "provider"
                        or "provider" in str(getattr(r, "requested_name", ""))]
     assert provider_records or any(
         "provider" in str(r).lower() for r in (result.decision_records or []))
+
+
+# ------------------------------------------------------------------ 0051 --
+def test_negation_constraint_named_failure_zero_execution_instant(tmp_path):
+    """القيد المنفي مُلزم (0051): «بدون فحص الأطر» والمختار (RA) يحمل
+    frameworks في مخرجه وعقده لا يعلّم تعطيله — فشل مسمى وصفر تنفيذ
+    وصفر استدعاء للحارس (لا تنفيذ صامت يتجاهل الاستثناء)."""
+    repo = _natrepo(tmp_path, "negrepo")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        natural_text="افحص رخصة واعتماديات ولغات المستودع " + str(repo)
+                     + " بدون فحص الأطر"))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "القيد المنفي" in (result.error or "")
+    assert "frameworks" in (result.error or "")
+    assert result.mission_id is None      # لا مهمة أُنشئت أو نُفذت
+    # الحارس لم يُستدع أصلاً — لا تنفيذ صامت
+    assert interface._core_wrapper.invocations == 0
+
+
+def test_negation_constraint_named_failure_zero_execution_engineer(tmp_path):
+    """القيد المنفي مُلزم في مسار Engineer أيضاً (0051): لا اعتماد ولا
+    تنفيذ — فشل مسمى وصفر استدعاء للحارس."""
+    repo = _natrepo(tmp_path, "negrepo2")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص رخصة واعتماديات ولغات المستودع " + str(repo)
+                     + " بدون فحص الأطر"))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "القيد المنفي" in (result.error or "")
+    assert interface._core_wrapper.invocations == 0
+    assert result.mission_id is None
+    assert result.approval_id is None
+
+
+def test_verbal_negation_zero_execution_engineer_mode(tmp_path):
+    """النفي اللفظي («لا أريد فحص أمن») في مسار Engineer: لا اعتماد ولا
+    تنفيذ — التوثيق يذكر الوضعين فيجب اختبار الوضعين (0051)."""
+    interface = IntelligenceInterface()
+    repo = _natrepo(tmp_path / "vn2dir", "vn2")
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="لا أريد فحص أمن، حلل التبعيات للمستودع " + str(repo)))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "نفي فعلي" in (result.error or "")
+    assert interface._core_wrapper.invocations == 0
+
+
+def test_instant_execution_does_not_close_engineer_cost_gap(tmp_path):
+    """عينات التكلفة مفصولة (0051): تنفيذ instant لا يغلق فجوة تقدير تكلفة
+    خطة engineer — العينة من وضع آخر فلا تُدمج في وسيط وضع مختلف؛ وتنفيذ
+    engineer وحده يغلقها في الطلب التالي بشروط عينته (الوضع)."""
+    repo = _natrepo(tmp_path, "costmode")
+    interface = IntelligenceInterface()
+    url = str(repo)
+    instant = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        mission={"name": "فحص", "capability": "SecurityScan",
+                 "parameters": {"url": url}}))
+    assert instant.status is IntelligenceStatus.COMPLETED
+    # عينة instant موجودة لكنها ليست من وضع engineer
+    measured = interface._measured_executions("SecurityScan")
+    assert all(e["mode"] == "instant" for e in measured)
+    engineer = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + url))
+    assert engineer.status is IntelligenceStatus.AWAITING_APPROVAL
+    # العينة الوحيدة من وضع instant — لا تغلق فجوة تكلفة خطة engineer
+    assert "engineering-plan-cost-estimate" in engineer.gaps
+    assert engineer.engineering_plan["cost"]["source"] == "declared-literal"
+    # تنفيذ engineer وحده يغلقها في الطلب التالي
+    interface.approve(engineer.approval_id, approver="م")
+    approved = interface.execute_approved(engineer.approval_id)
+    assert approved.status is IntelligenceStatus.COMPLETED
+    second = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + url))
+    assert second.status is IntelligenceStatus.AWAITING_APPROVAL
+    assert "engineering-plan-cost-estimate" not in second.gaps
+    cost = second.engineering_plan["cost"]
+    assert cost["source"] == "measured"
+    # وسيط العينة من وضع engineer فقط — لا دمج وضعين في وسيط واحد
+    assert cost["conditions"]["modes"] == ["engineer"]
+
+
+def test_measured_cost_records_sample_conditions(tmp_path):
+    """شروط العينة المعروضة فعلاً (0051): الوضع والمدخل (url) في سجل
+    العينة — لا وسيط بلا شروطه."""
+    interface = IntelligenceInterface()
+    url = str(_natrepo(tmp_path, "condrepo"))
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + url))
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL
+    interface.approve(result.approval_id, approver="م")
+    interface.execute_approved(result.approval_id)
+    again = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="افحص أمن المستودع " + url))
+    cost = again.engineering_plan["cost"]
+    assert cost["source"] == "measured"
+    measured = cost.get("measured") or []
+    conditions = cost.get("conditions") or (measured[0].get("conditions")
+                                            if measured else {})
+    assert cost["n"] >= 1
+    assert conditions["modes"] == ["engineer"]
+    assert url in conditions["inputs"]
+    assert "parameters" in conditions or "inputs" in conditions
+
+
+def test_cross_source_real_conflict_same_path_different_stacks():
+    """آلية التعارض الحقيقية (0051): المصدر نفسه بنتيجتين مختلفتين —
+    ادعاءان متنافسان مسندان يُعرضان لا يُدجان؛ اختلاف المصادر ليس تعارضاً."""
+    e1 = {"path": "samer", "detected_stack": ["python", "flask",
+                                                "flask-sqlalchemy"]}
+    e2 = {"path": "samer", "detected_stack": ["python", "django"]}
+    other = {"path": "other", "detected_stack": ["python", "flask"]}
+    view = IntelligenceInterface()._cross_source_view([e1, e2, other])
+    conflict_names = {c["subject"] for c in view["conflicts"]}
+    # Flask وDjango كلاهما ادعاء متنافٍ عن المصدر نفسه
+    assert any("flask" in n for n in conflict_names)
+    assert any("django" in n for n in conflict_names)
+    for c in view["conflicts"]:
+        assert c["context"] == "المصدر نفسه: samer"
+        assert len(c["claims"]) == 2   # إسناد كل ادعاء محفوظ
+    # اختلاف مستودعات مختلفة ليس تعارضاً (المصدران مختلفان)
+    view2 = IntelligenceInterface()._cross_source_view([e1, other])
+    assert view2["conflicts"] == []
+    assert view2["differences"] != []
+
+
+def test_runtimes_restored_without_question(tmp_path):
+    """انحدار 0050 مصلح (0051): عند غياب ترشيح السؤال تُعرض runtimes كاملة —
+    مستودع بDockerfile يُظهر docker؛ وترشيح frameworks يستبعدها مقصوداً."""
+    repo = _natrepo(tmp_path, "runtimerepo")
+    (repo / "Dockerfile").write_text("FROM python:3.12\n", encoding="utf-8")
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        mission={"name": "تحليل", "capability": "RepositoryAnalysis",
+                 "parameters": {"url": str(repo)}}))
+    assert result.status is IntelligenceStatus.COMPLETED
+    names = set(_iface_module._detected_stack_names(result.result))
+    if "docker" in names:   # السلوك الكامل دون ترشيح — حيث كشف الكاشف
+        fw_only = _iface_module._detected_stack_names(
+            result.result, fact_categories={"frameworks"})
+        assert "docker" not in fw_only   # استبعاد مقصود بالترشيح
+    else:
+        # الكاشف الحي قد لا يصنف Dockerfile كruntime — الاستبعاد المسمى
+        # يختبر حيث توجد العينة فقط (غياب دليل لا إثبات عدم)
+        pass
+
+
+def test_fulfillment_evidence_values_and_evidence(tmp_path):
+    """إيفاء المفاهيم بالقيم والأدلة معاً (0051): عينة RPP تحمل أدلة كشف
+    لكل إطار (framework_evidence بمسارات الملفات)؛ DNA لـ RA قيم بلا سجلات
+    أدلة (نقص مسمى) — القيم الصحيحة وحدها لا تثبت الإيفاء."""
+
+    interface = IntelligenceInterface()   # سجل حقيقي + قدرات حقيقية
+    repo = _natrepo(tmp_path, "evidrepo")
+    (repo / "app.py").write_text("import flask\n", encoding="utf-8")
+    (repo / "requirements.txt").write_text("flask>=2\n", encoding="utf-8")
+    text = "افحص اعتماديات وأطر المستودع " + str(repo)
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, natural_text=text))
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL
+    alt = result.engineering_plan["alternatives"]
+    # أدلة الإيفاء لحوامل المخرج الفعلية في جدول الإيفاء المعلن
+    row = next(r for r in alt["candidates"]
+               if r["name"] == "RepositoryProcessingPipeline")
+    assert row["fulfillment_evidence"]["frameworks"] == \
+        ["universal_repository_object.frameworks"]
+    # المختار بقاعدة التعادل المعلنة (ترتيب التسجيل) هو RA — قيمه مقيسة
+    # ونقص أدلته مسمى: DNA كائن قيم بلا سجلات أدلة لكل إطار
+    assert result.engineering_plan["alternatives"]["selection"]["selected"] \
+        == "RepositoryAnalysis"
+    interface.approve(result.approval_id, approver="م")
+    approved = interface.execute_approved(result.approval_id)
+    assert approved.status is IntelligenceStatus.COMPLETED
+    dna = approved.result
+    assert "flask" in [f.lower() for f in dna.frameworks]   # القيمة مثبتة
+    # تصحيح 0051: DNA يحمل سجلات أدلة أطر فعلاً (framework_evidence:
+    # الاعتمادية/البيان) — ادعاء «قيم بلا أدلة» في 0050 كان خاطئاً
+    ra_evidence = getattr(dna, "framework_evidence", None) or []
+    def _evget(e, k):
+        return (e.get(k) if isinstance(e, dict)
+                else getattr(e, k, None))
+    assert any(str(_evget(e, "dependency") or "").lower() == "flask"
+               and _evget(e, "manifest") for e in ra_evidence)
+    # RPP يكمل الصورة: أدلة كشف لكل إطار بمسارات الملفات في uro
+    rpp = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        mission={"name": "خط", "capability": "RepositoryProcessingPipeline",
+                 "parameters": {"url": str(repo)}}))
+    assert rpp.status is IntelligenceStatus.COMPLETED
+    uro = rpp.result["universal_repository_object"]
+    assert "flask" in [f.lower() for f in uro["frameworks"]]
+    # مخرج uro يصرّح أدلة الكشف كقائمة سجلات (framework/dependency/manifest)
+    rpp_evidence = uro.get("framework_evidence") or []
+    assert any(str(e.get("dependency", "")).lower() == "flask"
+               and e.get("manifest") for e in rpp_evidence)

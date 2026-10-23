@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 536,
-  "lines": 100918,
-  "functions": 6139,
+  "lines": 101083,
+  "functions": 6140,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 6253,
-   "functions": 199,
+   "lines": 6418,
+   "functions": 200,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8555,7 +8555,7 @@
    "path": "agos/agos-kernel/intelligence/intent.py",
    "module": "intelligence.intent",
    "root": "kernel",
-   "lines": 382,
+   "lines": 393,
    "syntax_ok": true,
    "classes": 1,
    "functions": 11,
@@ -8578,10 +8578,10 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 1541,
+   "lines": 1695,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 47,
+   "functions": 48,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
