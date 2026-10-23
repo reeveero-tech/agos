@@ -28,9 +28,25 @@ class NamingValidator:
         return True
 
 class VersionValidator:
-    """Validates versioning compliance."""
+    """Validates versioning compliance.
+
+    واجهة قديمة تفوّض إلى المقيم المعتمد (R-W1-007، ADR-0010): حكم الدستور
+    المادة 5 — كيان من نوع منصوص (VERSIONED_ENTITIES) يحمل إصداراً. التوقيع
+    محفوظ (bool) مع إتاحة سبب عدم التحقق في ``last_verdict`` — لا True أعمى:
+    الامتثال مثبت فقط بفحص ناجح، ونقص المدخل (بلا نوع منصوص) يُرجع False
+    مع سببه، فلا يُدّعى امتثال بلا فحص.
+    """
+    def __init__(self):
+        self.last_verdict = None
+
     def validate(self, entity: Dict[str, Any]) -> bool:
-        return "version" in entity
+        from agos_kernel.governance.policy_evaluator import (
+            CONSTITUTION_ARTICLE_5_RULE_ID, VERDICT_COMPLIANT,
+            get_shared_evaluator)
+        verdict = get_shared_evaluator().evaluate(
+            CONSTITUTION_ARTICLE_5_RULE_ID, entity)
+        self.last_verdict = verdict
+        return verdict.verdict == VERDICT_COMPLIANT
 
 class ImportValidator:
     """Validates no forbidden imports."""

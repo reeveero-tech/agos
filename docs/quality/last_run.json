@@ -1,7 +1,7 @@
 {
- "passed": 1077,
+ "passed": 1083,
  "failed": 0,
  "errors": 0,
  "skipped": 0,
- "pytest_summary": "1077 passed, 42 warnings in 123.91s (0:02:03)"
+ "pytest_summary": "1083 passed, 54 warnings in 125.82s (0:02:05)"
 }

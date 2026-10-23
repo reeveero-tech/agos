@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 536,
-  "lines": 101422,
-  "functions": 6144,
+  "files": 537,
+  "lines": 101639,
+  "functions": 6153,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 252,
-  "import_ok": 534,
+  "not_imported_by_others": 251,
+  "import_ok": 535,
   "import_fail": 0
  },
  "packages": {
@@ -551,14 +551,14 @@
    "import_fail": 0
   },
   "agos-kernel/governance": {
-   "files": 2,
-   "lines": 535,
-   "functions": 32,
+   "files": 3,
+   "lines": 736,
+   "functions": 40,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 0,
-   "import_ok": 2,
+   "import_ok": 3,
    "import_fail": 0
   },
   "agos-kernel/hardening": {
@@ -1283,7 +1283,7 @@
    "stub_functions": 1,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 1,
+   "not_imported_by_others": 0,
    "import_ok": 2,
    "import_fail": 0
   },
@@ -1366,8 +1366,8 @@
   },
   "governance": {
    "files": 4,
-   "lines": 437,
-   "functions": 31,
+   "lines": 453,
+   "functions": 32,
    "stub_functions": 14,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8128,13 +8128,46 @@
    "imported_by": [
     "K:test_civilization"
    ],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/governance/policy_evaluator.py",
+   "module": "governance.policy_evaluator",
+   "root": "kernel",
+   "lines": 161,
+   "syntax_ok": true,
+   "classes": 2,
+   "functions": 8,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "dataclasses",
+    "typing",
+    "agos.constitution.constitution"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:governance.policy_evaluator",
+   "resolved_imports": [
+    "S:constitution.constitution"
+   ],
+   "imported_by": [
+    "K:governance.runtime",
+    "S:governance.enforcement"
+   ],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/governance/runtime.py",
    "module": "governance.runtime",
    "root": "kernel",
-   "lines": 529,
+   "lines": 569,
    "syntax_ok": true,
    "classes": 18,
    "functions": 32,
@@ -8146,16 +8179,22 @@
     "dataclasses",
     "datetime",
     "enum",
-    "typing"
+    "typing",
+    "governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:governance.runtime",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:governance.policy_evaluator"
+   ],
    "imported_by": [
     "K:civilization.runtime",
     "K:governance",
     "K:platform_runtime.runtime"
+   ],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
    ],
    "import_status": "OK"
   },
@@ -13891,7 +13930,12 @@
    "resolved_imports": [
     "S:constitution"
    ],
-   "imported_by": [],
+   "imported_by": [
+    "K:governance.policy_evaluator"
+   ],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15219,23 +15263,28 @@
    "path": "agos/governance/enforcement.py",
    "module": "governance.enforcement",
    "root": "src",
-   "lines": 119,
+   "lines": 135,
    "syntax_ok": true,
    "classes": 10,
-   "functions": 12,
+   "functions": 13,
    "stub_functions": 8,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
-    "typing"
+    "typing",
+    "agos_kernel.governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:governance.enforcement",
    "resolved_imports": [
+    "K:governance.policy_evaluator",
     "S:governance"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16813,6 +16862,24 @@
     "K:vertical_slices.repo_discovery.slice",
     "S:rie.application",
     "S:rie.infrastructure"
+   ]
+  },
+  {
+   "path": "tests/test_governance_unification.py",
+   "imports": [
+    "agos.constitution.constitution",
+    "agos.governance.enforcement",
+    "agos_kernel.governance",
+    "agos_kernel.governance.policy_evaluator",
+    "agos_kernel.governance.runtime"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:governance",
+    "K:governance.policy_evaluator",
+    "K:governance.runtime",
+    "S:constitution.constitution",
+    "S:governance.enforcement"
    ]
   },
   {

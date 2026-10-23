@@ -74,6 +74,10 @@ class GovernanceRuntime:
     
     def __init__(self):
         """Initialize governance runtime."""
+        from .policy_evaluator import get_shared_evaluator
+        # المقيم المعتمد (R-W1-007، ADR-0010): مسار واحد لتقييم السياسات —
+        # القواعد ذات المواصفات تُقيَّم عبره بأحكام معللة
+        self.evaluator = get_shared_evaluator()
         self.rules: Dict[str, GovernanceRule] = {}
         self.violations: List[GovernanceViolation] = []
         self.audits: List[GovernanceAudit] = []
@@ -108,9 +112,19 @@ class GovernanceRuntime:
         entity_id: str,
         entity_type: str,
         domain: Optional[GovernanceDomain] = None,
+        entity: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Check compliance for an entity."""
+        """Check compliance for an entity.
+
+        القواعد ذات المواصفات التنفيذية تُقيَّم عبر المقيم المعتمد
+        (R-W1-007، ADR-0010) بأحكام معللة: مخالفة معللة أو امتثال مثبت —
+        وغياب مدخل الكيان (entity) ليس امتثالاً مثبتاً (unverified مع
+        سببه). القواعد بلا مواصفات تبقى على المسار القديم الحرفي
+        (احتساب ``severity="error"`` انتهاكاً أياً كان الكيان) — حكم قديم
+        غير مثبت موثق في ADR-0010، لا يُدّعى تقييماً.
+        """
         violations = []
+        unverified = []
         
         rules_to_check = self.rules.values()
         if domain:
@@ -120,7 +134,32 @@ class GovernanceRuntime:
             if rule.status != GovernanceStatus.ACTIVE:
                 continue
             
-            # Simple compliance check
+            if self.evaluator.get_spec(rule.id) is not None:
+                # مسار المقيم المعتمد — حكم معلل (ADR-0010)
+                if entity is None:
+                    unverified.append({
+                        "rule_id": rule.id,
+                        "rule_name": rule.name,
+                        "reason": "مدخل الكيان (entity) غائب — لا فحص "
+                                  "ولا امتثال مثبت",
+                    })
+                    continue
+                verdict = self.evaluator.evaluate(rule.id, entity)
+                if verdict.verdict == "violation":
+                    violations.append({
+                        "rule_id": rule.id,
+                        "rule_name": rule.name,
+                        "description": f"Compliance check: {verdict.reason}",
+                    })
+                elif verdict.verdict == "unverified":
+                    unverified.append({
+                        "rule_id": rule.id,
+                        "rule_name": rule.name,
+                        "reason": verdict.reason,
+                    })
+                continue
+            
+            # مسار قديم غير مثبت (ADR-0010 §القرار 2) — يبقى حرفياً
             if rule.severity == "error":
                 violations.append({
                     "rule_id": rule.id,
@@ -131,8 +170,9 @@ class GovernanceRuntime:
         return {
             "entity_id": entity_id,
             "entity_type": entity_type,
-            "compliant": len(violations) == 0,
+            "compliant": len(violations) == 0 and len(unverified) == 0,
             "violations": violations,
+            "unverified": unverified,
         }
     
     def report_violation(

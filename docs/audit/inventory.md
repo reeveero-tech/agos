@@ -4,13 +4,13 @@
 
 ## Totals
 
-- **files**: 536
-- **functions**: 6144
+- **files**: 537
+- **functions**: 6153
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 534
-- **lines**: 101422
-- **not_imported_by_others**: 252
+- **import_ok**: 535
+- **lines**: 101639
+- **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
 
@@ -67,7 +67,7 @@
 | `agos-kernel/federation` | 5 | 2034 | 190 | 98 | 0 | 5 | 0 | 4 |
 | `agos-kernel/finalization` | 1 | 1142 | 37 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/framework_packs` | 1 | 135 | 6 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/governance` | 2 | 535 | 32 | 0 | 0 | 2 | 0 | 0 |
+| `agos-kernel/governance` | 3 | 736 | 40 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 18 | 6757 | 204 | 0 | 0 | 18 | 0 | 5 |
@@ -133,7 +133,7 @@
 | `cognition` | 6 | 373 | 45 | 8 | 0 | 6 | 0 | 5 |
 | `cognitive` | 11 | 617 | 58 | 6 | 0 | 11 | 0 | 10 |
 | `consolidation` | 1 | 66 | 5 | 1 | 0 | 1 | 0 | 1 |
-| `constitution` | 2 | 264 | 21 | 1 | 0 | 2 | 0 | 1 |
+| `constitution` | 2 | 264 | 21 | 1 | 0 | 2 | 0 | 0 |
 | `domain` | 6 | 419 | 49 | 7 | 0 | 6 | 0 | 5 |
 | `ecosystem` | 7 | 249 | 28 | 0 | 0 | 7 | 0 | 6 |
 | `enterprise` | 6 | 357 | 46 | 6 | 0 | 6 | 0 | 5 |
@@ -141,7 +141,7 @@
 | `execution` | 11 | 556 | 55 | 0 | 0 | 11 | 0 | 10 |
 | `fabric` | 6 | 769 | 67 | 8 | 0 | 6 | 0 | 4 |
 | `foundation` | 11 | 849 | 96 | 4 | 0 | 11 | 0 | 10 |
-| `governance` | 4 | 437 | 31 | 14 | 0 | 4 | 0 | 3 |
+| `governance` | 4 | 453 | 32 | 14 | 0 | 4 | 0 | 3 |
 | `intelligence` | 6 | 435 | 57 | 8 | 0 | 6 | 0 | 5 |
 | `meta` | 7 | 626 | 54 | 0 | 0 | 7 | 0 | 6 |
 | `observatory` | 2 | 125 | 14 | 10 | 0 | 2 | 0 | 1 |
