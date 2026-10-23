@@ -473,8 +473,9 @@ def test_intelligence_result_positional_fields_unchanged():
 
 def test_engineer_plan_components_mutation_invalidates_approval():
     """سجل العمل 0044: المكونات المعروضة كائن مشترك كالخطة — تعديل أي
-    مكوّن منها بعد العرض يُكشف ببصمة عميقة عند الاعتماد فيُرفض بلا
-    استدعاء نواة، والمسار غير المعدّل يعتمد وينفذ مرة واحدة كما كان."""
+    مكوّن منها بعد العرض يُكشف ببصمة عميقة عند بوابتي الاعتماد **والتنفيذ**
+    فيُرفض بلا استدعاء نواة، والمسار غير المعدّل يعتمد وينفذ مرة واحدة
+    كما كان."""
     # المسار غير المعدّل أولاً: يعتمد وينفذ مرة واحدة (بلا انكسار)
     core = _FakeCore()
     interface, _ = _interface_with_core(core)
@@ -486,8 +487,9 @@ def test_engineer_plan_components_mutation_invalidates_approval():
     assert executed.status is IntelligenceStatus.COMPLETED
     assert core.calls != []
 
-    # تعديل المتطلبات بعد العرض — يُرفض عند الاعتماد
-    interface2, _ = _interface_with_core(_FakeCore())
+    # بوابة الاعتماد: تعديل المتطلبات بعد العرض — يُرفض بلا استدعاء نواة
+    core1 = _FakeCore()
+    interface2, _ = _interface_with_core(core1)
     r1 = interface2.run(IntelligenceRequest(
         mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
     r1.engineering_plan["requirements"].append(
@@ -495,24 +497,71 @@ def test_engineer_plan_components_mutation_invalidates_approval():
     rejected = interface2.approve(r1.approval_id, approver="م")
     assert rejected.status is IntelligenceStatus.FAILED
     assert "تغيّر" in (rejected.error or "")
+    assert core1.calls == []            # لا نواة استُدعيت
 
-    # تعديل البدائل بعد العرض — يُرفض كذلك
-    interface3, _ = _interface_with_core(_FakeCore())
+    # بوابة التنفيذ: اعتماد سليم ثم تعديل المتطلبات قبل التنفيذ — يُرفض
+    core2 = _FakeCore()
+    interface3, _ = _interface_with_core(core2)
     r2 = interface3.run(IntelligenceRequest(
         mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
-    r2.engineering_plan["alternatives"]["kind"] = "fabricated"
-    rejected2 = interface3.approve(r2.approval_id, approver="م")
-    assert rejected2.status is IntelligenceStatus.FAILED
-    assert "تغيّر" in (rejected2.error or "")
+    ok = interface3.approve(r2.approval_id, approver="م")
+    assert ok.status is IntelligenceStatus.APPROVED
+    r2.engineering_plan["requirements"].append(
+        {"ref": "mission.name", "value": "مزيف", "source": "caller-provided"})
+    rejected_exec = interface3.execute_approved(r2.approval_id)
+    assert rejected_exec.status is IntelligenceStatus.FAILED
+    assert "اختلاف المحتوى" in (rejected_exec.error or "")
+    assert core2.calls == []            # لا نواة استُدعيت
 
-    # تعديل التكلفة بعد العرض — يُرفض كذلك
-    interface4, _ = _interface_with_core(_FakeCore())
+    # بوابة التنفيذ: تعديل البدائل بعد الاعتماد — يُرفض كذلك
+    core3 = _FakeCore()
+    interface4, _ = _interface_with_core(core3)
     r3 = interface4.run(IntelligenceRequest(
         mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
-    r3.engineering_plan["cost"]["estimated_duration_ms"] = 99999
-    rejected3 = interface4.approve(r3.approval_id, approver="م")
+    interface4.approve(r3.approval_id, approver="م")
+    r3.engineering_plan["alternatives"]["kind"] = "fabricated"
+    rejected2 = interface4.execute_approved(r3.approval_id)
+    assert rejected2.status is IntelligenceStatus.FAILED
+    assert "اختلاف المحتوى" in (rejected2.error or "")
+    assert core3.calls == []
+
+    # بوابة التنفيذ: تعديل التكلفة بعد الاعتماد — يُرفض كذلك
+    core4 = _FakeCore()
+    interface5, _ = _interface_with_core(core4)
+    r4 = interface5.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    interface5.approve(r4.approval_id, approver="م")
+    r4.engineering_plan["cost"]["estimated_duration_ms"] = 99999
+    rejected3 = interface5.execute_approved(r4.approval_id)
     assert rejected3.status is IntelligenceStatus.FAILED
-    assert "تغيّر" in (rejected3.error or "")
+    assert "اختلاف المحتوى" in (rejected3.error or "")
+    assert core4.calls == []
+
+
+def test_engineering_plan_fingerprint_preserves_types():
+    """سجل العمل 0045: البصمة محافظة على الأنواع — القائمة والصف تمثيلان
+    مختلفان (JSON كان يطويهما)، وتغيير نوع قيمة متطلب بعد العرض يُرفض
+    بلا تغيير معاملات المهمة الأصلية."""
+    from intelligence.interface import _engineering_plan_fingerprint
+    # القائمة والصف محتوى «متشابه» لكنهما نوعان مختلفان — لا يُطوى أحدهما
+    assert _engineering_plan_fingerprint(
+        {"value": [1, 2]}) != _engineering_plan_fingerprint(
+        {"value": (1, 2)})
+    # النص والرقم لا يُطويان معاً
+    assert _engineering_plan_fingerprint(
+        {"v": "1"}) != _engineering_plan_fingerprint({"v": 1})
+    # تعديل نوع قيمة متطلب بعد العرض (بلا تغيير معاملات المهمة) يُكشف
+    core = _FakeCore()
+    interface, _ = _interface_with_core(core)
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    req = result.engineering_plan["requirements"][0]
+    assert req["ref"] == "mission.name"
+    req["value"] = [result.engineering_plan["requirements"][0]["value"]]
+    rejected = interface.approve(result.approval_id, approver="م")
+    assert rejected.status is IntelligenceStatus.FAILED
+    assert "تغيّر" in (rejected.error or "")
+    assert core.calls == []
 
 
 def test_engineer_validation_blocks_plan_and_approval():

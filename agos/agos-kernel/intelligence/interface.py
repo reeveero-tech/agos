@@ -291,9 +291,9 @@ def _engineering_plan(mission: Any, plan: Any,
 
     لا اختراع: كل مكوّن يُشتق من واقع قائم (مواصفة المرسل، الخطة، دليل
     القرار) ويحمل مصدره بصدقه، وما لا اشتقاق له يبقى فجوة مسماة في
-    ``gaps`` لا قيمة مختلقة هنا. الإسقاط حتمي من محتوى مقيد بالبصمات
-    أصلاً (الخطة والمعاملات والاختيار — لقطة ADR-0009) فلا حالة مستقلة
-    تُحرَس بمعزل عنها.
+    ``gaps`` لا قيمة مختلقة هنا. المكونات المعروضة مربوطة ببصمة عميقة
+    محافظة على الأنواع (``_engineering_plan_fingerprint``) تُفحص عند
+    بوابتي الاعتماد والتنفيذ (سجل العمل 0044).
     """
     # المتطلبات: مواصفة المرسل منقولة حرفياً بوسم مصدرها — ليست تحليل متطلبات
     requirements: List[Dict[str, Any]] = []
@@ -345,18 +345,30 @@ def _engineering_plan(mission: Any, plan: Any,
 
 
 def _engineering_plan_fingerprint(ep: Optional[Dict[str, Any]]) -> tuple:
-    """بصمة عميقة لمحتوى المكونات المعروضة — تعديلها بعد العرض يُكشف عند
-    بوابتي الاعتماد والتنفيذ (كالخطة نفسها، لا كائناً حراً بلا حراسة).
+    """بصمة عميقة محافظة على الأنواع لمحتوى المكونات المعروضة — تعديلها
+    بعد العرض يُكشف عند بوابتي الاعتماد والتنفيذ (كالخطة نفسها).
 
     تُحسب من **الكائن المربوط نفسه** عند كل مقارنة — لا من سجل قرار جديد
-    (فلا تُفحص معرّفات وأوقات متجددة عند كل حل)، وعميقة على القيم لا
-    على هوية القاموس (تعديل أي قيمة أو إضافة/حذف مفتاح يغيّر البصمة)."""
-    import json
+    (فلا تُفحص معرّفات وأوقات متجددة عند كل حل). محافظة على الأنواع:
+    القائمة والصف تمثيلان مختلفان (JSON كان يطويهما معاً)، ومفاتيح
+    القواميس مرتبة استقلالاً عن ترتيب الإدراج، وأي قيمة غير قياسية
+    تمثّل بنوعها وrepr لا بطيّها نصاً."""
     if ep is None:
         return ()
-    payload = json.dumps(ep, sort_keys=True, ensure_ascii=False,
-                         default=str)
-    return (payload,)
+
+    def _canonical(value: Any) -> tuple:
+        if isinstance(value, dict):
+            return ("dict", tuple(sorted(
+                (str(k), _canonical(v)) for k, v in value.items())))
+        if isinstance(value, (list, tuple)):
+            # القائمة والصف نوعان مختلفان — لا يُطوى أحدهما في الآخر
+            return (type(value).__name__,
+                    tuple(_canonical(v) for v in value))
+        if isinstance(value, (str, int, float, bool, type(None))):
+            return (type(value).__name__, value)
+        return (type(value).__name__, repr(value))
+
+    return (_canonical(ep),)
 
 
 @dataclass(frozen=True)
