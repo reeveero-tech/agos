@@ -414,11 +414,18 @@ _VERIFIED_PRODUCER_PATHS: Dict[str, Dict[str, Any]] = {
 
 
 def _git_head(path: str) -> Optional[str]:
-    """المراجعة الفعلية للمصدر إن كان مستودع git — **دليل المصدر نفسه**
-    لا ادعاء المرسل (سجل العمل 0056): تحقق سياق الدعوى يُربط به، فإن
-    غاب (ليس مستودع git) فلا تحقق ممكن ويسمّى ذلك."""
+    """مراجعة المحتوى المحلَّل فعلاً إن كان مستودع git — **دليل المصدر
+    نفسه** لا ادعاء المرسل (سجل العمل 0056+0057): HEAD يمثل الملفات
+    المحلَّلة فقط إذا كانت الشجرة نظيفة (لا تغييرات غير ملتزمة تغيّر
+    الأدلة التي يقرأها المحلل مع بقاء HEAD)؛ فتغيير غير ملتزم يبطل
+    الربط فلا تحقق ممكن ويُرجع None ويسمّى ذلك. لا بصمة وصفية بديلة."""
     import subprocess
     try:
+        status = subprocess.run(
+            ["git", "-C", str(path), "status", "--porcelain"],
+            capture_output=True, text=True, timeout=10)
+        if status.returncode != 0 or status.stdout.strip():
+            return None          # شجرة وسخة أو ليس مستودع — لا ربط مثبت
         out = subprocess.run(
             ["git", "-C", str(path), "rev-parse", "HEAD"],
             capture_output=True, text=True, timeout=10)
@@ -1604,6 +1611,9 @@ class IntelligenceInterface:
                 # سياق الدعوى كما قدّمه المرسل (caller-provided) — لا يُصنع
                 # من التحليل ولا يُفترض؛ وتساويه شرط قابلية المقارنة
                 "context": str(claim.get("context", "") or ""),
+                # موضوع الدعوى (مسارها كما أعلنه المرسل) — التجميع به؛
+                # والتحقق من سياق المصدر المرفقة به
+                "subject": str(claim.get("path", "") or ""),
                 "origin": "caller-provided"}
         for source_id, path in enumerate(request.evidence_paths):
             entry: Dict[str, Any] = {"path": path, "source_id": source_id}
@@ -1785,12 +1795,15 @@ class IntelligenceInterface:
         claims_by_key: Dict[tuple, List[Dict[str, Any]]] = {}
         for src in ok_sources:
             for prop, claim in (src.get("explicit_claims") or {}).items():
-                claims_by_key.setdefault((src["path"], prop), []).append({
-                    "src": src,
-                    "value": claim.get("value"),
-                    "evidence": str(claim.get("evidence", "")),
-                    "context": str(claim.get("context", "") or ""),
-                    "origin": str(claim.get("origin", "caller-provided"))})
+                claims_by_key.setdefault(
+                    (str(claim.get("subject", "") or src["path"]), prop),
+                    []).append({
+                        "src": src,
+                        "value": claim.get("value"),
+                        "evidence": str(claim.get("evidence", "")),
+                        "context": str(claim.get("context", "") or ""),
+                        "origin": str(claim.get("origin",
+                                                "caller-provided"))})
         for (path, prop), entries in sorted(claims_by_key.items()):
             if len(entries) < 2:
                 continue
@@ -1816,52 +1829,74 @@ class IntelligenceInterface:
                             "لها تعارض مثبت",
                 })
             for ctx, group in sorted(by_ctx.items()):
-                if len(group) < 2:
-                    continue
-                values = {e["value"] for e in group}
-                if len(values) < 2:
-                    continue      # لا تنافي داخل هذا السياق
-                # التحقق: سياق كل دعوى == مراجعة مصدرها الفعلية المسجلة
-                verified = all(
-                    (e["src"].get("actual_context") not in (None, ""))
-                    and e["context"] == e["src"].get("actual_context")
-                    for e in group)
-                claims_view = [
-                    {"source_id": e["src"].get("source_id"),
-                     "path": e["src"]["path"],
-                     "claim": "أثبت" if e["value"] else "أنكر صراحةً",
-                     "evidence": e["evidence"],
-                     "origin": e["origin"]}
-                    for e in group]
-                if verified:
-                    conflicts.append({
-                        "subject": f"explicit-claim: {prop}",
-                        "context": f"المسار نفسه ({path}) — الخاصية "
-                                   f"نفسها — السياق متحقق بدليل المصدر "
-                                   f"الفعلي (المراجعة): {ctx}",
-                        "claims": claims_view,
-                        "note": "دعويان صريحتان متنافيتان عن الخاصية "
-                                "نفسها لمسار واحد بسياق متحقق متوافق "
-                                "(مراجعة المصدر الفعلية) — يُعرضان بقيمة "
-                                "كل دعوى ودليلها وهوية مصدرها للفصل، لا "
-                                "يُدجان ولا يُحسمان هنا؛ والدعويان "
-                                "caller-provided لا تحقق من قيمهما "
-                                "المحلل؛ والمصدر الصامت عن الخاصية لا "
-                                "يُسقط تعارضهما",
-                    })
-                else:
-                    # سياق معلن غير متحقق بدليل المصدر — تناقض دعاوى
-                    # المرسل يُعرض منفصلاً ولا يُسمى تعارض مصادر
-                    caller_contradictions.append({
-                        "subject": f"explicit-claim: {prop}",
-                        "context": f"المسار نفسه ({path}) — سياق معلن من "
-                                   f"المرسل: {ctx} — غير متحقق بدليل "
-                                   "المصدر الفعلي",
-                        "claims": claims_view,
-                        "note": "تناقض دعاوى المرسل بسياق معلن غير متحقق "
-                                "بدليل المصدر — ليس إثبات تعارض مصادر؛ "
-                                "يُعرض للفصل ولا يُدجن ولا يُحسم",
-                    })
+                # تقسيم بحسب التحقق أولاً (سجل العمل 0057): غير المتحقق
+                # لا يُبطل مقارنة غيره — المتحققون المتوافقون يُقارنون
+                # وحدهم، وغير المتحققين يُحفظون منفصلين
+                def _is_verified(e):
+                    return (e["src"].get("actual_context") not in (None, "")
+                            and e["context"] == e["src"].get("actual_context"))
+                verified_group = [e for e in group if _is_verified(e)]
+                unverified_group = [e for e in group if not _is_verified(e)]
+                if len(verified_group) >= 2:
+                    values = {e["value"] for e in verified_group}
+                    if len(values) >= 2:
+                        claims_view = [
+                            {"source_id": e["src"].get("source_id"),
+                             "path": e["src"]["path"],
+                             "claim": "أثبت" if e["value"] else "أنكر صراحةً",
+                             "evidence": e["evidence"],
+                             "origin": e["origin"]}
+                            for e in verified_group]
+                        conflicts.append({
+                            "subject": f"explicit-claim: {prop}",
+                            "context": f"المسار نفسه ({path}) — الخاصية "
+                                       f"نفسها — السياق متحقق بدليل "
+                                       f"المصدر الفعلي (المراجعة): {ctx}",
+                            "claims": claims_view,
+                            "note": "دعويان صريحتان متنافيتان عن الخاصية "
+                                    "نفسها لمسار واحد بسياق متحقق متوافق "
+                                    "(مراجعة المصدر الفعلية للمحتوى "
+                                    "المحلَّل) — يُعرضان بقيمة كل دعوى "
+                                    "ودليلها وهوية مصدرها للفصل، لا يُدجان "
+                                    "ولا يُحسمان هنا؛ والدعويان "
+                                    "caller-provided لا تحقق من قيمهما "
+                                    "المحلل؛ والمصدر الصامت عن الخاصية لا "
+                                    "يُسقط تعارضهما",
+                        })
+                if unverified_group:
+                    uv_values = {e["value"] for e in unverified_group}
+                    uv_claims = [
+                        {"source_id": e["src"].get("source_id"),
+                         "claim": "أثبت" if e["value"] else "أنكر صراحةً",
+                         "evidence": e["evidence"],
+                         "context": e["context"]}
+                        for e in unverified_group]
+                    if len(unverified_group) >= 2 and len(uv_values) >= 2:
+                        # تناقض دعاوى مرسل غير متحقق — منفصل لا يُسمى
+                        # تعارض مصادر ولا يُبطل مقارنة المتحققين
+                        caller_contradictions.append({
+                            "subject": f"explicit-claim: {prop}",
+                            "context": f"المسار نفسه ({path}) — سياق معلن "
+                                       f"من المرسل: {ctx} — غير متحقق "
+                                       "بدليل المصدر الفعلي",
+                            "claims": uv_claims,
+                            "note": "تناقض دعاوى المرسل بسياق معلن غير "
+                                    "متحقق بدليل المصدر — ليس إثبات تعارض "
+                                    "مصادر؛ يُعرض للفصل ولا يُدجن ولا "
+                                    "يُحسم؛ ولا يُبطل مقارنة المتحققين",
+                        })
+                    elif len(by_ctx) == 1:
+                        # دعوى غير متحققة وحدها — محفوظة منفصلة بلا مقارنة
+                        # (في حالة السياقات المتعددة حفظها إدخال
+                        # السياقات المتعددة أعلاه — لا تكرار)
+                        incomparable.append({
+                            "subject": f"explicit-claim: {prop}",
+                            "path": path,
+                            "claims": uv_claims,
+                            "note": "دعوى بسياق معلن غير متحقق بدليل "
+                                    "المصدر الفعلي — محفوظة منفصلة بلا "
+                                    "مقارنة ولا تُبطل مقارنة غيرها",
+                        })
         invalid_total = sum(
             len(e.get("invalid_source_claims") or []) for e in ok_sources)
         return {

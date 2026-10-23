@@ -4,6 +4,7 @@
 والمخطط والمترجم ونظام الاعتماد بأشكالها الحالية بالضبط (لا حكم، لا تغيير).
 """
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -2313,6 +2314,92 @@ def test_source_claims_conflict_reaches_research_result(tmp_path):
     cross_nc = no_ctx.evidence_snapshot["cross_source"]
     assert cross_nc["conflicts"] == []
     assert len(cross_nc["caller_claims_contradictions"]) == 1
+
+    # (5) HEAD ليس لقطة التحليل (0057): تغيير غير ملتزم بعد الالتزام يبقي
+    # HEAD كما هو لكنه يغيّر ما يقرأه المحلل — دعويان بسياق يساوي HEAD لا
+    # يُعلن متحققاً اعتماداً على HEAD وحده (الشجرة الوسخة تبطل الربط)
+    dirty = tmp_path / "dirtyrepo"
+    shutil.copytree(repo, dirty)
+    (dirty / "app.py").write_text("import django\n", encoding="utf-8")
+    # بلا التزام — الشجرة وسخة
+    dirty_result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(dirty), str(dirty)],
+        source_claims=[
+            {"source_id": 0, "path": str(dirty), "property": "flask",
+             "value": True, "context": head,
+             "evidence": "دعوى بسياق HEAD مع شجرة وسخة"},
+            {"source_id": 1, "path": str(dirty), "property": "flask",
+             "value": False, "context": head,
+             "evidence": "أخرى بسياق HEAD مع شجرة وسخة"},
+        ]))
+    cross_d = dirty_result.evidence_snapshot["cross_source"]
+    assert cross_d["conflicts"] == []      # لا يُعلن السياق متحققاً
+    assert len(cross_d["caller_claims_contradictions"]) == 1
+    assert "غير متحقق" in cross_d["caller_claims_contradictions"][0]["context"]
+
+    # (6) عضو غير متحقق لا يخفي المتحققين (0057): دعويان متحققتان
+    # بسياق H (مصدراهما نظيف) + دعوى ثالثة سياقها المعلن H أيضاً لكن
+    # مصدرها وسخ (غير متحقق) — تعارض الأوليين قائم والثالثة محفوظة
+    # منفصلة لا تُبطله
+    mixed = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(repo), str(repo), str(dirty)],
+        source_claims=[
+            {"source_id": 0, "path": str(repo), "property": "flask",
+             "value": True, "context": head,
+             "evidence": "متحققة أولى"},
+            {"source_id": 1, "path": str(repo), "property": "flask",
+             "value": False, "context": head,
+             "evidence": "متحققة ثانية"},
+            # موضوعها المستودع النظيف نفسه (تجميع واحد) لكن مصدرها
+            # المرفقة به وسخ — غير متحققة لا تُخفي تعارض المتحققين
+            {"source_id": 2, "path": str(repo), "property": "flask",
+             "value": True, "context": head,
+             "evidence": "غير متحققة (مصدرها وسخ)"},
+        ]))
+    cross_m = mixed.evidence_snapshot["cross_source"]
+    assert len(cross_m["conflicts"]) == 1   # تعارض المتحققين قائم
+    assert {cl["source_id"] for cl in
+            cross_m["conflicts"][0]["claims"]} == {0, 1}
+    # والثالثة محفوظة منفصلة (سياق معلن غير متحقق — لا مقارنة ولا إبطال)
+    assert any("غير متحقق" in str(i.get("note", ""))
+               for i in cross_m["incomparable_claims"])
+
+    # (7) القيمة النصية "false" ليست إثباتاً (استعادة تغطية 0055 عبر
+    # run): تُرفض وتُسمّى ولا تصنع تعارضاً
+    str_false = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(repo), str(repo)],
+        source_claims=[
+            {"source_id": 0, "path": str(repo), "property": "flask",
+             "value": "false", "context": head,
+             "evidence": "قيمة نصية لا منطقية"},
+            {"source_id": 1, "path": str(repo), "property": "flask",
+             "value": True, "context": head,
+             "evidence": "دعوى صحيحة مقابل المرفوضة"},
+        ]))
+    cross_sf = str_false.evidence_snapshot["cross_source"]
+    assert cross_sf["conflicts"] == []
+    assert cross_sf["invalid_source_claims_named"] >= 1
+
+    # (8) الدليل الفارغ: الدعوى غير مسندة تُرفض وتُسمّى (استعادة 0055)
+    no_ev = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.RESEARCH,
+        question="ما إطار هذا المستودع؟",
+        evidence_paths=[str(repo), str(repo)],
+        source_claims=[
+            {"source_id": 0, "path": str(repo), "property": "flask",
+             "value": True, "context": head, "evidence": ""},
+            {"source_id": 1, "path": str(repo), "property": "flask",
+             "value": False, "context": head, "evidence": "مقابل بلا دليل"},
+        ]))
+    cross_ne = no_ev.evidence_snapshot["cross_source"]
+    assert cross_ne["conflicts"] == []
+    assert cross_ne["invalid_source_claims_named"] >= 1
 
 
 def test_content_digest_reliability_same_length_content_change(tmp_path):

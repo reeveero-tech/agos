@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 536,
-  "lines": 101333,
-  "functions": 6142,
+  "lines": 101368,
+  "functions": 6143,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 6668,
-   "functions": 202,
+   "lines": 6703,
+   "functions": 203,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8578,10 +8578,10 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 1945,
+   "lines": 1980,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 50,
+   "functions": 51,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -16844,6 +16844,7 @@
     "contracts",
     "dataclasses",
     "decision_pipeline",
+    "django",
     "events",
     "flask",
     "intelligence",
@@ -16856,6 +16857,7 @@
     "pipeline",
     "pytest",
     "resolvers",
+    "shutil",
     "subprocess",
     "sys",
     "tempfile"
