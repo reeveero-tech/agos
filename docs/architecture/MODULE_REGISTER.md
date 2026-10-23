@@ -28,7 +28,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | `__init__.py` | namespace | 1 | 168 | 0 | yes | no | yes | L1 | R-F-005 |
 | L1 | `agos-kernel/agos_kernel` | namespace | 1 | 14 | 0 | yes | no | yes | L1 | R-F-003, R-F-005 |
-| L1 | `agos-kernel/architecture` | governance | 1 | 220 | 0 | yes | no | no | L1 | R-W1-001 |
+| L1 | `agos-kernel/architecture` | governance | 1 | 243 | 0 | yes | no | yes | L1 | R-W1-001 |
 | L1 | `agos-kernel/bootstrap` | boot | 1 | 277 | 0 | yes | no | no | L1 | R-W3-001 |
 | L1 | `agos-kernel/bootstrapper` | boot | 1 | 217 | 0 | yes | yes | yes | L4 | R-F-004, R-W3-001 |
 | L1 | `agos-kernel/container` | boot | 1 | 165 | 0 | yes | yes | no | L2 | R-W3-001 |
@@ -63,7 +63,7 @@
 | L2 | `agos-kernel/distributed` | cloud | 2 | 316 | 0 | yes | no | yes | L1 | R-W4-008 |
 | L2 | `agos-kernel/execution` | execution | 5 | 1641 | 0 | yes | yes | yes | L4 | R-W3-003 |
 | L2 | `agos-kernel/finalization` | quality | 1 | 1142 | 0 | yes | no | no | L1 | R-W5-002 |
-| L2 | `agos-kernel/governance` | governance | 3 | 837 | 0 | yes | no | yes | L1 | R-W1-007, R-W3-015 |
+| L2 | `agos-kernel/governance` | governance | 3 | 931 | 0 | yes | no | yes | L1 | R-W1-007, R-W3-015 |
 | L2 | `agos-kernel/hardening` | quality | 1 | 404 | 0 | yes | no | no | L1 | R-F-007, R-Q-007 |
 | L2 | `agos-kernel/healing` | healing | 2 | 195 | 4 | yes | no | yes | L1 | R-W3-013 |
 | L2 | `agos-kernel/longrunning` | mission | 1 | 1 | 0 | yes | no | no | L1 | R-W3-003 |
@@ -140,7 +140,7 @@
 | L5 | `execution` | execution | 11 | 556 | 0 | yes | no | yes | L1 | R-F-005, R-W1-003, R-W3-019 |
 | L5 | `fabric` | fabric | 6 | 769 | 8 | yes | no | yes | L1 | R-W1-013, R-W3-018 |
 | L5 | `foundation` | object-model | 11 | 858 | 4 | yes | no | yes | L1 | R-W1-012, R-W3-017 |
-| L5 | `governance` | governance | 4 | 529 | 6 | yes | no | yes | L1 | R-F-005, R-W1-007 |
+| L5 | `governance` | governance | 4 | 530 | 6 | yes | no | yes | L1 | R-F-005, R-W1-007 |
 | L5 | `meta` | registry | 7 | 626 | 0 | yes | no | no | L1 | R-W1-014, R-W3-017 |
 | L5 | `orchestration` | fabric | 1 | 161 | 12 | yes | no | no | L1 | R-W3-018 |
 | L5 | `resource` | object-model | 1 | 153 | 2 | yes | no | no | L1 | R-W3-017 |

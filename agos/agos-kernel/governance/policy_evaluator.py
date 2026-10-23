@@ -116,6 +116,75 @@ class PolicyEvaluator:
                 verdict=VERDICT_COMPLIANT,
                 reason="فحص الحقول المطلوبة ناجح — امتثال مثبت",
             )
+        if kind == "declared_membership":
+            # عضوية قيمة في قوائم معلنة (توحيد حالة وعضوية كاملة — لا بحث
+            # عن عبارات داخل نص حر): حكم على التصنيف النصي المقدم وفق
+            # الإعلان المعتمد، لا على التغيير البرمجي الفعلي
+            frozen = spec.get("frozen_components")
+            allowed = spec.get("allowed_changes")
+            forbidden = spec.get("forbidden_changes")
+            if not all(isinstance(lst, list) and lst
+                      for lst in (frozen, allowed, forbidden)):
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_UNVERIFIED,
+                    reason="مواصفة ناقصة — قوائم العضوية المعلنة غير "
+                           "معرفة، فلا فحص ولا امتثال مثبت",
+                )
+            change = entity.get("change")
+            component = entity.get("component")
+            if change is None or component is None:
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_UNVERIFIED,
+                    reason="مدخل ناقص — التصنيف أو المكوّن غائب فلا فحص",
+                )
+
+            def _norm(value: Any) -> str:
+                return str(value).strip().casefold()
+
+            # توحيد الحالة للتصنيف فقط؛ أما عضوية المكوّن فمطابقة
+            # لمفاتيح الإعلان كما هي — لا تُختلق أسماء بديلة للمكوّنات
+            # (المقيم قد يوحد الحالة فيسمح لمعرّف لا تعدّه الواجهة مسجلاً)
+            change_n = _norm(change)
+            frozen_exact = {str(c) for c in frozen}
+            allowed_n = {_norm(c) for c in allowed}
+            forbidden_n = {_norm(c) for c in forbidden}
+            if component not in frozen_exact:
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_UNVERIFIED,
+                    reason="المكوّن غير مسجل في إعلان التجميد — لا قاعدة "
+                           "تجميد في نطاقه فلا امتثال مثبت",
+                )
+            in_allowed = change_n in allowed_n
+            in_forbidden = change_n in forbidden_n
+            if in_allowed and in_forbidden:
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_UNVERIFIED,
+                    reason="التصنيف معلن في القائمتين معاً (تعارض "
+                           "الإعلان) — لا يُعلن سماح",
+                )
+            if in_forbidden:
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_VIOLATION,
+                    reason="التصنيف ممنوع في إعلان التجميد للمكوّن المجمد",
+                )
+            if in_allowed:
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_COMPLIANT,
+                    reason="التصنيف النصي المقدم مسموح وفق إعلان التجميد — "
+                           "ضمن حدود التصنيف فقط، لا حكماً على التغيير "
+                           "البرمجي الفعلي",
+                )
+            return PolicyVerdict(
+                rule_id=rule_id,
+                verdict=VERDICT_UNVERIFIED,
+                reason="تصنيف مجهول — ليس في قوائم الإعلان فلا امتثال مثبت",
+            )
         return PolicyVerdict(
             rule_id=rule_id,
             verdict=VERDICT_UNVERIFIED,
@@ -140,6 +209,31 @@ def constitution_article_5_spec(
         "source": "الدستور المادة 5 — VERSIONED_ENTITIES",
         "applies_to_types": list(versioned_entities),
         "required_fields": ["version"],
+    }
+
+
+# ---------------------------------------------------------------
+# قاعدة تغييرات التجميد المعماري: حكم العضوية في قوائم إعلان التجميد
+# (الشريحة السادسة — R-W1-007). المواصفة تُبنى من الإعلان الحالي نفسه
+# عند كل حكم فلا تنفصل القوائم التي يقرأها المدير عن التي يحكم بها
+# المقيم؛ والمثبت محدود: التصنيف النصي المقدم مسموح/ممنوع وفق الإعلان —
+# لا حكماً على التغيير البرمجي الفعلي.
+# ---------------------------------------------------------------
+FREEZE_CHANGE_RULE_ID = "architecture-freeze-change-classification"
+
+
+def freeze_change_spec(
+        frozen_components: List[str],
+        allowed_changes: List[str],
+        forbidden_changes: List[str]) -> Dict[str, Any]:
+    """مواصفة حكم تغييرات التجميد — المدخل قوائم الإعلان نفسها."""
+    return {
+        "kind": "declared_membership",
+        "source": "إعلان التجميد — ArchitectureFreeze",
+        "applies_to_types": ["ArchitectureChange"],
+        "frozen_components": list(frozen_components),
+        "allowed_changes": list(allowed_changes),
+        "forbidden_changes": list(forbidden_changes),
     }
 
 

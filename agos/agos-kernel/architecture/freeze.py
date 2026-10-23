@@ -122,6 +122,8 @@ class ArchitectureFreezeManager:
             allowed_changes=ALLOWED_CHANGES,
             forbidden_changes=FORBIDDEN_CHANGES,
         )
+        # حكم المقيم المشترك الأخير وسببه — متاح لنقل سبب المنع
+        self.last_verdict = None
     
     def get_component(self, name: str) -> FrozenComponent:
         """Get a frozen component."""
@@ -132,25 +134,46 @@ class ArchitectureFreezeManager:
         return component in self.freeze.components
     
     def is_allowed(self, change: str) -> bool:
-        """Check if change is allowed."""
-        return change in self.freeze.allowed_changes
+        """Check if change is allowed — عضوية كاملة بعد توحيد الحالة."""
+        normalized = str(change).strip().casefold()
+        return normalized in {
+            str(c).strip().casefold()
+            for c in self.freeze.allowed_changes}
     
     def is_forbidden(self, change: str) -> bool:
-        """Check if change is forbidden."""
-        return change in self.frozen_changes
+        """Check if change is forbidden — أصلحت الخاصية المعطوبة (كانت
+        تقرأ self.frozen_changes غير الموجودة فترمي AttributeError دائماً)."""
+        normalized = str(change).strip().casefold()
+        return normalized in {
+            str(c).strip().casefold()
+            for c in self.freeze.forbidden_changes}
     
     def validate_change(self, change: str, component: str) -> tuple[bool, str]:
-        """Validate if a change is allowed."""
-        # Check if component is frozen
-        if self.is_frozen(component):
-            # Check if change is in allowed list
-            if self.is_allowed(change):
-                return True, "Change is allowed"
-            # Check if change is in forbidden list
-            if any(f in change.lower() for f in FORBIDDEN_CHANGES):
-                return False, f"Change '{change}' is forbidden for frozen components"
-        
-        return True, "Change is allowed"
+        """Validate if a change is allowed — الحكم النهائي عبر المقيم
+        المشترك (R-W1-007 — الشريحة السادسة، ADR-0010): مواصفة العضوية تُبنى
+        من الإعلان الحالي نفسه عند كل حكم فلا تنفصل قوائم المدير عن قوائم
+        حكم المقيم، والحكم يتبع الإعلان إن تغيّر. المثبت محدود: التصنيف
+        النصي المقدم مسموح/ممنوع وفق إعلان التجميد — لا حكماً على التغيير
+        البرمجي الفعلي. لا سماح أعمى بالسقوط (كان التصنيف المجاهل على
+        مكوّن مجمد وأي تغيير على مكوّن غير مجمد يرجعان True دائماً)."""
+        from agos_kernel.governance.policy_evaluator import (
+            VERDICT_COMPLIANT, FREEZE_CHANGE_RULE_ID, freeze_change_spec,
+            get_shared_evaluator)
+        evaluator = get_shared_evaluator()
+        # المواصفة من الإعلان الحالي نفسه — مرجعية واحدة للحكم والقراءة
+        evaluator.register_spec(
+            FREEZE_CHANGE_RULE_ID,
+            freeze_change_spec(
+                list(self.freeze.components),
+                self.freeze.allowed_changes,
+                self.freeze.forbidden_changes))
+        self.last_verdict = evaluator.evaluate(
+            FREEZE_CHANGE_RULE_ID,
+            {"type": "ArchitectureChange",
+             "change": change, "component": component})
+        # السبب المُعاد يوضح حدود المثبت — لا عبارة سماح مطلقة
+        return (self.last_verdict.verdict == VERDICT_COMPLIANT,
+                self.last_verdict.reason)
     
     def get_frozen_components(self) -> List[FrozenComponent]:
         """Get all frozen components."""

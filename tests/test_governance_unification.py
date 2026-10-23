@@ -773,6 +773,127 @@ def test_mission_denied_before_workspace_and_resources():
     assert allocated == []     # وقبل تخصيص الموارد
 
 
+def test_freeze_is_forbidden_and_membership_fixed():
+    """إصلاح عيوب التجميد الموضوعية (الشريحة السادسة): is_forbidden كانت
+    تقرأ خاصية غير موجودة فترمي AttributeError دائماً؛ والمطابقة الآن
+    عضوية كاملة بعد توحيد الحالة — فالتصنيف الممنوع الحرفي وباختلاف حالة
+    حروفه يُكتشف (كان فحص العبارات الحرفي يفشل دائماً بحساسية الحالة)."""
+    from agos_kernel.architecture.freeze import get_freeze_manager
+    manager = get_freeze_manager()
+    # كانت AttributeError دائماً — الآن عضوية فعلية بعد توحيد الحالة
+    assert manager.is_forbidden("Breaking Core Contracts") is True
+    assert manager.is_forbidden("breaking core contracts") is True
+    assert manager.is_forbidden("Bug Fixes") is False
+    assert manager.is_allowed("New Capabilities") is True
+    assert manager.is_allowed("new capabilities") is True
+    assert manager.is_allowed("Breaking Core Contracts") is False
+
+
+def test_freeze_validate_change_delegates_to_shared_evaluator():
+    """الحكم النهائي في validate_change عبر المقيم المشترك (الشريحة
+    السادسة — ADR-0010): مكوّن مجمد + تصنيف ممنوع ⇒ violation وFalse
+    (حرفياً وباختلاف الحالة)؛ + مسموح ⇒ compliant وTrue **ضمن حدود
+    التصنيف النصي فقط** (السبب يوضح الحد — لا عبارة سماح مطلقة)؛ تصنيف
+    مجهول ⇒ unverified؛ ومكوّن غير مسجل **حتى مع تصنيف مسموح** ⇒
+    unverified؛ والحكم وسببه من المقيم المشترك (سجل محصور حول الاستدعاء)."""
+    from agos_kernel.architecture.freeze import get_freeze_manager
+    from agos_kernel.governance.policy_evaluator import (
+        FREEZE_CHANGE_RULE_ID, get_shared_evaluator)
+    manager = get_freeze_manager()
+    evaluator = get_shared_evaluator()
+    # ممنوع حرفياً — وباختلاف حالة الحروف
+    ok, msg = manager.validate_change("Breaking Core Contracts", "kernel")
+    assert ok is False and "ممنوع" in msg
+    assert manager.last_verdict.verdict == "violation"
+    ok_case, _ = manager.validate_change(
+        "breaking core contracts", "kernel")
+    assert ok_case is False
+    # مسموح على مكوّن مجمد — ضمن حدود التصنيف فقط
+    ok_allow, msg_allow = manager.validate_change(
+        "New Capabilities", "kernel")
+    assert ok_allow is True
+    assert "ضمن حدود التصنيف" in msg_allow     # لا سماح مطلق
+    assert manager.last_verdict.verdict == "compliant"
+    # مجهول على مجمد ⇒ لا امتثال مثبت (كان True بالسقوط)
+    ok_unknown, _ = manager.validate_change("Refactoring", "kernel")
+    assert ok_unknown is False
+    assert manager.last_verdict.verdict == "unverified"
+    # مكوّن غير مسجل حتى مع تصنيف مسموح ⇒ unverified (كان True دائماً)
+    ok_unreg, msg_unreg = manager.validate_change(
+        "New Capabilities", "not-registered")
+    assert ok_unreg is False
+    assert "غير مسجل" in msg_unreg
+    assert manager.last_verdict.verdict == "unverified"
+    # واسم المكوّن لا يُوحَّد حالته: "KERNEL" غير المسجل ينتج unverified
+    # وFalse حتى مع تصنيف مسموح — عضوية المكوّن مطابقة لمفاتيح الإعلان
+    # كما هي (والواجهة نفسها لا تعدّه مسجلاً: is_frozen("KERNEL") is False)
+    assert manager.is_frozen("KERNEL") is False
+    ok_case_comp, msg_case_comp = manager.validate_change(
+        "New Capabilities", "KERNEL")
+    assert ok_case_comp is False
+    assert "غير مسجل" in msg_case_comp
+    assert manager.last_verdict.verdict == "unverified"
+    # الحكم من المقيم المشترك — سجل محصور حول الاستدعاء (لا السجل العالمي)
+    log_start = len(evaluator.evaluation_log)
+    manager.validate_change("Bug Fixes", "kernel")
+    entries = evaluator.evaluation_log[log_start:]
+    assert any(e[0] == FREEZE_CHANGE_RULE_ID for e in entries)
+
+
+def test_freeze_judgment_follows_declaration_change():
+    """اتساق الحكم عند تغيير الإعلان المعتمد (الشريحة السادسة): المواصفة
+    تُبنى من الإعلان الحالي نفسه عند كل حكم — فإضافة تصنيف للمسموح تقلب
+    الحكم، وتعارض القائمتين لا يُعلن سماحاً، وبالاستعادة يعود عدم الثبوت.
+    (لا يجعل نجاح تصنيف مسموح اختباراً مزعوماً لسلامة تغيير فعلي.)"""
+    from agos_kernel.architecture.freeze import get_freeze_manager
+    from agos_kernel.governance.policy_evaluator import (
+        FREEZE_CHANGE_RULE_ID, freeze_change_spec, get_shared_evaluator)
+    manager = get_freeze_manager()
+    # قبل التغيير: مجهول ⇒ غير مثبت
+    ok_before, _ = manager.validate_change("Custom Change", "kernel")
+    assert ok_before is False
+    # تغيير الإعلان المعتمد: إضافة التصنيف للمسموح تقلب الحكم
+    try:
+        manager.freeze.allowed_changes.append("Custom Change")
+        ok_after, msg_after = manager.validate_change(
+            "Custom Change", "kernel")
+        assert ok_after is True
+        assert "ضمن حدود التصنيف" in msg_after
+    finally:
+        manager.freeze.allowed_changes.remove("Custom Change")
+    # بعد الاستعادة يعود عدم الثبوت
+    ok_restored, _ = manager.validate_change("Custom Change", "kernel")
+    assert ok_restored is False
+    # تعارض القائمتين: التصنيف في المسموحة والممنوعة معاً ⇒ لا سماح
+    evaluator = get_shared_evaluator()
+    try:
+        manager.freeze.allowed_changes.append("Breaking Core Contracts")
+        ok_conflict, _ = manager.validate_change(
+            "Breaking Core Contracts", "kernel")
+        assert ok_conflict is False
+    finally:
+        manager.freeze.allowed_changes.remove("Breaking Core Contracts")
+        # إعادة مزامنة مواصفة المقيم مع الإعلان المستعاد — المواصفة تنسخ
+        # القوائم فتبقى نسخة الإعلان المتعارض في المقيم لولا المزامنة
+        evaluator.register_spec(
+            FREEZE_CHANGE_RULE_ID,
+            freeze_change_spec(
+                list(manager.freeze.components),
+                manager.freeze.allowed_changes,
+                manager.freeze.forbidden_changes))
+    # بعد الاستعادة والمزامنة: التعارض زال والتصنيف يعود violation —
+    # والتحقق مباشرة عبر المقيم المشترك لا عبر المدير وحده
+    direct = evaluator.evaluate(
+        FREEZE_CHANGE_RULE_ID,
+        {"type": "ArchitectureChange",
+         "change": "Breaking Core Contracts", "component": "kernel"})
+    assert direct.verdict == "violation"
+    ok_after, _ = manager.validate_change(
+        "Breaking Core Contracts", "kernel")
+    assert ok_after is False
+    assert manager.last_verdict.verdict == "violation"
+
+
 def test_spec_comes_from_constitution_text():
     """المواصفة تُقرأ من النص الدستوري نفسه لا نسخة مستقلة عنه."""
     spec = get_shared_evaluator().get_spec(

@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 101889,
-  "functions": 6158,
+  "lines": 102007,
+  "functions": 6160,
   "stub_functions": 780,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -101,7 +101,7 @@
   },
   "agos-kernel/architecture": {
    "files": 1,
-   "lines": 220,
+   "lines": 243,
    "functions": 10,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 837,
-   "functions": 42,
+   "lines": 931,
+   "functions": 44,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1366,7 +1366,7 @@
   },
   "governance": {
    "files": 4,
-   "lines": 529,
+   "lines": 530,
    "functions": 34,
    "stub_functions": 6,
    "hardcoded_paths": 0,
@@ -2028,7 +2028,7 @@
    "path": "agos/agos-kernel/architecture/freeze.py",
    "module": "architecture.freeze",
    "root": "kernel",
-   "lines": 220,
+   "lines": 243,
    "syntax_ok": true,
    "classes": 3,
    "functions": 10,
@@ -2038,13 +2038,19 @@
     "hashlib",
     "dataclasses",
     "datetime",
-    "typing"
+    "typing",
+    "agos_kernel.governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:architecture.freeze",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:governance.policy_evaluator"
+   ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -8149,10 +8155,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 247,
+   "lines": 341,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 10,
+   "functions": 12,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8167,6 +8173,7 @@
     "S:constitution.constitution"
    ],
    "imported_by": [
+    "K:architecture.freeze",
     "K:civilization.autonomous_engineering.autonomous_batch",
     "K:civilization.policy_runtime.policy",
     "K:governance.runtime",
@@ -15289,7 +15296,7 @@
    "path": "agos/governance/enforcement.py",
    "module": "governance.enforcement",
    "root": "src",
-   "lines": 211,
+   "lines": 212,
    "syntax_ok": true,
    "classes": 11,
    "functions": 15,
@@ -16898,6 +16905,7 @@
     "agos.enterprise.governance",
     "agos.foundation.policy",
     "agos.governance.enforcement",
+    "agos_kernel.architecture.freeze",
     "agos_kernel.civilization.autonomous_engineering.autonomous_batch",
     "agos_kernel.civilization.policy_runtime",
     "agos_kernel.governance",
@@ -16906,6 +16914,7 @@
    ],
    "scripts": [],
    "resolved": [
+    "K:architecture.freeze",
     "K:civilization.autonomous_engineering.autonomous_batch",
     "K:civilization.policy_runtime",
     "K:governance",
