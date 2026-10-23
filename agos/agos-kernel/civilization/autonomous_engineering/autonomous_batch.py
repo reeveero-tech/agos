@@ -12,6 +12,8 @@ from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
 
+from agos_kernel.governance.policy_evaluator import evaluate_rule_dicts
+
 
 # ============================================================
 # EXECUTION-000001: AUTONOMOUS RUNTIME CORE
@@ -760,10 +762,18 @@ class ExecutionAuthorizer:
 
 
 class PolicyEnforcer:
-    """Enforces policies."""
+    """Enforces policies — يفوّض حكم تقييم السياسات للمقيم المعتمد (R-W1-007)."""
+    
+    def __init__(self):
+        self.last_outcome: Dict = {}
     
     def enforce(self, action: Dict, policies: List[Dict]) -> bool:
-        return True
+        # تفويض حكم التقييم فقط للمقيم المعتمد (لا دمج قسري — ADR-0010 §5):
+        # السماح المثبت وحده يُعلن؛ والمخالفة وتعذر التحقق كلاهما يمنع؛
+        # وبلا قواعد لا فحص ولا امتثال مثبت — لا سماح أعمى كما كان.
+        # النتيجة المعللة محفوظة في last_outcome لنقل سبب المنع للمستهلك
+        self.last_outcome = evaluate_rule_dicts(policies or [], action)
+        return bool(self.last_outcome.get("allowed"))
 
 
 class SafetyValidator:
@@ -844,7 +854,11 @@ class GovernanceRuntime:
             return {'authorized': False, 'reason': 'Not authorized'}
         
         if not self.policy_enforcer.enforce(action, []):
-            return {'authorized': False, 'reason': 'Policy violation'}
+            # سبب المنع منقول من المقيم المعتمد — غياب القواعد ليس مخالفة
+            # مثبتة كي يُختزل في «Policy violation»
+            outcome = getattr(self.policy_enforcer, "last_outcome", None) or {}
+            return {'authorized': False,
+                    'reason': outcome.get("reason", "Policy violation")}
         
         safety = self.safety.validate(action)
         if not safety['safe']:

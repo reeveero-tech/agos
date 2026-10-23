@@ -527,6 +527,162 @@ def test_civilization_results_cover_every_rule_in_order():
     assert res2[0]["reason"].startswith("violation")
 
 
+def test_autonomous_policy_enforcer_delegates_to_shared_evaluator():
+    """المفوّض الحقيقي (الشريحة الرابعة — autonomous_batch): حكم تقييم
+    السياسات في PolicyEnforcer يمر عبر المقيم المعتمد — امتثال مثبت،
+    مخالفة معللة، تعذر تحقق، وقائمة فارغة؛ والسماح المثبت وحده يُعلن."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        PolicyEnforcer)
+    from agos_kernel.governance.policy_evaluator import get_shared_evaluator
+    enforcer = PolicyEnforcer()
+    rules = [{"name": "قاعدة الإصدار",
+              "rule_id": CONSTITUTION_ARTICLE_5_RULE_ID}]
+    log_before = len(get_shared_evaluator().evaluation_log)
+    # امتثال مثبت
+    assert enforcer.enforce({"type": "Contracts", "version": "1.0"},
+                            rules) is True
+    assert enforcer.last_outcome["allowed"] is True
+    assert "سماح مثبت" in enforcer.last_outcome["reason"]
+    # مخالفة معللة
+    assert enforcer.enforce({"type": "Contracts"}, rules) is False
+    assert enforcer.last_outcome["allowed"] is False
+    assert "version" in enforcer.last_outcome["reason"]
+    # تعذر تحقق
+    assert enforcer.enforce({"version": "1.0"}, rules) is False
+    assert enforcer.last_outcome["allowed"] is False
+    assert "نوع الكيان غائب" in enforcer.last_outcome["reason"]
+    # قائمة فارغة — لا سماح أعمى
+    assert enforcer.enforce({"type": "Contracts"}, []) is False
+    assert "لا فحص ولا سماح مثبت" in enforcer.last_outcome["reason"]
+    # التقييم وصل المقيم المشترك فعلاً (السجل نما بالأحكام)
+    assert len(get_shared_evaluator().evaluation_log) > log_before
+
+
+def test_authorize_execution_empty_policies_denies_with_reason():
+    """التوصيل الحالي (الشريحة الرابعة): authorize_execution يمنع عند
+    القائمة الفارغة وينقل سبب غياب القواعد (لا اختزال في Policy
+    violation)، ولا يستدعي التدقيق بعد المنع."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+    rt = AutoGovRuntime()
+    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    assert res["authorized"] is False
+    assert "لا فحص ولا سماح مثبت" in res["reason"]   # السبب منقول
+    assert len(rt.auditor.audit_log) == 0            # لا تدقيق بعد منع
+
+
+def test_authorize_execution_gate_order_and_right_to_block():
+    """ترتيب البوابات وحق المنع (الشريحة الرابعة — تصحيح المراجعة): بدائل
+    تسجّل كل استدعاء، ويتحقق الاختبار من **تسلسل الاستدعاءات كاملاً حتى
+    المنع** — لا خلو سجل التدقيق وحده: الطوارئ تمنع بـ[emergency] فقط،
+    والتفويض بـ[emergency, authorizer]، والتوصيل الحقيقي بالقائمة الفارغة
+    بـ[emergency, authorizer, policy] مع السبب المنقول، والسلامة
+    بـ[...policy, safety]، والموافقة البشرية بـ[...safety, approval] بلا
+    audit. هذه اختبارات ترتيب لا دليل نجاح المسار الحقيقي بسياسات معتمدة."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime, PolicyEnforcer)
+
+    def _recorded(stopped=False, authorize=True, enforce=True,
+                  safe=True, requires_approval=False):
+        rt = AutoGovRuntime()
+        calls = []
+
+        class RecEmergency:
+            def is_stopped(self):
+                calls.append("emergency")
+                return stopped
+
+        class RecAuthorizer:
+            def authorize(self, action):
+                calls.append("authorizer")
+                return authorize
+
+        class RealRecordingPolicy(PolicyEnforcer):
+            # المفوّض الحقيقي نفسه مع تسجيل الاستدعاء — التفويض لا يُستبدل
+            def enforce(self, action, policies):
+                calls.append("policy")
+                return super().enforce(action, policies)
+
+        class RecPassPolicy:
+            # بديل مضبوط يسمح — لاختبار البوابات اللاحقة في مواضعها
+            def __init__(self):
+                self.last_outcome = {"allowed": True, "reason": "سماح مثبت"}
+            def enforce(self, action, policies):
+                calls.append("policy")
+                return True
+
+        class RecSafety:
+            def validate(self, action):
+                calls.append("safety")
+                return {"safe": safe, "warnings": []}
+
+        class RecApproval:
+            def requires_approval(self, action):
+                calls.append("approval")
+                return requires_approval
+
+        class RecAuditor:
+            def __init__(self):
+                self.audit_log = []
+            def audit(self, action):
+                calls.append("audit")
+                self.audit_log.append(action)
+
+        rt.emergency = RecEmergency()
+        rt.authorizer = RecAuthorizer()
+        rt.policy_enforcer = RealRecordingPolicy() if enforce == "real" else RecPassPolicy()
+        rt.safety = RecSafety()
+        rt.approval = RecApproval()
+        rt.auditor = RecAuditor()
+        return rt, calls
+
+    # (1) الطوارئ تمنع: [emergency] فقط — لا شيء بعدها يُستدعى
+    rt, calls = _recorded(stopped=True)
+    assert rt.authorize_execution({"risk_level": 0.1}) == {
+        "authorized": False, "reason": "Emergency stop active"}
+    assert calls == ["emergency"]
+    # (2) التفويض يمنع: [emergency, authorizer]
+    rt, calls = _recorded(authorize=False)
+    assert rt.authorize_execution({})["reason"] == "Not authorized"
+    assert calls == ["emergency", "authorizer"]
+    # (3) التوصيل الحقيقي بالقائمة الفارغة: [emergency, authorizer, policy]
+    # فقط — المفوّض الحقيقي يمنع بسببه المنقول ولا تُستدعى السلامة بعده
+    rt, calls = _recorded(enforce="real")
+    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    assert res["authorized"] is False
+    assert "لا فحص ولا سماح مثبت" in res["reason"]
+    assert calls == ["emergency", "authorizer", "policy"]
+    # (4) السلامة تمنع: [emergency, authorizer, policy, safety]
+    rt, calls = _recorded(safe=False)
+    assert rt.authorize_execution({})["reason"] == "Safety check failed"
+    assert calls == ["emergency", "authorizer", "policy", "safety"]
+    # (5) الموافقة البشرية تمنع: [...] + approval — بلا audit
+    rt, calls = _recorded(requires_approval=True)
+    assert rt.authorize_execution(
+        {"risk_level": 0.9})["reason"] == "Requires human approval"
+    assert calls == ["emergency", "authorizer", "policy",
+                     "safety", "approval"]
+    assert "audit" not in calls
+
+
+def test_mission_denied_before_workspace_and_resources():
+    """المستهلك الأعلى (الشريحة الرابعة): رفض المهمة يحدث قبل إنشاء مساحة
+    العمل أو تخصيص الموارد — والسبب منقول."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        AutonomousEngineeringRuntime)
+    runtime = AutonomousEngineeringRuntime()
+    created, allocated = [], []
+    runtime.workspace.create_workspace = (
+        lambda mid: (created.append(mid), "/tmp/ws")[1])
+    runtime.resource_manager.allocate = (
+        lambda tid, req: (allocated.append(tid), True)[1])
+    result = runtime.execute_mission_autonomously({"id": "m1"})
+    assert result["status"] == "denied"
+    assert "لا فحص ولا سماح مثبت" in result["reason"]
+    assert created == []       # الرفض قبل إنشاء مساحة العمل
+    assert allocated == []     # وقبل تخصيص الموارد
+
+
 def test_spec_comes_from_constitution_text():
     """المواصفة تُقرأ من النص الدستوري نفسه لا نسخة مستقلة عنه."""
     spec = get_shared_evaluator().get_spec(

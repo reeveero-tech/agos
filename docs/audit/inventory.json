@@ -1,9 +1,9 @@
 {
  "totals": {
   "files": 537,
-  "lines": 101811,
-  "functions": 6155,
-  "stub_functions": 789,
+  "lines": 101825,
+  "functions": 6156,
+  "stub_functions": 788,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 251,
@@ -189,9 +189,9 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24451,
-   "functions": 1316,
-   "stub_functions": 120,
+   "lines": 24465,
+   "functions": 1317,
+   "stub_functions": 119,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 35,
@@ -3035,24 +3035,30 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 970,
+   "lines": 984,
    "syntax_ok": true,
    "classes": 69,
-   "functions": 112,
-   "stub_functions": 29,
+   "functions": 113,
+   "stub_functions": 28,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "datetime",
     "typing",
     "enum",
-    "uuid"
+    "uuid",
+    "agos_kernel.governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.autonomous_engineering.autonomous_batch",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:governance.policy_evaluator"
+   ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -8161,6 +8167,7 @@
     "S:constitution.constitution"
    ],
    "imported_by": [
+    "K:civilization.autonomous_engineering.autonomous_batch",
     "K:civilization.policy_runtime.policy",
     "K:governance.runtime",
     "S:enterprise.governance",
@@ -16890,6 +16897,7 @@
     "agos.enterprise.governance",
     "agos.foundation.policy",
     "agos.governance.enforcement",
+    "agos_kernel.civilization.autonomous_engineering.autonomous_batch",
     "agos_kernel.civilization.policy_runtime",
     "agos_kernel.governance",
     "agos_kernel.governance.policy_evaluator",
@@ -16897,6 +16905,7 @@
    ],
    "scripts": [],
    "resolved": [
+    "K:civilization.autonomous_engineering.autonomous_batch",
     "K:civilization.policy_runtime",
     "K:governance",
     "K:governance.policy_evaluator",

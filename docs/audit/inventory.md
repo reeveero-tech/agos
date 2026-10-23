@@ -5,13 +5,13 @@
 ## Totals
 
 - **files**: 537
-- **functions**: 6155
+- **functions**: 6156
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 101811
+- **lines**: 101825
 - **not_imported_by_others**: 251
-- **stub_functions**: 789
+- **stub_functions**: 788
 - **syntax_errors**: 0
 
 ## Packages
@@ -34,7 +34,7 @@
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 13 | 5411 | 278 | 27 | 0 | 13 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24451 | 1316 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization` | 100 | 24465 | 1317 | 119 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
