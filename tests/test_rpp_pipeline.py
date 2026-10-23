@@ -795,9 +795,8 @@ class TestPipelineChain:
 class TestRealRepositoryAcceptance:
     """القبول: «تنفيذ مطابق للمراحل الموثقة» — على مستودع حقيقي (AGOS نفسه)."""
 
-    @classmethod
     @pytest.fixture(scope="class")
-    def agos_result(cls):
+    def agos_result(self):
         kb = RPPKnowledgeBase()   # قاعدة معزولة للاختبار — لا تلوث الافتراضية
         return RPPPipeline(knowledge_base=kb).process(
             get_analysis_service().analyze_path(str(REPO_ROOT)),

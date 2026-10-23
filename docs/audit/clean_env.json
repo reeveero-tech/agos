@@ -18,6 +18,7 @@
     "agos_kernel_version": "2.0.0",
     "boot_success": true,
     "capabilities": [
+      "CapabilityGenome",
       "ConfigurationAnalysis",
       "DocumentationAnalysis",
       "EngineeringKnowledgeExtraction",
@@ -25,6 +26,7 @@
       "LicenseAnalysis",
       "RepositoryAnalysis",
       "RepositoryDNAGeneration",
+      "RepositoryProcessingPipeline",
       "SecurityScan"
     ],
     "providers": [
@@ -32,8 +34,8 @@
     ],
     "dev_group_absent": true
   },
-  "runtime_modules_probed": 494,
-  "runtime_modules_ok": 494,
+  "runtime_modules_probed": 500,
+  "runtime_modules_ok": 500,
   "not_ok_in_both_envs": [],
   "failures": []
 }
