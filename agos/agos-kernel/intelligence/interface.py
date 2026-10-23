@@ -515,15 +515,22 @@ class IntelligenceInterface:
     الحقيقية بمحولاتها الفعلية."""
 
     def __init__(self, mission_engine=None, approval=None,
-                 capability_resolver=None):
+                 capability_resolver=None, kernel_runtime=None):
         if mission_engine is None:
-            mission_engine, _ = self._build_default_chain()
+            # السلسلة الحية من **الإقلاع المعتمد** (Bootstrapper) — سجل القدرات
+            # والمزوددون الحقيقيان وسلسلة التنفيذ التي بناها فعلاً (سجل العمل
+            # 0046): لا سجلات فارغة تُنشأ بجانب الإقلاع، وفشل الإقلاع خطأ
+            # معلن لا واجهة "جاهزة" فوق سجل خاوٍ.
+            if kernel_runtime is None:
+                kernel_runtime = self._boot_live_runtime()
+            mission_engine = kernel_runtime.mission_engine
         # المحلل يُستخرج من أنبوب المحرك المستخدم فعلاً — لا محلل افتراضي
         # منفصل عند حقن المحرك وحده (اتساق التحقق مع التنفيذ)
         extracted_resolver, core_wrapper = self._wire_engine(mission_engine)
         if capability_resolver is None:
             capability_resolver = extracted_resolver
         self._mission_engine = mission_engine
+        self._kernel_runtime = kernel_runtime   # مالك سجل المهام القائم (rt.missions)
         self._capability_resolver = capability_resolver
         self._core_wrapper = core_wrapper      # حد التحقق عند الاستدعاء (أو None)
         if approval is None:
@@ -538,24 +545,29 @@ class IntelligenceInterface:
         self._approval_by_mission: Dict[str, str] = {}
 
     @staticmethod
+    def _boot_live_runtime(base_path=None):
+        """الإقلاع المعتمد للسلسلة الحية — عبر ``Bootstrapper`` لا سجلات
+        موازية. فشل الإقلاع **يُبلَّغ** (استثناء صريح برسائله) ولا يُنشر
+        كواجهة جاهزة فوق سجل خاوٍ (سجل العمل 0046)."""
+        from agos_runtime import boot
+        runtime = boot(base_path)
+        if not runtime.ready:
+            raise RuntimeError(
+                "فشل إقلاع النواة — لا واجهة ذكاء حية فوق إقلاع فاشل: "
+                + ("; ".join(runtime.errors) or "سبب غير معروف"))
+        return runtime
+
+    @staticmethod
     def _build_default_chain():
-        """السلسلة الحية الافتراضية: أنبوب حقيقي بمحولاته الفعلية — **سجل
-        قدرات واحد** للمحولين معاً (لا سجلين)، والمحول نفسه للتحقق والتنفيذ."""
-        from events import EventBus
-        from mission_engine import MissionEngine
-        from pipeline import ExecutionPipeline
-        from registry.capability import CapabilityRegistry
-        from registry.provider import ProviderRegistry
-        from resolvers import CapabilityResolver, ProviderResolver
-        capability_registry = CapabilityRegistry()
-        capability_resolver = CapabilityResolver(capability_registry)
-        pipeline = ExecutionPipeline(
-            event_bus=EventBus(),
-            capability_resolver=capability_resolver,
-            provider_resolver=ProviderResolver(ProviderRegistry(),
-                                               capability_registry),
-        )
-        return MissionEngine(pipeline), capability_resolver
+        """مُهملة (تبقى للتوافق): السلسلة الافتراضية صارت من الإقلاع الحي
+        عبر ``_boot_live_runtime`` — سجل القدرات الحقيقي الذي يحمّله
+        ``Bootstrapper`` لا سجل فارغ. المحلل يُستخرج من أنبوب المحرك."""
+        runtime = IntelligenceInterface._boot_live_runtime()
+        pipeline = getattr(getattr(runtime.mission_engine, "executor", None),
+                           "pipeline", None)
+        resolver = (getattr(pipeline, "capability_resolver", None)
+                    if pipeline else None)
+        return runtime.mission_engine, resolver
 
     @staticmethod
     def _wire_engine(mission_engine):
@@ -598,7 +610,13 @@ class IntelligenceInterface:
                       "(فجوة مسماة: intent-interpretation)",
                 gaps=list(INSTANT_GAPS))
         bound_content = self._stable_content(request.mission)
-        outcome = self._mission_engine.run(bound_content)   # parse→validate→plan→execute
+        if self._kernel_runtime is not None:
+            # المسار الحي المعتمد: يمر عبر ``KernelRuntime.run`` فيُسجَّل في
+            # ``rt.missions`` (المالك القائم لسجل التنفيذات) ويقيس المنفذ
+            # المدة فعلاً — لا قناة موازية تتجاوز السجل
+            outcome = self._kernel_runtime.run(bound_content)
+        else:
+            outcome = self._mission_engine.run(bound_content)   # parse→validate→plan→execute
         from mission_engine import MissionState
         completed = outcome.state is MissionState.COMPLETED
         return IntelligenceResult(

@@ -12,7 +12,7 @@
 | `c` | `c` | generated (1) | — | — |
 | `memory_profiler` | `memory-profiler` | runtime (1) | runtime | 0.61.0 |
 | `psutil` | `psutil` | runtime (1) | runtime | 7.2.2 |
-| `pytest` | `pytest` | dev (31) | dev | 9.1.1 |
+| `pytest` | `pytest` | dev (32) | dev | 9.1.1 |
 | `requests` | `requests` | generated (3) | runtime | 2.34.2 |
 | `yaml` | `pyyaml` | optional (1)، runtime (1) | runtime | 6.0.3 |
 
@@ -33,7 +33,7 @@
 |---|---|
 | `docker` | 3: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/providers/filesystem.py`, `agos/agos-kernel/providers/network.py` |
 | `find` | 2: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/skills/implementation.py` |
-| `git` | 20: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/capabilities/__init__.py`, `agos/agos-kernel/capabilities/analysis_service.py`, `agos/agos-kernel/civilization/core/civilization_engine.py` … |
+| `git` | 21: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/capabilities/__init__.py`, `agos/agos-kernel/capabilities/analysis_service.py`, `agos/agos-kernel/civilization/core/civilization_engine.py` … |
 | `kubectl` | 1: `agos/agos-kernel/adapters/implementation.py` |
 | `npm` | 1: `agos/agos-kernel/adapters/implementation.py` |
 | `podman` | 1: `agos/agos-kernel/providers/network.py` |

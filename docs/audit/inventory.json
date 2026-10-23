@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 535,
-  "lines": 99893,
-  "functions": 6117,
+  "lines": 99923,
+  "functions": 6119,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 17,
-   "lines": 5228,
-   "functions": 177,
+   "lines": 5258,
+   "functions": 179,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1896,6 +1896,7 @@
    ],
    "imported_by": [
     "K:core.kernel",
+    "K:intelligence.interface",
     "K:main"
    ],
    "tested_by_external": [
@@ -7452,7 +7453,6 @@
    "resolved_imports": [],
    "imported_by": [
     "K:bootstrapper",
-    "K:intelligence.interface",
     "K:pipeline",
     "K:test_validation"
    ],
@@ -8547,25 +8547,19 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 898,
+   "lines": 928,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 36,
+   "functions": 38,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "enum",
     "typing",
-    "json",
     "hashlib",
     "json",
-    "events",
-    "mission_engine",
-    "pipeline",
-    "registry.capability",
-    "registry.provider",
-    "resolvers",
+    "agos_runtime",
     "mission_engine",
     "mission_engine",
     "mission_engine",
@@ -8585,16 +8579,12 @@
    "importable_package_path": true,
    "id": "K:intelligence.interface",
    "resolved_imports": [
+    "K:agos_runtime",
     "K:approval",
     "K:capabilities.analysis_service",
     "K:context",
-    "K:events",
     "K:execution.engine",
-    "K:mission_engine",
-    "K:pipeline",
-    "K:registry.capability",
-    "K:registry.provider",
-    "K:resolvers"
+    "K:mission_engine"
    ],
    "imported_by": [
     "S:intelligence"
@@ -9751,8 +9741,7 @@
     "K:resolvers"
    ],
    "imported_by": [
-    "K:bootstrapper",
-    "K:intelligence.interface"
+    "K:bootstrapper"
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
@@ -10302,7 +10291,6 @@
    "imported_by": [
     "K:bootstrapper",
     "K:decision",
-    "K:intelligence.interface",
     "K:resolvers"
    ],
    "tested_by_external": [
@@ -10336,7 +10324,6 @@
    "imported_by": [
     "K:bootstrapper",
     "K:decision",
-    "K:intelligence.interface",
     "K:resolvers"
    ],
    "tested_by_external": [
@@ -10437,7 +10424,6 @@
    ],
    "imported_by": [
     "K:bootstrapper",
-    "K:intelligence.interface",
     "K:pipeline"
    ],
    "tested_by_external": [
@@ -16816,12 +16802,15 @@
     "events",
     "flask",
     "intelligence.interface",
+    "json",
     "mission",
     "mission_engine",
     "os",
     "pathlib",
     "pipeline",
+    "pytest",
     "resolvers",
+    "subprocess",
     "sys",
     "tempfile"
    ],

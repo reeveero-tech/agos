@@ -7,6 +7,8 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 _HERE = Path(__file__).resolve()
 _KERNEL = _HERE.parent.parent / "agos" / "agos-kernel"
 if str(_KERNEL) not in sys.path:
@@ -1332,3 +1334,83 @@ def test_engineer_early_execute_unchanged_plan_not_invalidated():
     executed = interface.execute_approved(awaiting.approval_id)
     assert executed.status is IntelligenceStatus.COMPLETED
     assert len(core.calls) == 1                            # العمل نفّذ مرة
+
+
+# ===============================================================
+# الربط الحي (سجل العمل 0046): السلسلة الافتراضية من الإقلاع المعتمد
+# ===============================================================
+
+def test_default_interface_boots_live_registry():
+    """الواجهة الافتراضية ترى القدرات المسجلة فعلاً — لا سجلاً فارغاً
+    منسوخاً بجانب الإقلاع (كانت السلسلة الافتراضية تبني سجلات خاوية
+    فلا يرى المحلل شيئاً في عملية جديدة)."""
+    interface = IntelligenceInterface()
+    registry = getattr(interface._capability_resolver, "capability_registry", None)
+    assert registry is not None
+    names = [c.name for c in registry.list_all()]
+    assert len(names) > 0                       # سجل حي لا فارغ
+    # القدرات الفعلية التي يحمّلها Bootstrapper من capabilities/
+    assert "RepositoryAnalysis" in names
+    assert "RepositoryProcessingPipeline" in names
+    # الإقلاع نفسه جاهز
+    assert interface._kernel_runtime is not None
+    assert interface._kernel_runtime.ready is True
+
+
+def test_resolution_and_execution_use_same_live_registry():
+    """الحل والتنفيذ يستخدمان السجل الحي نفسه — كائناً واحداً لا نسختين."""
+    interface = IntelligenceInterface()
+    pipeline = getattr(getattr(interface._mission_engine, "executor", None),
+                       "pipeline", None)
+    assert pipeline is not None
+    resolver_registry = interface._capability_resolver.capability_registry
+    pipeline_registry = pipeline.capability_resolver.capability_registry
+    runtime_registry = interface._kernel_runtime.capability_registry
+    assert resolver_registry is pipeline_registry
+    assert resolver_registry is runtime_registry
+
+
+def test_real_mission_through_live_core(tmp_path):
+    """مهمة حقيقية تمر عبر النواة الحية والسجل الحي — لا عبر نواة زائفة:
+    تحليل مستودع git حقيقي محلي بقدرة مسجلة فعلاً، والنتيجة DNA فعلي."""
+    import subprocess
+    repo = tmp_path / "liverepo"
+    _write_repo(repo, {
+        "app.py": "import json\nprint('x')\n",
+        "requirements.txt": "flask>=2.0\n",
+        "README.md": "# live\n",
+    })
+    subprocess.run(["git", "init", "-q"], cwd=str(repo), check=True)
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True,
+                   env={**os.environ, "GIT_AUTHOR_NAME": "t",
+                        "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+                        "GIT_COMMITTER_EMAIL": "t@t"})
+    subprocess.run(["git", "commit", "-qm", "init"], cwd=str(repo), check=True,
+                   env={**os.environ, "GIT_AUTHOR_NAME": "t",
+                        "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+                        "GIT_COMMITTER_EMAIL": "t@t"})
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        mission={"name": "تحليل حي",
+                 "capability": "RepositoryAnalysis",
+                 "parameters": {"url": str(repo)}}))
+    assert result.status is IntelligenceStatus.COMPLETED, result.error
+    dna = result.result
+    # مخرج فعلي من قدرة إنتاجية حقيقية — ليس قيمة زائفة
+    assert dna is not None
+    name = dna.get("name") if isinstance(dna, dict) else getattr(dna, "name", None)
+    assert name == "liverepo"
+    # المهمة سُجلت في سجل التنفيذات القائم (المالك: rt.missions)
+    assert len(interface._kernel_runtime.missions) >= 1
+    recorded = interface._kernel_runtime.missions[-1]
+    assert recorded.state.value == "completed"
+    assert recorded.duration_ms > 0          # المنفذ قاس المدة فعلاً
+
+
+def test_boot_failure_is_reported_not_ready(tmp_path):
+    """فشل الإقلاع يُبلَّغ باستثناء صريح — لا واجهة \"جاهزة\" فوق إقلاع فاشل."""
+    empty = tmp_path / "empty_boot"
+    empty.mkdir()
+    with pytest.raises(RuntimeError):
+        IntelligenceInterface._boot_live_runtime(base_path=str(empty))
