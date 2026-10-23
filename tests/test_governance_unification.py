@@ -125,8 +125,9 @@ def test_policy_change_changes_both_paths():
 
 
 def test_legacy_rules_keep_literal_path():
-    """القواعد بلا مواصفات تبقى على المسار القديم الحرفي (متطلب قائم
-    مثبت في test_civilization) — لا يُدّعى تقييمها."""
+    """القواعد بلا مواصفات: حكم unverified معلل (منقّح بتصحيح المراجعة على
+    الشريحة الأولى — ADR-0010 §القرار 2): لا مخالفة بلا فحص ولا امتثال بلا
+    فحص؛ توقع test_civilization القديم عُدّل بلا حذف اسمه."""
     runtime = GovernanceRuntime()
     runtime.create_rule(
         name="Security Check",
@@ -134,11 +135,84 @@ def test_legacy_rules_keep_literal_path():
         description="All deployments must pass security check",
         severity="error",
     )
+    # قاعدة بلا مواصفة وبشدة error — لا تُحتسب مخالفة بلا فحص
     result = runtime.check_compliance("e1", "deployment")
     assert result["compliant"] is False
-    assert result["violations"][0]["description"].startswith(
-        "Compliance check:")
-    assert result["unverified"] == []
+    assert result["violations"] == []
+    assert len(result["unverified"]) == 1
+    assert result["unverified"][0]["rule_name"] == "Security Check"
+    assert "بلا مواصفة" in result["unverified"][0]["reason"]
+    # وبشدة warning كذلك — لا امتثال معلناً بلا فحص
+    runtime2 = GovernanceRuntime()
+    runtime2.create_rule(
+        name="Advisory Check",
+        domain=GovernanceDomain.SECURITY,
+        description="Advisory only",
+        severity="warning",
+    )
+    result2 = runtime2.check_compliance("e2", "deployment")
+    assert result2["compliant"] is False
+    assert result2["violations"] == []
+    assert len(result2["unverified"]) == 1
+
+
+def test_incomplete_spec_is_unverified():
+    """المواصفة الناقصة ليست قائمة سماح فارغة: غياب تعريف الحقول المطلوبة
+    حكم unverified بسبب نقص المواصفة — لا امتثال بلا فحص؛ وتغيير مواصفة
+    المادة 5 إلى ناقصة يجعل المحرك والواجهة القديمة لا يثبتان الامتثال
+    معاً."""
+    evaluator = get_shared_evaluator()
+    # مباشرة: مواصفة مكسورة بلا تعريف الحقول
+    evaluator.register_spec("broken", {"kind": "required_fields"})
+    verdict = evaluator.evaluate("broken", {})
+    assert verdict.verdict == "unverified"
+    assert "مواصفة ناقصة" in verdict.reason
+    # وبتغيير مواصفة المادة 5 إلى ناقصة — المساران لا يثبتان امتثالاً معاً
+    original_spec = evaluator.get_spec(
+        CONSTITUTION_ARTICLE_5_RULE_ID)
+    incomplete = {k: v for k, v in original_spec.items()
+                 if k != "required_fields"}
+    evaluator.register_spec(
+        CONSTITUTION_ARTICLE_5_RULE_ID, incomplete)
+    try:
+        validator = VersionValidator()
+        entity = {"type": "Contracts", "version": "1.0"}
+        assert validator.validate(dict(entity)) is False
+        assert "مواصفة ناقصة" in validator.last_verdict.reason
+        runtime = _runtime_with_article5()
+        result = runtime.check_compliance(
+            "e1", "contract", entity=dict(entity))
+        assert result["compliant"] is False
+        assert result["violations"] == []
+        assert "مواصفة ناقصة" in result["unverified"][0]["reason"]
+    finally:
+        evaluator.register_spec(
+            CONSTITUTION_ARTICLE_5_RULE_ID, original_spec)
+    # وبعد الاستعادة يعود الامتثال المثبت في المسارين
+    assert validator.validate(dict(entity)) is True
+
+
+def test_enforcement_pipeline_blocks_on_rejection():
+    """بوابة التجميع لا تتجاهل الرفض: رفض مدقق الإصدار (أو تعذر تحققه)
+    يمنع نجاح validate_all — والسبب من last_verdict يُنقل إلى الإخفاقات."""
+    from agos.governance.enforcement import ArchitecturalEnforcement
+    pipeline = ArchitecturalEnforcement()
+    pipeline.validators = {"version": VersionValidator()}
+    # مخالفة: نوع منصوص بلا إصدار — الرفض يمنع النجاح
+    result = pipeline.validate_all({"version": {"type": "Contracts"}})
+    assert result["validators"]["version"] is False
+    assert result["passed"] is False
+    assert any(f.get("validator") == "version"
+               for f in result["failures"])
+    # وتعذر التحقق (بلا نوع منصوص) يمنع النجاح كذلك
+    result2 = pipeline.validate_all({"version": {"version": "1"}})
+    assert result2["validators"]["version"] is False
+    assert result2["passed"] is False
+    # والامتثال المثبت ينجح
+    result3 = pipeline.validate_all(
+        {"version": {"type": "Contracts", "version": "1.0"}})
+    assert result3["validators"]["version"] is True
+    assert result3["passed"] is True
 
 
 def test_spec_comes_from_constitution_text():

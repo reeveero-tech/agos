@@ -92,7 +92,17 @@ class PolicyEvaluator:
                 )
         kind = spec.get("kind")
         if kind == "required_fields":
-            required = spec.get("required_fields", [])
+            # المواصفة الناقصة ليست قائمة سماح فارغة (تصحيح المراجعة):
+            # غياب تعريف الحقول المطلوبة أو فراغها = لا حقول مفحوصة —
+            # حكم unverified بسبب نقص المواصفة، لا امتثال بلا فحص
+            required = spec.get("required_fields")
+            if not isinstance(required, list) or not required:
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_UNVERIFIED,
+                    reason="مواصفة ناقصة — لا حقول مفحوصة معرفة، فلا فحص "
+                           "ولا امتثال مثبت",
+                )
             for field_name in required:
                 if field_name not in entity:
                     return PolicyVerdict(

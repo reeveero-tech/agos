@@ -118,9 +118,21 @@ class ArchitecturalEnforcement:
                     "error": str(e)
                 })
                 results[name] = False
+            # رفض المدقق أو تعذر تحققه يمنع نجاح التجميع (تصحيح المراجعة
+            # على الشريحة الأولى): لا نجاح مع نتيجة False — والسبب المتاح
+            # في last_verdict يُنقل إلى الإخفاقات
+            if results[name] is False:
+                verdict = getattr(validator, "last_verdict", None)
+                if verdict is not None and name not in {
+                        f.get("validator") for f in self.failures}:
+                    self.failures.append({
+                        "validator": name,
+                        "reason": getattr(verdict, "reason", str(verdict)),
+                    })
         
         return {
-            "passed": len(self.failures) == 0,
+            "passed": (len(self.failures) == 0
+                       and all(results.values())),
             "validators": results,
             "failures": self.failures
         }

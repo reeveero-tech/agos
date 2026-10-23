@@ -119,9 +119,9 @@ class GovernanceRuntime:
         القواعد ذات المواصفات التنفيذية تُقيَّم عبر المقيم المعتمد
         (R-W1-007، ADR-0010) بأحكام معللة: مخالفة معللة أو امتثال مثبت —
         وغياب مدخل الكيان (entity) ليس امتثالاً مثبتاً (unverified مع
-        سببه). القواعد بلا مواصفات تبقى على المسار القديم الحرفي
-        (احتساب ``severity="error"`` انتهاكاً أياً كان الكيان) — حكم قديم
-        غير مثبت موثق في ADR-0010، لا يُدّعى تقييماً.
+        سببه). **والقاعدة بلا مواصفة تنفيذية كذلك unverified** (تصحيح
+        المراجعة على الشريحة الأولى — ADR-0010 §القرار 2 منقّح): لا تُحتسب
+        مخالفة بلا فحص ولا يُعلن امتثال بلا فحص — الحكم غير مثبت معللاً.
         """
         violations = []
         unverified = []
@@ -134,37 +134,38 @@ class GovernanceRuntime:
             if rule.status != GovernanceStatus.ACTIVE:
                 continue
             
-            if self.evaluator.get_spec(rule.id) is not None:
-                # مسار المقيم المعتمد — حكم معلل (ADR-0010)
-                if entity is None:
-                    unverified.append({
-                        "rule_id": rule.id,
-                        "rule_name": rule.name,
-                        "reason": "مدخل الكيان (entity) غائب — لا فحص "
-                                  "ولا امتثال مثبت",
-                    })
-                    continue
-                verdict = self.evaluator.evaluate(rule.id, entity)
-                if verdict.verdict == "violation":
-                    violations.append({
-                        "rule_id": rule.id,
-                        "rule_name": rule.name,
-                        "description": f"Compliance check: {verdict.reason}",
-                    })
-                elif verdict.verdict == "unverified":
-                    unverified.append({
-                        "rule_id": rule.id,
-                        "rule_name": rule.name,
-                        "reason": verdict.reason,
-                    })
+            spec = self.evaluator.get_spec(rule.id)
+            if spec is None:
+                # قاعدة بلا مواصفة تنفيذية (تصحيح المراجعة — ADR-0010
+                # منقّح): لا مخالفة بلا فحص ولا امتثال بلا فحص — unverified
+                unverified.append({
+                    "rule_id": rule.id,
+                    "rule_name": rule.name,
+                    "reason": "قاعدة بلا مواصفة تنفيذية — لا فحص ولا "
+                              "امتثال ولا مخالفة مثبتة",
+                })
                 continue
-            
-            # مسار قديم غير مثبت (ADR-0010 §القرار 2) — يبقى حرفياً
-            if rule.severity == "error":
+            # مسار المقيم المعتمد — حكم معلل (ADR-0010)
+            if entity is None:
+                unverified.append({
+                    "rule_id": rule.id,
+                    "rule_name": rule.name,
+                    "reason": "مدخل الكيان (entity) غائب — لا فحص "
+                              "ولا امتثال مثبت",
+                })
+                continue
+            verdict = self.evaluator.evaluate(rule.id, entity)
+            if verdict.verdict == "violation":
                 violations.append({
                     "rule_id": rule.id,
                     "rule_name": rule.name,
-                    "description": f"Compliance check: {rule.description}",
+                    "description": f"Compliance check: {verdict.reason}",
+                })
+            elif verdict.verdict == "unverified":
+                unverified.append({
+                    "rule_id": rule.id,
+                    "rule_name": rule.name,
+                    "reason": verdict.reason,
                 })
         
         return {

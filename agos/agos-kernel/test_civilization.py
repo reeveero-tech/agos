@@ -257,11 +257,14 @@ def test_governance():
     )
     
     print(f"✓ Compliance checked: {result['compliant']}")
-    # R-Q-001: العقد المثبت من runtime.py: كل قاعدة severity="error" نشطة تُحتسب
-    # مخالفة تلقائياً — القاعدة التي أنشأناها للتو (error) مخالفة واحدة معلنة
+    # R-Q-001 (منقّح — R-W1-007/ADR-0010): القاعدة بلا مواصفة تنفيذية لا
+    # تُحتسب مخالفة بلا فحص ولا يُعلن امتثال بلا فحص — حكم unverified معلل
+    # (كانت تُحتسب مخالفة تلقائياً بseverity="error" — عدّل التوقع بلا
+    # حذف الاسم)
     assert result["compliant"] is False, result
-    assert len(result["violations"]) == 1, result["violations"]
-    assert result["violations"][0]["rule_name"] == "Security Check"
+    assert result["violations"] == [], result["violations"]
+    assert len(result["unverified"]) == 1, result["unverified"]
+    assert result["unverified"][0]["rule_name"] == "Security Check"
     
     return runtime
 
