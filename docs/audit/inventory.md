@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 535
-- **functions**: 6115
+- **functions**: 6117
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 533
-- **lines**: 99796
+- **lines**: 99893
 - **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
@@ -70,7 +70,7 @@
 | `agos-kernel/governance` | 2 | 535 | 32 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
-| `agos-kernel/intelligence` | 17 | 5131 | 175 | 0 | 0 | 17 | 0 | 4 |
+| `agos-kernel/intelligence` | 17 | 5228 | 177 | 0 | 0 | 17 | 0 | 4 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/knowledge` | 6 | 1051 | 39 | 0 | 0 | 6 | 0 | 0 |
 | `agos-kernel/laboratory` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |

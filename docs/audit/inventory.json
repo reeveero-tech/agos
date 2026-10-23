@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 535,
-  "lines": 99796,
-  "functions": 6115,
+  "lines": 99893,
+  "functions": 6117,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 17,
-   "lines": 5131,
-   "functions": 175,
+   "lines": 5228,
+   "functions": 177,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -6879,7 +6879,8 @@
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
-    "tests/test_decision_unification.py"
+    "tests/test_decision_unification.py",
+    "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
   },
@@ -8546,16 +8547,17 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 801,
+   "lines": 898,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 34,
+   "functions": 36,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "enum",
     "typing",
+    "json",
     "hashlib",
     "json",
     "events",
@@ -16810,6 +16812,7 @@
     "agos_kernel.intelligence.interface",
     "approval",
     "approval.runtime",
+    "decision_pipeline",
     "events",
     "flask",
     "intelligence.interface",
@@ -16826,6 +16829,7 @@
    "resolved": [
     "K:approval",
     "K:approval.runtime",
+    "K:decision_pipeline",
     "K:events",
     "K:execution",
     "K:execution.engine",

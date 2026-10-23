@@ -223,10 +223,11 @@ class IntelligenceResult:
     approval_id: Optional[str] = None
     comparison: Optional[ComparisonResult] = None
     evidence_snapshot: Optional[Dict[str, Any]] = None
-    #: مكونات خطة Engineer — إسقاط موثق المصدر لما هو كائن (R-W1-006):
-    #: لا تُعرض إلا حيث توجد خطة واختيار حقيقيان؛ الفشل المبكر يتركها None
-    engineering_plan: Optional[Dict[str, Any]] = None
     gaps: List[str] = field(default_factory=list)
+    #: مكونات خطة Engineer — إسقاط موثق المصدر لما هو كائن (R-W1-006):
+    #: لا تُعرض إلا حيث توجد خطة واختيار حقيقيان؛ الفشل المبكر يتركها None.
+    #: الحقل أُضيف **بعد** الحقول القائمة كلها — المنشئ الموضعي القديم لا يتأثر
+    engineering_plan: Optional[Dict[str, Any]] = None
 
 
 # ===============================================================
@@ -343,6 +344,21 @@ def _engineering_plan(mission: Any, plan: Any,
     }
 
 
+def _engineering_plan_fingerprint(ep: Optional[Dict[str, Any]]) -> tuple:
+    """بصمة عميقة لمحتوى المكونات المعروضة — تعديلها بعد العرض يُكشف عند
+    بوابتي الاعتماد والتنفيذ (كالخطة نفسها، لا كائناً حراً بلا حراسة).
+
+    تُحسب من **الكائن المربوط نفسه** عند كل مقارنة — لا من سجل قرار جديد
+    (فلا تُفحص معرّفات وأوقات متجددة عند كل حل)، وعميقة على القيم لا
+    على هوية القاموس (تعديل أي قيمة أو إضافة/حذف مفتاح يغيّر البصمة)."""
+    import json
+    if ep is None:
+        return ()
+    payload = json.dumps(ep, sort_keys=True, ensure_ascii=False,
+                         default=str)
+    return (payload,)
+
+
 @dataclass(frozen=True)
 class _ApprovalSnapshot:
     """لقطة مستقلة كاملة للمحتوى الموافق عليه — لا قاموس ``evidence`` القابل
@@ -355,6 +371,9 @@ class _ApprovalSnapshot:
     parameters_fingerprint: str
     selection_identity: tuple
     selection_object: Any = None      # الكائن القابل للاستدعاء الموافق عليه — يُتحقق عند حد الاستدعاء
+    #: بصمة مكونات خطة Engineer المعروضة (سجل العمل 0043+0044) — تُفحص
+    #: عند الاعتماد والتنفيذ كالخطة نفسها؛ الحقل أُضيف بعد الحقول القائمة
+    engineering_plan_fingerprint: tuple = ()
 
 
 def _parameters_fingerprint(parameters: Any) -> str:
@@ -502,6 +521,7 @@ class IntelligenceInterface:
         self._guard = _ApprovalGuard()
         self._bound_missions: Dict[str, Any] = {}   # المحتوى الموافق عليه يُنفَّذ (نسخة عميقة)
         self._bound_plans: Dict[str, Any] = {}      # الخطة المعروضة للاعتماد — كائن مشترك
+        self._bound_engineering_plans: Dict[str, Any] = {}  # مكونات الخطة المعروضة — كائن مشترك ببصمة عميقة
         self._bound_work: Dict[str, Any] = {}       # العمل المعتمد: (صاحب الدالة، الدالة، المعاملات)
         self._approval_by_mission: Dict[str, str] = {}
 
@@ -630,7 +650,11 @@ class IntelligenceInterface:
             request_type="intelligence.engineer-plan",
             description=f"خطة Engineer للمهمة: {mission.name}",
             source=self._human_source(), requester="intelligence-interface")
-        snapshot = self._snapshot(mission, plan, selection)
+        engineering_plan = _engineering_plan(mission, plan, decision_records)
+        # المكونات كائن مشترك معروض للاعتماد — كالخطة: تعديلها يُكشف ببصمة
+        # عميقة عند بوابتي الاعتماد والتنفيذ (سجل العمل 0044) ولا تمر معدّلة
+        self._bound_engineering_plans[approval_request.id] = engineering_plan
+        snapshot = self._snapshot(mission, plan, selection, engineering_plan)
         self._guard.bind(approval_request.id, snapshot)
         # الخطة كائن مشترك معروض للاعتماد — تعديلها يظهر عند التنفيذ فيُرفض؛
         # والمحتوى نسخة عميقة معزولة عن تعديل المرسل
@@ -658,7 +682,7 @@ class IntelligenceInterface:
             plan=plan,
             approval_id=approval_request.id,
             decision_records=decision_records,
-            engineering_plan=_engineering_plan(mission, plan, decision_records),
+            engineering_plan=engineering_plan,
             gaps=list(ENGINEER_GAPS))
 
     def approve(self, approval_id: str, approver: str) -> IntelligenceResult:
@@ -677,7 +701,8 @@ class IntelligenceInterface:
         selection_now = self._resolve_selection(mission)
         bound_snapshot = self._guard.snapshot(approval_id)
         if bound_snapshot is not None and self._snapshot(
-                mission, plan, selection_now) != bound_snapshot:
+                mission, plan, selection_now,
+                self._bound_engineering_plans.get(approval_id)) != bound_snapshot:
             self._guard.invalidate(approval_id)     # نهائي
             return IntelligenceResult(
                 mode=IntelligenceMode.ENGINEER,
@@ -733,7 +758,9 @@ class IntelligenceInterface:
         # الخطة المرتبطة نفسها (كائن مشترك) — تعديلها يظهر هنا فيُرفض
         plan = self._bound_plans[approval_id]
         selection_now = self._resolve_selection(mission)
-        snapshot_now = self._snapshot(mission, plan, selection_now)
+        snapshot_now = self._snapshot(
+            mission, plan, selection_now,
+            self._bound_engineering_plans.get(approval_id))
         if not self._guard.permit_execution(self._approval, approval_id,
                                             snapshot_now):
             if self._guard.is_invalidated(approval_id):
@@ -846,8 +873,9 @@ class IntelligenceInterface:
         return self._capability_resolver.resolve(mission, ExecutionContext(mission=mission))
 
     @staticmethod
-    def _snapshot(mission, plan, selection) -> _ApprovalSnapshot:
-        """لقطة الاعتماد: الخطة + العمل + المعاملات + **هوية الاختيار المحلول**."""
+    def _snapshot(mission, plan, selection, engineering_plan=None) -> _ApprovalSnapshot:
+        """لقطة الاعتماد: الخطة + العمل + المعاملات + **هوية الاختيار المحلول**
+        + بصمة مكونات الخطة المعروضة (سجل العمل 0044)."""
         identity = ()
         if selection is not None:
             identity = (str(getattr(selection, "capability_name", "") or ""),
@@ -859,7 +887,9 @@ class IntelligenceInterface:
             parameters_fingerprint=_parameters_fingerprint(
                 getattr(mission, "parameters", None)),
             selection_identity=identity,
-            selection_object=getattr(selection, "capability", None))
+            selection_object=getattr(selection, "capability", None),
+            engineering_plan_fingerprint=_engineering_plan_fingerprint(
+                engineering_plan))
 
     @staticmethod
     def _human_source():

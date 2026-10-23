@@ -461,6 +461,60 @@ def test_engineer_failed_results_have_no_engineering_plan():
     assert result.engineering_plan is None
 
 
+def test_intelligence_result_positional_fields_unchanged():
+    """G2/توافق: الحقل الجديد engineering_plan أُضيف بعد الحقول القائمة
+    كلها — المنشئ الموضعي القديم لا يزال يضع gaps في موضعه لا في الجديد."""
+    r = IntelligenceResult(
+        IntelligenceMode.ENGINEER, IntelligenceStatus.FAILED,
+        "m1", None, "خطأ", ["record"], None, None, None, None, ["g"])
+    assert r.gaps == ["g"]
+    assert r.engineering_plan is None
+
+
+def test_engineer_plan_components_mutation_invalidates_approval():
+    """سجل العمل 0044: المكونات المعروضة كائن مشترك كالخطة — تعديل أي
+    مكوّن منها بعد العرض يُكشف ببصمة عميقة عند الاعتماد فيُرفض بلا
+    استدعاء نواة، والمسار غير المعدّل يعتمد وينفذ مرة واحدة كما كان."""
+    # المسار غير المعدّل أولاً: يعتمد وينفذ مرة واحدة (بلا انكسار)
+    core = _FakeCore()
+    interface, _ = _interface_with_core(core)
+    clean = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    approved = interface.approve(clean.approval_id, approver="م")
+    assert approved.status is IntelligenceStatus.APPROVED
+    executed = interface.execute_approved(clean.approval_id)
+    assert executed.status is IntelligenceStatus.COMPLETED
+    assert core.calls != []
+
+    # تعديل المتطلبات بعد العرض — يُرفض عند الاعتماد
+    interface2, _ = _interface_with_core(_FakeCore())
+    r1 = interface2.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    r1.engineering_plan["requirements"].append(
+        {"ref": "mission.name", "value": "مزيف", "source": "caller-provided"})
+    rejected = interface2.approve(r1.approval_id, approver="م")
+    assert rejected.status is IntelligenceStatus.FAILED
+    assert "تغيّر" in (rejected.error or "")
+
+    # تعديل البدائل بعد العرض — يُرفض كذلك
+    interface3, _ = _interface_with_core(_FakeCore())
+    r2 = interface3.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    r2.engineering_plan["alternatives"]["kind"] = "fabricated"
+    rejected2 = interface3.approve(r2.approval_id, approver="م")
+    assert rejected2.status is IntelligenceStatus.FAILED
+    assert "تغيّر" in (rejected2.error or "")
+
+    # تعديل التكلفة بعد العرض — يُرفض كذلك
+    interface4, _ = _interface_with_core(_FakeCore())
+    r3 = interface4.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    r3.engineering_plan["cost"]["estimated_duration_ms"] = 99999
+    rejected3 = interface4.approve(r3.approval_id, approver="م")
+    assert rejected3.status is IntelligenceStatus.FAILED
+    assert "تغيّر" in (rejected3.error or "")
+
+
 def test_engineer_validation_blocks_plan_and_approval():
     interface, _ = _interface_with_core(_FakeCore())
     result = interface.run(IntelligenceRequest(
