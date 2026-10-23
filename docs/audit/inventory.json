@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 536,
-  "lines": 100292,
-  "functions": 6129,
+  "lines": 100630,
+  "functions": 6134,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -585,8 +585,8 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 5627,
-   "functions": 189,
+   "lines": 5965,
+   "functions": 194,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -6825,6 +6825,7 @@
    ],
    "imported_by": [
     "K:decision",
+    "K:intelligence.interface",
     "K:resolvers"
    ],
    "import_status": "OK"
@@ -6878,6 +6879,7 @@
    "resolved_imports": [],
    "imported_by": [
     "K:decision",
+    "K:intelligence.interface",
     "K:resolvers"
    ],
    "tested_by_external": [
@@ -8553,10 +8555,10 @@
    "path": "agos/agos-kernel/intelligence/intent.py",
    "module": "intelligence.intent",
    "root": "kernel",
-   "lines": 343,
+   "lines": 364,
    "syntax_ok": true,
    "classes": 1,
-   "functions": 10,
+   "functions": 11,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8576,16 +8578,17 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 954,
+   "lines": 1271,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 38,
+   "functions": 42,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "enum",
     "typing",
+    "intelligence",
     "hashlib",
     "json",
     "agos_runtime",
@@ -8593,6 +8596,10 @@
     "mission_engine",
     "mission_engine",
     "copy",
+    "intelligence",
+    "uuid",
+    "decision_pipeline",
+    "decision_pipeline",
     "mission_engine",
     "capabilities.analysis_service",
     "copy",
@@ -8613,6 +8620,7 @@
     "K:approval",
     "K:capabilities.analysis_service",
     "K:context",
+    "K:decision_pipeline",
     "K:execution.engine",
     "K:intelligence",
     "K:mission_engine"

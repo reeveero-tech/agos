@@ -134,6 +134,27 @@ NEEDS_REPOSITORY_SOURCE = {
     "CapabilityGenome",
 }
 
+#: مفهوم الفعل: تحليل/فحص مستودع
+CONCEPT_SKILLS: Dict[str, List[str]] = {
+    # جدول معلن مؤسس على عقود السجل الحي: كل قدرة في إيفاء
+    # repository-analysis تتطلب هذه المهارات (يُختبر التأسيس)
+    "repository-analysis": ["CloneRepository", "ReadRepository"],
+    "dna": ["CloneRepository", "ReadRepository", "GenerateDNA"],
+}
+
+
+def derived_skills(interpretation: "IntentInterpretation") -> List[str]:
+    """المهارات المشتقة من المفاهيم المطلوبة — جدول معلن (CONCEPT_SKILLS)
+    لا استخراج حر؛ المفهوم بلا تعيين مهاري لا يضيف شيئاً (مفاهيم المخرجات
+    إيفاؤها بالحقول لا بالمهارات)."""
+    skills: List[str] = []
+    for concept in interpretation.required_concepts:
+        for skill in CONCEPT_SKILLS.get(concept, []):
+            if skill not in skills:
+                skills.append(skill)
+    return skills
+
+
 NEGATION_MARKERS = ("بدون", "بلا", "ليس", "غير", "لا")
 
 INTERROGATIVE_STARTERS = ("هل", "كيف", "لماذا", "أين", "متى", "ما هو",

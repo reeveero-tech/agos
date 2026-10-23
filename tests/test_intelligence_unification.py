@@ -1558,3 +1558,117 @@ def test_instant_natural_text_interrogative_fails_named(tmp_path):
     assert result.status is IntelligenceStatus.FAILED
     assert "استفهامي" in (result.error or "")
     assert "intent-interpretation" in result.gaps
+
+
+# ===============================================================
+# مسار القبول الحي لمثال القبول (سجل العمل 0048): طلب طبيعي ←
+# متطلبات قبل الاختيار ← بدائل تقارن بدليل القرار ← خطة مشتقة ←
+# اعتماد ← تنفيذ واحد — والقياس يغلق فجوة التكلفة في الطلب التالي
+# ===============================================================
+
+def _natrepo(tmp_path, name="natrepo"):
+    import subprocess
+    repo = tmp_path / name
+    _write_repo(repo, {"app.py": "import json\nprint('x')\n",
+                      "requirements.txt": "flask>=2.0\n",
+                      "README.md": "# live\n"})
+    subprocess.run(["git", "init", "-q"], cwd=str(repo), check=True)
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "init"], cwd=str(repo), check=True,
+                   env=env)
+    return repo
+
+
+def test_engineer_natural_text_acceptance_path(tmp_path):
+    """مثال القبول كاملاً: نص عربي طبيعي (أطر/اعتماديات/لغات + مستودع)
+    → متطلبات مشتقة قبل الاختيار → بدائل الإيفاء الثلاثة تقارن بدليل
+    القرار القائم → خطة بمكونات مشتقة → اعتماد → تنفيذ واحد فعلي."""
+    repo = _natrepo(tmp_path)
+    interface = IntelligenceInterface()
+    text = f"أريد فحص مستودع {repo} والكشف عن أطره واعتمادياته ولغاته"
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, natural_text=text))
+    # خطة معروضة بانتظار الاعتماد — صفر تنفيذ قبل الإجازة
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL, result.error
+    assert len(interface._kernel_runtime.missions) == 0   # لا تنفيذ قبل الاعتماد
+    ep = result.engineering_plan
+    assert ep is not None
+    # 1) المتطلبات مشتقة من نص المستخدم قبل الاختيار — لا من قدرة
+    req_refs = [r["ref"] for r in ep["requirements"]]
+    assert "natural_text" in req_refs
+    assert any(r.startswith("intent.required.frameworks") for r in req_refs)
+    assert all(r.get("source") != "caller-provided" for r in ep["requirements"])
+    # 2) البدائل: مرشحو الإيفاء الثلاثة بإثبات حوامل المخرجات + المقارنة
+    assert ep["alternatives"]["kind"] == "design-alternatives-compared"
+    names = {c["name"] for c in ep["alternatives"]["candidates"]}
+    assert names == {"RepositoryAnalysis", "RepositoryDNAGeneration",
+                    "RepositoryProcessingPipeline"}
+    ra_row = next(c for c in ep["alternatives"]["candidates"]
+                 if c["name"] == "RepositoryAnalysis")
+    assert "RepositoryDNA.frameworks" in ra_row["fulfillment_evidence"]["frameworks"]
+    assert ep["alternatives"]["selection"]["selected"] in names
+    # 3) المخاطر مشتقة بأسانيد (احتمالية غير معلومة — لا تُختلق)
+    assert ep["risks"], "المخاطر يجب أن تشتق للمسار المفسر"
+    for risk in ep["risks"]:
+        assert risk["evidence"] and risk["impact"] and risk["probability"] is None
+    # 4) المعمارية: مقترح مشتق من المتطلبات والعقد — بوسم مقترح
+    assert ep["architecture_design"]["kind"] == "proposal"
+    assert ep["architecture_design"]["components"]
+    # 5) التكلفة: معلنة حرفياً أول مرة (لا تاريخ) — الفجوة مسماة صادقة
+    assert ep["cost"]["source"] == "declared-literal"
+    # 6) الفجوات: ما اشتُق يُغلق وما لا قياس له يبقى
+    assert "engineering-plan-requirements-analysis" not in result.gaps
+    assert "engineering-plan-design-alternatives" not in result.gaps
+    assert "engineering-plan-risks" not in result.gaps
+    assert "engineering-plan-architecture" not in result.gaps
+    assert "engineering-plan-cost-estimate" in result.gaps   # لا قياس بعد
+    assert "intent-interpretation" not in result.gaps
+    # ---- الاعتماد ثم التنفيذ مرة واحدة ----
+    approved = interface.approve(result.approval_id, "المعتمِد")
+    assert approved.status is IntelligenceStatus.APPROVED
+    executed = interface.execute_approved(result.approval_id)
+    assert executed.status is IntelligenceStatus.COMPLETED, executed.error
+    assert executed.result is not None          # مخرج فعلي (DNA أو uro)
+    # التنفيذ سُجل بمدة مقيسة مسندة إلى القدرة
+    log_entry = interface._execution_log[-1]
+    assert log_entry["capability"] == ep["alternatives"]["selection"]["selected"]
+    assert log_entry["state"] == "completed" and log_entry["duration_ms"] > 0
+
+
+def test_engineer_natural_text_second_request_closes_cost_gap(tmp_path):
+    """بعد تنفيذ مقيس، الطلب الثاني لنفس الهدف تُغلق فجوة التكلفة بقياس
+    فعلي (وسائط وعينة مدى ملحوظ) — لا يعود معلناً حرفياً."""
+    repo = _natrepo(tmp_path, "costrepo")
+    interface = IntelligenceInterface()
+    text = f"افحص أمن المستودع {repo}"        # SecurityScan — مرشح وحيد
+    first = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, natural_text=text))
+    assert first.status is IntelligenceStatus.AWAITING_APPROVAL
+    assert first.engineering_plan["cost"]["source"] == "declared-literal"
+    assert "engineering-plan-cost-estimate" in first.gaps
+    assert interface.approve(first.approval_id, "م").status is IntelligenceStatus.APPROVED
+    assert interface.execute_approved(
+        first.approval_id).status is IntelligenceStatus.COMPLETED
+    second = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, natural_text=text))
+    assert second.status is IntelligenceStatus.AWAITING_APPROVAL
+    cost = second.engineering_plan["cost"]
+    assert cost["source"] == "measured"
+    assert cost["n"] >= 1 and cost["median_ms"] > 0
+    assert cost["observed_min_ms"] <= cost["median_ms"] <= cost["observed_max_ms"]
+    assert "engineering-plan-cost-estimate" not in second.gaps
+
+
+def test_engineer_natural_text_interrogative_and_guards(tmp_path):
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        natural_text="هل يمكنك تحليل هذا المستودع؟"))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "استفهامي" in (result.error or "")
+    missing = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, natural_text="افحص أمن المستودع"))
+    assert missing.status is IntelligenceStatus.FAILED
+    assert "المدخل المطلوب غائب" in (missing.error or "")

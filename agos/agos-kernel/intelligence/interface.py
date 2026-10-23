@@ -289,8 +289,18 @@ def _plan_fingerprint(plan: Any) -> tuple:
     )
 
 
+def _mission_field(mission_spec: Any, field: str) -> str:
+    """قراءة حقل من مواصفة مهمة — قاموساً كانت أو كائن Mission."""
+    if isinstance(mission_spec, dict):
+        return str(mission_spec.get(field, "") or "")
+    return str(getattr(mission_spec, field, "") or "")
+
+
 def _engineering_plan(mission: Any, plan: Any,
-                       decision_records: List[Any]) -> Dict[str, Any]:
+                       decision_records: List[Any],
+                       interpreted: Optional[Dict[str, Any]] = None,
+                       execution_log: Optional[List[Dict[str, Any]]] = None
+                       ) -> Dict[str, Any]:
     """مكونات خطة Engineer — إسقاط موثق المصدر لما هو كائن فعلاً (R-W1-006).
 
     لا اختراع: كل مكوّن يُشتق من واقع قائم (مواصفة المرسل، الخطة، دليل
@@ -298,7 +308,17 @@ def _engineering_plan(mission: Any, plan: Any,
     ``gaps`` لا قيمة مختلقة هنا. المكونات المعروضة مربوطة ببصمة عميقة
     محافظة على الأنواع (``_engineering_plan_fingerprint``) تُفحص عند
     بوابتي الاعتماد والتنفيذ (سجل العمل 0044).
+
+    المسار المفسر من الطلب الطبيعي (سجل العمل 0048): المكونات تُشتق من
+    النية المفسرة **قبل الاختيار** — المتطلبات من نص المستخدم، والبدائل
+    مرشحو الإيفاء تقارن عبر دليل القرار القائم، والمخاطر والتكلفة المقيسة
+    والمعمارية مشتقة بأسانيدها المعلنة (لا تُغلق الفجوات إلا بما اشتُق
+    فعلاً — والتكلفة لا تُغلق إلا بقياس موجود).
     """
+    if interpreted is not None:
+        return _interpreted_engineering_plan(
+            mission, plan, decision_records, interpreted,
+            execution_log or [])
     # المتطلبات: مواصفة المرسل منقولة حرفياً بوسم مصدرها — ليست تحليل متطلبات
     requirements: List[Dict[str, Any]] = []
     for ref, value in (("mission.name", getattr(mission, "name", "")),
@@ -345,6 +365,167 @@ def _engineering_plan(mission: Any, plan: Any,
         "risks": None,               # لا تقييم مخاطر — الفجوة مسماة
         "cost": cost,
         "architecture_design": None,  # تحليل لما هو كائن لا تصميم — الفجوة مسماة
+    }
+
+
+def _interpreted_engineering_plan(
+        mission: Any, plan: Any, decision_records: List[Any],
+        interpreted: Dict[str, Any],
+        execution_log: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """مكونات خطة المسار المفسر — اشتقاق موثق الأسناد من نية مفسرة قبل
+    الاختيار (سجل العمل 0048). لا تحقق دائري: المتطلبات من نص المستخدم،
+    والبدائل من جدول الإيفاء المُثبت بالمخرجات، والمقارنة من دليل القرار
+    القائم، والمخاطر/التكلفة/المعمارية مشتقة بأسانيدها المعلنة."""
+    from intelligence import intent as intent_module
+    interpretation = interpreted["interpretation"]
+    selected = interpreted["selected"]
+
+    # ---- المتطلبات: مشتقة من نص المستخدم قبل أي اختيار ----
+    requirements: List[Dict[str, Any]] = [
+        {"ref": "natural_text", "value": interpreted["natural_text"],
+         "source": "user-text-verbatim"}]
+    for concept in interpretation.required_concepts:
+        matched = next((t for c, t in interpretation.matched_terms
+                       if c == concept), "")
+        requirements.append({
+            "ref": f"intent.required.{concept}", "value": concept,
+            "evidence": f"مصطلح مطابق: {matched}",
+            "source": "interpreted-from-natural-text"})
+    for concept in interpretation.negated_concepts:
+        requirements.append({
+            "ref": f"intent.negated.{concept}", "value": concept,
+            "evidence": "نُفي صراحةً في الطلب — استبعاد لا متطلب",
+            "source": "interpreted-from-natural-text"})
+    for key, value in interpretation.artifacts.items():
+        requirements.append({
+            "ref": f"intent.artifact.{key}", "value": value,
+            "evidence": "مستخرج نصياً من الطلب — لا تخمين",
+            "source": "extracted-from-text"})
+
+    # ---- البدائل: مرشحو الإيفاء والمقارنة من دليل القرار القائم ----
+    comparison = interpreted["comparison"]
+    projected = (comparison.to_dict() if hasattr(comparison, "to_dict")
+                 else {"record_type": type(comparison).__name__})
+    candidate_rows = []
+    for name in interpreted["alternatives"]:
+        fulfill_carriers = {}
+        for concept in interpretation.required_concepts:
+            entry = intent_module.FULFILLMENT.get(concept, {}).get(name)
+            if entry:
+                fulfill_carriers[concept] = entry[0]
+        eval_row = next((e for e in projected.get("candidates", [])
+                         if e.get("name") == name), None)
+        candidate_rows.append({
+            "name": name,
+            "fulfillment_evidence": fulfill_carriers,   # حامل المخرج الفعلي
+            "evaluation": eval_row,                    # درجة دليل القرار
+        })
+    alternatives = {
+        "kind": "design-alternatives-compared",
+        "policy": "live-capability-resolution (دليل القرار القائم وسياسته الحية)",
+        "required_skills": interpreted["required_skills"],
+        "skill_source": "CONCEPT_SKILLS المعلن — اشتقاق من المفاهيم لا من قدرة",
+        "candidates": candidate_rows,
+        "selection": {"selected": selected,
+                      "tie_break": projected.get("tie_break")},
+        "record": projected,
+        "note": "مرشحو الإيفاء المثبت بالمخرجات قورنوا بدليل القرار القائم",
+    }
+
+    # ---- المخاطر: مشتقة من أسانيد واقعية للتصميم المختار ----
+    risks: List[Dict[str, Any]] = []
+    url = interpretation.artifacts.get("url", "")
+    if url.startswith("http"):
+        risks.append({
+            "risk": "اعتماد على الشبكة — المصدر رابط بعيد",
+            "evidence": f"المصدر المستخرج نصياً: {url}",
+            "impact": "فشل الوصول يفشل المهمة قبل أي تحليل",
+            "mitigation": "سياسة الاستنساخ الآمن ترفض المخفي والسطحي؛ المصدر "
+                          "المحلي بديل بلا شبكة",
+            "mitigation_verification": "فشل الاستنساخ يظهر خطأً مسمى في أحداث "
+                                       "التنفيذ (execution_failed)",
+            "probability": None})
+    risks.append({
+        "risk": "صلاحية معاملات غير مثبتة — ما لم يذكره المستخدم (فرع/عمق) "
+                "يبقى بقيمة القدرة المعلنة",
+        "evidence": "المفسر يستخرج المصادر نصياً فقط ولا يخمّن معاملات",
+        "impact": "قد تختلف النتيجة عن توقع المستخدم إن كانت القيمة المعلنة "
+                  "غير المقصودة",
+        "mitigation": "الخطة المعروضة للاعتماد تُظهر المعاملات كما استخرجت",
+        "mitigation_verification": "المعتمِد يرى mission.parameters في الخطة "
+                                   "قبل الإجازة",
+        "probability": None})
+    measured = [e["duration_ms"] for e in execution_log
+                if e.get("capability") == selected
+                and e.get("state") == "completed"]
+    if not measured:
+        risks.append({
+            "risk": "لا تاريخ تنفيذ مقيس لهذه القدرة — عدم يقين في المدة، "
+                    "ليس دليل فشل",
+            "evidence": "سجل التنفيذات المسند لا يحوي تنفيذاً مكتملاً لهذه "
+                        "القدرة",
+            "impact": "تقدير المدة يبقى معلناً لا مقيساً",
+            "mitigation": "أول تنفيذ يُقاس ويُسند إلى القدرة فيغلق الفجوة",
+            "mitigation_verification": "المدة المقيسة تظهر في سجل التنفيذات "
+                                       "بعد التنفيذ",
+            "probability": None})
+
+    # ---- التكلفة: مدة تنفيذ مقيسة من سجل التنفيذات، وإلا معلنة حرفياً ----
+    if measured:
+        ordered = sorted(measured)
+        n = len(ordered)
+        median = ordered[n // 2] if n % 2 else (ordered[n // 2 - 1]
+                                              + ordered[n // 2]) // 2
+        cost = {
+            "n": n, "median_ms": median,
+            "observed_min_ms": ordered[0], "observed_max_ms": ordered[-1],
+            "unit": "measured-execution-duration",
+            "conditions": {"capability": selected, "state": "completed"},
+            "note": "مدة تنفيذ مقيسة (وسائط وعينة مدى ملحوظ) — لا تكلفة مالية "
+                    "ولا ادعاء شمول",
+            "source": "measured",
+        }
+    else:
+        cost = {
+            "estimated_duration_ms": getattr(plan, "estimated_duration_ms", None),
+            "source": "declared-literal",
+            "measured": [],
+            "note": "لا تاريخ تنفيذ مقيس لهذه القدرة بعد — الفجوة مسماة "
+                    "(engineering-plan-cost-estimate)",
+        }
+
+    # ---- المعمارية: مقترح مشتق من المتطلبات وعقد المختار — لا وصف منفذ ----
+    selected_skills = []
+    for concept in interpretation.required_concepts:
+        selected_skills.extend(intent_module.CONCEPT_SKILLS.get(concept, []))
+    architecture_design = {
+        "kind": "proposal",
+        "derived_from": "requirements (before selection) + chosen contract",
+        "components": [
+            {"component": skill,
+             "responsibility": "مرحلة معلنة في عقد القدرة المختارة",
+             "supports_concepts": [c for c in interpretation.required_concepts
+                                    if skill in intent_module.CONCEPT_SKILLS.get(c, [])]}
+            for skill in dict.fromkeys(selected_skills)],
+        "output_fulfillment": {
+            concept: intent_module.FULFILLMENT.get(concept, {}).get(
+                selected, ([], False))[0]
+            for concept in interpretation.required_concepts},
+        "data_flow": [
+            "المصدر المستخرج نصياً (url)",
+            "المراحل المعلنة في عقد المختار (skills)",
+            "المخرج المثبت حاملاً للمفاهيم (fulfillment carriers)",
+        ],
+        "note": "مقترح معماري مشتق — ليس وصف المنفذ القائم؛ العقد المختار "
+                "مصدر المراحل", 
+    }
+
+    return {
+        "requirements": requirements,
+        "alternatives": alternatives,
+        "risks": risks,
+        "cost": cost,
+        "architecture_design": architecture_design,
     }
 
 
@@ -536,6 +717,11 @@ class IntelligenceInterface:
         self._mission_engine = mission_engine
         self._kernel_runtime = kernel_runtime   # مالك سجل المهام القائم (rt.missions)
         self._capability_resolver = capability_resolver
+        #: سجل تنفيذات مسند (سجل العمل 0048): كل تنفيذ تقوده الواجهة يُسجل
+        #: بقدرته وحالته ومدته المقيسة — المدة من المنفذ (Instant/Engineer
+        #: يمران عبر MissionExecutor) لا من ساعة الواجهة؛ وهو إسنادُ قدرةٍ
+        #: فوق سجل rt.missions القائم (المالك) لا مخزن موازٍ له
+        self._execution_log: List[Dict[str, Any]] = []
         self._core_wrapper = core_wrapper      # حد التحقق عند الاستدعاء (أو None)
         if approval is None:
             from approval import ApprovalRuntime
@@ -645,6 +831,14 @@ class IntelligenceInterface:
         if interpreted:
             # الفجوة أُغلقت للمسار المفسر — لا تُرد فجوة آلية غاب مسبباها
             gaps = [g for g in gaps if g != "intent-interpretation"]
+        # إسناد القدرة إلى المدة المقيسة من المنفذ (لا ساعة واجهة)
+        self._execution_log.append({
+            "mission_id": outcome.mission_id,
+            "capability": _mission_field(mission_spec, "capability"),
+            "mode": "instant",
+            "state": outcome.state.value,
+            "duration_ms": outcome.duration_ms,
+            "measured_by": "mission-executor"})
         return IntelligenceResult(
             mode=IntelligenceMode.INSTANT,
             status=IntelligenceStatus.COMPLETED if completed
@@ -657,14 +851,27 @@ class IntelligenceInterface:
 
     # ---------- Engineer ----------
     def _run_engineer(self, request: IntelligenceRequest) -> IntelligenceResult:
-        if not request.mission:
+        mission_spec = request.mission
+        interpreted_ctx = None
+        if not mission_spec and request.natural_text:
+            # مسار الطلب الطبيعي (سجل العمل 0048): المتطلبات قبل الاختيار —
+            # تفسير معلن ثم بدائل الإيفاء تقارن عبر دليل القرار القائم
+            mission_spec, interpreted_ctx, intent_error = (
+                self._interpret_engineer_request(request.natural_text))
+            if mission_spec is None:
+                return IntelligenceResult(
+                    mode=IntelligenceMode.ENGINEER,
+                    status=IntelligenceStatus.FAILED,
+                    error=intent_error,
+                    gaps=list(ENGINEER_GAPS))
+        if not mission_spec:
             return IntelligenceResult(
                 mode=IntelligenceMode.ENGINEER,
                 status=IntelligenceStatus.FAILED,
                 error="لا مواصفة مهمة — لا مفسر قصد حراً في القائم "
                       "(فجوة مسماة: intent-interpretation)",
                 gaps=list(ENGINEER_GAPS))
-        bound_content = self._stable_content(request.mission)
+        bound_content = self._stable_content(mission_spec)
         mission = self._parse_bound(bound_content)
         # التحقق يمنع أي خطة أو اعتماد عند الفشل — كما في السلسلة المتحققة
         from mission_engine import MissionValidator
@@ -706,7 +913,14 @@ class IntelligenceInterface:
             request_type="intelligence.engineer-plan",
             description=f"خطة Engineer للمهمة: {mission.name}",
             source=self._human_source(), requester="intelligence-interface")
-        engineering_plan = _engineering_plan(mission, plan, decision_records)
+        engineering_plan = _engineering_plan(
+            mission, plan, decision_records,
+            interpreted=interpreted_ctx, execution_log=self._execution_log)
+        # فجوات المسار المفسر: ما اشتُق فعلاً يُغلق، وما لا قياس له يبقى مسمى
+        gaps = list(ENGINEER_GAPS)
+        if interpreted_ctx is not None:
+            gaps = [g for g in gaps
+                    if g not in interpreted_ctx.get("closed_gaps", [])]
         # المكونات كائن مشترك معروض للاعتماد — كالخطة: تعديلها يُكشف ببصمة
         # عميقة عند بوابتي الاعتماد والتنفيذ (سجل العمل 0044) ولا تمر معدّلة
         self._bound_engineering_plans[approval_request.id] = engineering_plan
@@ -739,7 +953,101 @@ class IntelligenceInterface:
             approval_id=approval_request.id,
             decision_records=decision_records,
             engineering_plan=engineering_plan,
-            gaps=list(ENGINEER_GAPS))
+            gaps=gaps)
+
+    def _interpret_engineer_request(self, natural_text: str):
+        """الطلب الطبيعي في Engineer: متطلبات قبل الاختيار، وبدائل إيفاء
+        تقارن عبر دليل القرار القائم (سياسته الحية) — لا محرك ترتيب موازٍ.
+
+        الترتيب الصريح: نص المستخدم ← مفاهيم/مصادر ← بدائل الإيفاء ←
+        مقارنة دليل القرار ← الفائز — لا اشتقاق متطلبات من قدرة مختارة."""
+        from intelligence import intent as intent_module
+        interpretation = intent_module.interpret(natural_text)
+        if interpretation.interrogative:
+            return None, None, ("طلب استفهامي — سؤال لا أمر تنفيذ؛ يُوجَّه "
+                                "للبحث لا للتنفيذ (فجوة مسماة: "
+                                "intent-interpretation)")
+        if not interpretation.required_concepts:
+            return None, None, ("لا مفاهيم مطلوبة مفهومة من الطلب — المعجم "
+                                "المعلن لم يطابق شيئاً (فجوة مسماة: "
+                                "intent-interpretation)")
+        registered = [c.name for c in
+                      self._capability_resolver.capability_registry.list_all()]
+        alternatives, unfulfilled = intent_module.ranked_candidates(
+            interpretation, registered)
+        if unfulfilled:
+            return None, None, ("لا قدرة مسجلة يحمل مخرجها المفهوم المطلوب: "
+                                + ", ".join(unfulfilled)
+                                + " (فجوة مسماة: intent-interpretation)")
+        if not alternatives:
+            return None, None, ("لا قدرة مسجلة تحقق المفاهيم معاً: "
+                                + ", ".join(interpretation.required_concepts)
+                                + " (فجوة مسماة: intent-interpretation)")
+        required_skills = intent_module.derived_skills(interpretation)
+        comparison = self._compare_alternatives(alternatives, required_skills)
+        selected = getattr(comparison, "selected", None)
+        if getattr(comparison, "status", None) != "selected" or not selected:
+            return None, None, ("تعذر اختيار بين البدائل في دليل القرار — "
+                                "لا اعتماد بلا عمل صالح (" 
+                                + str(getattr(comparison, "status", "")) + ")")
+        if selected in intent_module.NEEDS_REPOSITORY_SOURCE \
+                and "url" not in interpretation.artifacts:
+            return None, None, ("المدخل المطلوب غائب: " + selected
+                                + " يحتاج مصدر مستودع (رابط أو مسار) ولم "
+                                  "يُذكر في الطلب (فجوة مسماة: "
+                                  "intent-interpretation)")
+        mission_spec = {
+            "name": "نية: " + " + ".join(sorted(
+                interpretation.required_concepts)),
+            "description": "مهمة مبنية من طلب طبيعي (مفسر النية المعلن)",
+            "capability": selected,
+            "parameters": dict(interpretation.artifacts),
+        }
+        # فجوات تُغلق بما اشتُق فعلاً — والتكلفة المقيسة تُغلق عند وجود قياس
+        closed = ["intent-interpretation",
+                 "engineering-plan-requirements-analysis",
+                 "engineering-plan-design-alternatives",
+                 "engineering-plan-risks",
+                 "engineering-plan-architecture"]
+        durations = [e["duration_ms"] for e in self._execution_log
+                    if e.get("capability") == selected
+                    and e.get("state") == "completed"]
+        if durations:
+            closed.append("engineering-plan-cost-estimate")
+        interpreted_ctx = {
+            "natural_text": natural_text,
+            "interpretation": interpretation,
+            "alternatives": list(alternatives),
+            "required_skills": list(required_skills),
+            "comparison": comparison,
+            "selected": selected,
+            "closed_gaps": closed,
+        }
+        return mission_spec, interpreted_ctx, None
+
+    def _compare_alternatives(self, alternative_names: List[str],
+                              required_skills: List[str]):
+        """مقارنة بدائل التصميم عبر **دليل القرار القائم** بسياسته الحية
+        (LIVE_CAPABILITY_POLICY) — المرشحون مرشحو الإيفاء المثبت
+        بالمخرجات فقط (لا السجل كله)، والمهارات المشتقة من المفاهيم
+        بجدول معلن. لا محرك ترتيب موازٍ."""
+        import uuid as _uuid
+        from decision_pipeline import (DECISION_CORE, DecisionCandidate,
+                                       DecisionRequest, LIVE_CAPABILITY_POLICY)
+        from decision_pipeline import _utc_now_iso
+        registry = self._capability_resolver.capability_registry
+        registered = {c.name: c for c in registry.list_all()}
+        candidates = [DecisionCandidate(
+            name=name,
+            skills_query=(lambda c=registered[name]: getattr(c, "skills", [])),
+            priority_query=(lambda c=registered[name]: getattr(c, "priority", 1.0)),
+            ref=registered[name])
+            for name in alternative_names if name in registered]
+        return DECISION_CORE.evaluate(
+            DecisionRequest(kind="capability", requested_name="",
+                            required_skills=list(required_skills), constraints=[]),
+            candidates, LIVE_CAPABILITY_POLICY,
+            decision_id=f"cap-{_uuid.uuid4()}", timestamp=_utc_now_iso())
 
     def approve(self, approval_id: str, approver: str) -> IntelligenceResult:
         """اعتماد صريح — حالة **APPROVED** فقط، لا تنفيذ (التنفيذ بإجازة
@@ -846,6 +1154,15 @@ class IntelligenceInterface:
             wrapper.expected = None
         from mission_engine import MissionState
         completed = outcome.state is MissionState.COMPLETED
+        # إسناد القدرة إلى المدة المقيسة من المنفذ (سجل العمل 0048) —
+        # المدة قياس المنفذ لا ساعة الواجهة
+        self._execution_log.append({
+            "mission_id": outcome.mission_id,
+            "capability": str(getattr(mission, "capability", "") or ""),
+            "mode": "engineer",
+            "state": outcome.state.value,
+            "duration_ms": outcome.duration_ms,
+            "measured_by": "mission-executor"})
         return IntelligenceResult(
             mode=IntelligenceMode.ENGINEER,
             status=IntelligenceStatus.COMPLETED if completed
