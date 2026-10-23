@@ -208,6 +208,10 @@ class IntelligenceRequest:
     question: Optional[str] = None                # Research
     evidence_path: Optional[str] = None           # Research: مسار المستودع
     candidates: Optional[List[EngineeringCandidate]] = None  # Research
+    #: طلب طبيعي (Instant/Engineer): يُفسر بالمفسر المعلن (معجم ثنائي +
+    #: جدول إيفاء مُثبت بالمخرجات) — الحقل أُضيف **بعد** الحقول القائمة
+    #: كلها فالمنشئ الموضعي القديم لا يتأثر (سجل العمل 0047)
+    natural_text: Optional[str] = None
 
 
 @dataclass
@@ -602,14 +606,32 @@ class IntelligenceInterface:
 
     # ---------- Instant ----------
     def _run_instant(self, request: IntelligenceRequest) -> IntelligenceResult:
-        if not request.mission:
+        mission_spec = request.mission
+        interpreted = False
+        if not mission_spec and request.natural_text:
+            # مفسر النية المعلن (سجل العمل 0047): معجم ثنائي + إيفاء مُثبت
+            # بالمخرجات — لا تخمين معاملات ولا اختيار بلا تعليل
+            from intelligence import intent as intent_module
+            interpretation = intent_module.interpret(request.natural_text)
+            registered = [c.name for c in
+                          self._capability_resolver.capability_registry.list_all()]
+            mission_spec, intent_error = intent_module.build_mission(
+                interpretation, registered)
+            interpreted = True
+            if mission_spec is None:
+                return IntelligenceResult(
+                    mode=IntelligenceMode.INSTANT,
+                    status=IntelligenceStatus.FAILED,
+                    error=intent_error,
+                    gaps=list(INSTANT_GAPS))
+        if not mission_spec:
             return IntelligenceResult(
                 mode=IntelligenceMode.INSTANT,
                 status=IntelligenceStatus.FAILED,
                 error="لا مواصفة مهمة — لا مفسر قصد حراً في القائم "
                       "(فجوة مسماة: intent-interpretation)",
                 gaps=list(INSTANT_GAPS))
-        bound_content = self._stable_content(request.mission)
+        bound_content = self._stable_content(mission_spec)
         if self._kernel_runtime is not None:
             # المسار الحي المعتمد: يمر عبر ``KernelRuntime.run`` فيُسجَّل في
             # ``rt.missions`` (المالك القائم لسجل التنفيذات) ويقيس المنفذ
@@ -619,6 +641,10 @@ class IntelligenceInterface:
             outcome = self._mission_engine.run(bound_content)   # parse→validate→plan→execute
         from mission_engine import MissionState
         completed = outcome.state is MissionState.COMPLETED
+        gaps = list(INSTANT_GAPS)
+        if interpreted:
+            # الفجوة أُغلقت للمسار المفسر — لا تُرد فجوة آلية غاب مسبباها
+            gaps = [g for g in gaps if g != "intent-interpretation"]
         return IntelligenceResult(
             mode=IntelligenceMode.INSTANT,
             status=IntelligenceStatus.COMPLETED if completed
@@ -627,7 +653,7 @@ class IntelligenceInterface:
             result=outcome.result,
             error=outcome.error,
             decision_records=list(getattr(outcome, "decision_records", None) or []),
-            gaps=list(INSTANT_GAPS))
+            gaps=gaps)
 
     # ---------- Engineer ----------
     def _run_engineer(self, request: IntelligenceRequest) -> IntelligenceResult:

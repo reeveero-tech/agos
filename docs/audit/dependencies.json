@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 577,
+  "files_scanned": 578,
   "external_imports": [
     {
       "import": "a",

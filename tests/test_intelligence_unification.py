@@ -1414,3 +1414,147 @@ def test_boot_failure_is_reported_not_ready(tmp_path):
     empty.mkdir()
     with pytest.raises(RuntimeError):
         IntelligenceInterface._boot_live_runtime(base_path=str(empty))
+
+
+# ===============================================================
+# تفسير النية (سجل العمل 0047): معجم ثنائي معلن + إيفاء مُثبت بالمخرجات
+# ===============================================================
+from intelligence import intent as _intent  # noqa: E402
+
+_LIVE_REGISTRY_NAMES = [
+    "RepositoryAnalysis", "RepositoryDNAGeneration", "RepositoryProcessingPipeline",
+    "SecurityScan", "LicenseAnalysis", "ConfigurationAnalysis",
+    "DocumentationAnalysis", "InfrastructureAnalysis", "CapabilityGenome",
+    "EngineeringKnowledgeExtraction",
+]
+
+
+def test_intent_acceptance_example_tie_is_named_ambiguity():
+    """مثال القبول: طلب الأطر والاعتماديات واللغات له ثلاثة مرشحين حقيقيين
+    متكافئين (RA/RDNG/RPP) — تعادل مسمّى لا اختيار بلا تعليل في Instant
+    (المقارنة المعللة مسار engineer)."""
+    text = ("أريد فحص مستودع https://github.com/psf/requests والكشف عن "
+            "أطره واعتمادياته ولغاته")
+    interpretation = _intent.interpret(text)
+    # المفاهيم مشتقة من نص المستخدم (لا من قدرة مختارة — لا تحقق دائري)
+    assert set(interpretation.required_concepts) == {
+        "frameworks", "dependencies", "languages", "repository-analysis"}
+    assert interpretation.artifacts["url"] == "https://github.com/psf/requests"
+    mission, error = _intent.build_mission(interpretation, _LIVE_REGISTRY_NAMES)
+    assert mission is None
+    assert "تعادل" in error
+    for cap in ("RepositoryAnalysis", "RepositoryDNAGeneration",
+                "RepositoryProcessingPipeline"):
+        assert cap in error            # المرشحون الثلاثة مسمّون في الخطأ
+
+
+def test_intent_dedicated_fulfillment_beats_incidental():
+    """رخصة المستودع: LicenseAnalysis (مخرجها كله المفهوم) تسبق
+    RepositoryAnalysis (يحملها حقلاً بين حقول DNA) — ترتيب إيفاء معلن."""
+    interpretation = _intent.interpret(
+        "افحص رخصة مستودع https://github.com/psf/requests")
+    mission, error = _intent.build_mission(interpretation, _LIVE_REGISTRY_NAMES)
+    assert error is None
+    assert mission["capability"] == "LicenseAnalysis"
+    assert mission["parameters"] == {"url": "https://github.com/psf/requests"}
+    # المعاملات المستخرجة نصياً فقط — لا تخمين فرع ولا عمق
+    assert set(mission["parameters"]) == {"url"}
+
+
+def test_intent_negation_excludes_concept_and_changes_outcome():
+    """النفي يستبعد المفهوم من المطلوب — ويغير النتيجة: بلا نفي لا مُوفٍ
+    (أمن + رخص لا تحققهما قدرة واحدة معاً)، وبالنفي يفوز المُوفّي المتبقي."""
+    both = _intent.interpret("افحص رخص وأمن المستودع /tmp/r")
+    assert set(both.required_concepts) >= {"license", "security"}
+    mission, error = _intent.build_mission(both, _LIVE_REGISTRY_NAMES)
+    assert mission is None and "لا قدرة مسجلة تحقق" in error
+    negated = _intent.interpret("افحص رخص المستودع /tmp/r بدون أمن")
+    assert "security" in negated.negated_concepts
+    assert "security" not in negated.required_concepts
+    mission, error = _intent.build_mission(negated, _LIVE_REGISTRY_NAMES)
+    assert mission is not None and mission["capability"] == "LicenseAnalysis"
+
+
+def test_intent_interrogative_is_question_not_execution_order():
+    """السؤال لا يُعامل كأمر تنفيذ — فشل مسمّى لا تنفيذ."""
+    interpretation = _intent.interpret("هل يمكنك تحليل هذا المستودع؟")
+    assert interpretation.interrogative is True
+    mission, error = _intent.build_mission(interpretation, _LIVE_REGISTRY_NAMES)
+    assert mission is None and "استفهامي" in error
+
+
+def test_intent_missing_required_input_is_named_gap():
+    """المرشح يحتاج مصدر مستودع ولم يُذكر — فجوة مسماة لا اختلاق معامل."""
+    interpretation = _intent.interpret("افحص أمن المستودع")
+    mission, error = _intent.build_mission(interpretation, _LIVE_REGISTRY_NAMES)
+    assert mission is None
+    assert "المدخل المطلوب غائب" in error and "SecurityScan" in error
+
+
+def test_intent_fulfillment_table_grounded_in_code():
+    """تأسيس جدول الإيفاء: الحقول المزعومة موجودة فعلاً في عقد المخرج
+    (RepositoryDNA) — لا انجراف صامت بين الجدول والكود."""
+    from dataclasses import fields
+    from contracts import RepositoryDNA   # عقد المخرج الفعلي
+    dna_fields = {f.name for f in fields(RepositoryDNA)}
+    for claimed in ("frameworks", "dependencies", "languages", "license",
+                    "config_files"):
+        assert claimed in dna_fields, claimed
+    # كل قدرة في الجدول موجودة في السجل الحي أو مسماة صراحة
+    for concept, caps in _intent.FULFILLMENT.items():
+        for cap in caps:
+            assert cap in _LIVE_REGISTRY_NAMES, (concept, cap)
+
+
+def test_intent_rpp_fulfillment_grounded_by_execution(tmp_path):
+    """تأسيس إيفاء RPP بالنتيجة الفعلية: تشغيله على مستودع حقيقي صغير
+    يُخرج حقائق languages/frameworks في سمات uro — الإثبات نتيجة لا وصف."""
+    import subprocess
+    repo = tmp_path / "rppground"
+    _write_repo(repo, {"app.py": "import json\n", "requirements.txt": "flask>=2\n"})
+    subprocess.run(["git", "init", "-q"], cwd=str(repo), check=True)
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "i"], cwd=str(repo), check=True, env=env)
+    from capabilities.rpp import RepositoryProcessingPipelineCapability
+    outcome = RepositoryProcessingPipelineCapability().execute(
+        {"repo_path": str(repo)})
+    uro = outcome["universal_repository_object"]
+    # المفاهيم الثلاثة حقول عُليا في uro — كما أثبت التنفيذ الفعلي
+    assert uro["all_languages"]          # لغات مكتشفة فعلاً
+    assert "frameworks" in uro and "dependencies" in uro and "all_languages" in uro
+
+
+def test_instant_natural_text_runs_through_live_interface(tmp_path):
+    """المسار الحي الكامل للطلب الطبيعي: نص عربي → تفسير → مهمة → تنفيذ
+    عبر النواة الحية، والفجوة intent-interpretation مغلقة للمسار المفسر."""
+    import subprocess
+    repo = tmp_path / "natrepo"
+    _write_repo(repo, {"app.py": "import json\n", "requirements.txt": "flask>=2\n"})
+    subprocess.run(["git", "init", "-q"], cwd=str(repo), check=True)
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "add", "-A"], cwd=str(repo), check=True, env=env)
+    subprocess.run(["git", "commit", "-qm", "i"], cwd=str(repo), check=True, env=env)
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        natural_text=f"افحص أمن المستودع {repo}"))
+    assert result.status is IntelligenceStatus.COMPLETED, result.error
+    assert isinstance(result.result, dict) and result.result   # تقرير فعلي
+    # الفجوة أُغلقت للمسار المفسر — لا تُرد فجوة آلية غاب مسبباها
+    assert "intent-interpretation" not in result.gaps
+    # سُجلت في سجل التنفيذات القائم بمدة مقيسة
+    recorded = interface._kernel_runtime.missions[-1]
+    assert recorded.state.value == "completed" and recorded.duration_ms > 0
+
+
+def test_instant_natural_text_interrogative_fails_named(tmp_path):
+    interface = IntelligenceInterface()
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.INSTANT,
+        natural_text="هل يمكنك تحليل هذا المستودع؟"))
+    assert result.status is IntelligenceStatus.FAILED
+    assert "استفهامي" in (result.error or "")
+    assert "intent-interpretation" in result.gaps
