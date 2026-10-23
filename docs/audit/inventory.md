@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 537
-- **functions**: 6153
+- **functions**: 6154
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 101720
+- **lines**: 101776
 - **not_imported_by_others**: 251
 - **stub_functions**: 789
 - **syntax_errors**: 0
@@ -34,7 +34,7 @@
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 13 | 5411 | 278 | 27 | 0 | 13 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24445 | 1316 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization` | 100 | 24451 | 1316 | 120 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -67,7 +67,7 @@
 | `agos-kernel/federation` | 5 | 2034 | 190 | 98 | 0 | 5 | 0 | 4 |
 | `agos-kernel/finalization` | 1 | 1142 | 37 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/framework_packs` | 1 | 135 | 6 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/governance` | 3 | 761 | 40 | 0 | 0 | 3 | 0 | 0 |
+| `agos-kernel/governance` | 3 | 802 | 41 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
 | `agos-kernel/intelligence` | 18 | 6757 | 204 | 0 | 0 | 18 | 0 | 5 |
@@ -140,7 +140,7 @@
 | `evolution` | 6 | 405 | 48 | 17 | 0 | 6 | 0 | 5 |
 | `execution` | 11 | 556 | 55 | 0 | 0 | 11 | 0 | 10 |
 | `fabric` | 6 | 769 | 67 | 8 | 0 | 6 | 0 | 4 |
-| `foundation` | 11 | 849 | 96 | 4 | 0 | 11 | 0 | 10 |
+| `foundation` | 11 | 858 | 96 | 4 | 0 | 11 | 0 | 10 |
 | `governance` | 4 | 465 | 32 | 14 | 0 | 4 | 0 | 3 |
 | `intelligence` | 6 | 435 | 57 | 8 | 0 | 6 | 0 | 5 |
 | `meta` | 7 | 626 | 54 | 0 | 0 | 7 | 0 | 6 |

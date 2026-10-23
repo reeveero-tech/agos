@@ -158,6 +158,47 @@ def shared_evaluator() -> PolicyEvaluator:
     return evaluator
 
 
+def evaluate_rule_dicts(rules: List[Any],
+                         context: Dict[str, Any]) -> Dict[str, Any]:
+    """تقييم قواعد سياسة (قواميس) عبر المقيم المعتمد — للواجهات المكتشفة
+    (R-W1-007، الشريحة الثالثة — ADR-0010).
+
+    القاعدة القابلة للفحص الوحيدة: **قاموس يحمل ``rule_id`` معرّفَ قاعدة
+    مسجلة** لدى المقيم؛ ما سواه (نص حر، قاموس بلا rule_id، معرّف غير
+    مسجل) غير قابل للفحص — لا يُعلن سماحاً بلا فحص. السماح مثبت فقط بفحص
+    ناجح لكل القواعد؛ والمخالفة والتحقق المتعذر كلاهما لا يُعلن سماحاً.
+    """
+    evaluator = get_shared_evaluator()
+    results: List[Dict[str, Any]] = []
+    if not rules:
+        return {"allowed": False,
+                "reason": "السياسة بلا قواعد — لا فحص ولا سماح مثبت",
+                "results": results}
+    for rule in rules:
+        if not isinstance(rule, dict) or "rule_id" not in rule:
+            return {"allowed": False,
+                    "reason": "قاعدة غير قابلة للفحص (ليست قاموساً بمعرّف "
+                              "قاعدة rule_id) — لا يُحوَّل الشكل الحر آلياً",
+                    "results": results}
+        rule_id = str(rule["rule_id"])
+        if evaluator.get_spec(rule_id) is None:
+            return {"allowed": False,
+                    "reason": "قاعدة غير قابلة للفحص (معرّف غير مسجل): "
+                              "{!r}".format(rule_id),
+                    "results": results}
+        verdict = evaluator.evaluate(rule_id, context)
+        results.append({"rule": rule_id,
+                        "verdict": verdict.verdict})
+        if verdict.verdict != VERDICT_COMPLIANT:
+            # مخالفة معللة أو تحقق متعذر — كلاهما لا يُعلن سماحاً
+            return {"allowed": False,
+                    "reason": "{}: {}".format(verdict.verdict, verdict.reason),
+                    "results": results}
+    return {"allowed": True,
+            "reason": "فحص كل قواعد السياسة ناجح — سماح مثبت",
+            "results": results}
+
+
 # المقيم المشترك على مستوى الوحدة — هوية واحدة للتفويض (مسار واحد)
 _SHARED: Optional[PolicyEvaluator] = None
 

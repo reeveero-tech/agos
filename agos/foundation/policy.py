@@ -29,8 +29,17 @@ class PolicyRegistry:
         return [p for p in self._policies.values() if p.policy_type == policy_type]
 
 class PolicyEvaluator:
+    """مقيم واجهة السياسة الشاملة — يفوّض الحكم إلى المقيم المعتمد
+    (R-W1-007، ADR-0010 — الشريحة الثالثة): كان يرجع allowed=True أعمى؛
+    السماح الآن مثبت فقط بفحص ناجح لكل قواعد السياسة عبر المقيم المعتمد،
+    والقاعدة القابلة للفحص هي قاموس بمعرّف قاعدة مسجلة (rule_id) — لا
+    يُحوَّل الشكل الحر آلياً؛ والسبب متاح في ``reason``."""
+
     def evaluate(self, policy: Policy, context: Dict[str, Any]) -> Dict[str, Any]:
-        return {"allowed": True, "policy": policy.name}
+        from agos_kernel.governance.policy_evaluator import evaluate_rule_dicts
+        result = evaluate_rule_dicts(policy.rules, context)
+        return {"allowed": result["allowed"], "policy": policy.name,
+                "reason": result["reason"]}
 
 class UniversalPolicyRuntime:
     """

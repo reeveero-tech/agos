@@ -319,6 +319,127 @@ def test_enterprise_policy_delegation_traced():
     assert (CONSTITUTION_ARTICLE_5_RULE_ID, entity) in evaluator.evaluation_log
 
 
+def test_discovered_foundation_policy_delegates():
+    """الشريحة الثالثة (المسار المكتشف الأول — foundation/policy.py):
+    UniversalPolicyRuntime كان يرجع allowed=True أعمى بلا مستهلكين —
+    السماح الآن مثبتاً فقط عبر المقيم المعتمد، والقاعدة القابلة للفحص
+    قاموس بمعرّف مسجل (rule_id) لا شكل حر يُحوَّل آلياً."""
+    from agos.foundation.policy import UniversalPolicyRuntime
+    runtime = UniversalPolicyRuntime()
+    rule = {"rule_id": CONSTITUTION_ARTICLE_5_RULE_ID}
+    runtime.create_policy("Security", "versioned", "desc", [dict(rule)])
+    # السماح: فحص ناجح
+    ok = runtime.evaluate(
+        "policy_versioned", {"type": "Contracts", "version": "1.0"})
+    assert ok["allowed"] is True
+    assert "سماح مثبت" in ok["reason"]
+    # المنع: مخالفة معللة (بلا إصدار)
+    denied = runtime.evaluate("policy_versioned", {"type": "Contracts"})
+    assert denied["allowed"] is False
+    assert denied["reason"].startswith("violation")
+    # عدم التحقق: مدخل ناقص (بلا نوع)
+    unv = runtime.evaluate("policy_versioned", {"version": "1.0"})
+    assert unv["allowed"] is False
+    assert unv["reason"].startswith("unverified")
+    # قاعدة شكل حر (بلا rule_id) — غير قابلة للفحص
+    runtime.create_policy("Security", "freeform", "desc", [{"name": "آمن"}])
+    free = runtime.evaluate("policy_freeform", {"type": "Contracts"})
+    assert free["allowed"] is False
+    assert "غير قابلة للفحص" in free["reason"]
+    # معرّف غير مسجل
+    runtime.create_policy("Security", "unregistered", "d",
+                          [{"rule_id": "no-such-rule"}])
+    assert runtime.evaluate(
+        "policy_unregistered", {})["allowed"] is False
+    # سياسة بلا قواعد — لا فحص ولا سماح
+    runtime.create_policy("Security", "empty", "d", [])
+    assert runtime.evaluate("policy_empty", {})["allowed"] is False
+    # سياسة غير موجودة — مسار الخطأ محفوظ كما كان
+    assert runtime.evaluate("policy_missing", {}) == {
+        "error": "Policy not found"}
+
+
+def test_discovered_civilization_policy_delegates():
+    """الشريحة الثالثة (المسار المكتشف الثاني — civilization/policy_runtime):
+    PolicyEvaluator كان يعلن passed=True لكل قاعدة أياً كان الفحص — السماح
+    الآن مثبتاً فقط عبر المقيم المعتمد (مع حفظ شكل النتيجة: policy_id/
+    passed/results) والسبب في reason."""
+    from agos_kernel.civilization.policy_runtime import (
+        PolicyRuntime as CivPolicyRuntime, PolicyType)
+    runtime = CivPolicyRuntime()
+    runtime.create_policy(
+        "versioned", PolicyType.SECURITY,
+        [{"rule_id": CONSTITUTION_ARTICLE_5_RULE_ID}])
+    # السماح
+    ok = runtime.evaluate_policies(
+        PolicyType.SECURITY, {"type": "Contracts", "version": "1.0"})
+    assert len(ok) == 1
+    assert ok[0]["passed"] is True
+    assert "سماح مثبت" in ok[0]["reason"]
+    # المنع: مخالفة معللة
+    denied = runtime.evaluate_policies(
+        PolicyType.SECURITY, {"type": "Contracts"})
+    assert denied[0]["passed"] is False
+    assert denied[0]["reason"].startswith("violation")
+    # عدم التحقق: مدخل ناقص
+    unv = runtime.evaluate_policies(
+        PolicyType.SECURITY, {"version": "1.0"})
+    assert unv[0]["passed"] is False
+    assert unv[0]["reason"].startswith("unverified")
+    # شكل حر — غير قابل للفحص (النوع يجمع سياستيه: المنع لـversioned
+    # وغير القابل للفحص لـfreeform — كلتاهما لا تُعلن سماحاً)
+    runtime.create_policy("freeform", PolicyType.SECURITY, [{"name": "آمن"}])
+    free = runtime.evaluate_policies(PolicyType.SECURITY, {"type": "Contracts"})
+    assert all(r["passed"] is False for r in free)
+    assert any("غير قابلة للفحص" in r["reason"] for r in free)
+
+
+def test_discovered_paths_delegation_traced_and_policy_change():
+    """تتبع التفويض وتأثير تغيير السياسة عبر المسارين المكتشفين معاً
+    (والمحرك) — مصدر واحد للمواصفة يقلب الجميع."""
+    from agos.foundation.policy import UniversalPolicyRuntime
+    from agos_kernel.civilization.policy_runtime import (
+        PolicyRuntime as CivPolicyRuntime, PolicyType)
+    evaluator = get_shared_evaluator()
+    original_spec = evaluator.get_spec(CONSTITUTION_ARTICLE_5_RULE_ID)
+    # تتبع التفويض: تقييم المسارين يمر بالمقيم المشترك فعلاً
+    evaluator.evaluation_log.clear()
+    foundation = UniversalPolicyRuntime()
+    foundation.create_policy("Security", "v", "d",
+                             [{"rule_id": CONSTITUTION_ARTICLE_5_RULE_ID}])
+    foundation.evaluate("policy_v", {"type": "Contracts", "version": "1"})
+    civ = CivPolicyRuntime()
+    civ.create_policy("v", PolicyType.EXECUTION,
+                      [{"rule_id": CONSTITUTION_ARTICLE_5_RULE_ID}])
+    civ.evaluate_policies(PolicyType.EXECUTION,
+                          {"type": "Contracts", "version": "1"})
+    assert evaluator.evaluation_log.count(
+        (CONSTITUTION_ARTICLE_5_RULE_ID,
+         {"type": "Contracts", "version": "1"})) == 2
+    # تغيير السياسة يقلب المسارين المكتشفين والمحرك معاً
+    entity = {"type": "Contracts", "version": "1.0"}
+    assert foundation.evaluate("policy_v", dict(entity))["allowed"] is True
+    assert civ.evaluate_policies(
+        PolicyType.EXECUTION, dict(entity))[0]["passed"] is True
+    changed = dict(original_spec)
+    changed["required_fields"] = ["version", "name"]
+    evaluator.register_spec(CONSTITUTION_ARTICLE_5_RULE_ID, changed)
+    try:
+        assert foundation.evaluate(
+            "policy_v", dict(entity))["allowed"] is False
+        assert civ.evaluate_policies(
+            PolicyType.EXECUTION, dict(entity))[0]["passed"] is False
+        assert _runtime_with_article5().check_compliance(
+            "e1", "contract", entity=dict(entity))["compliant"] is False
+    finally:
+        evaluator.register_spec(
+            CONSTITUTION_ARTICLE_5_RULE_ID, original_spec)
+    # وبعد الاستعادة يعود السماح في الثلاثة
+    assert foundation.evaluate("policy_v", dict(entity))["allowed"] is True
+    assert civ.evaluate_policies(
+        PolicyType.EXECUTION, dict(entity))[0]["passed"] is True
+
+
 def test_spec_comes_from_constitution_text():
     """المواصفة تُقرأ من النص الدستوري نفسه لا نسخة مستقلة عنه."""
     spec = get_shared_evaluator().get_spec(

@@ -60,11 +60,17 @@ class PolicyRegistry:
 
 
 class PolicyEvaluator:
+    """مقيم سياسات الحضارة — يفوّض الحكم إلى المقيم المعتمد (R-W1-007،
+    ADR-0010 — الشريحة الثالثة): كان يعلن passed=True لكل قاعدة أياً كان
+    الفحص؛ السماح الآن مثبت فقط بفحص ناجح لكل قواعد السياسة عبر المقيم
+    المعتمد، والقاعدة القابلة للفحص هي قاموس بمعرّف قاعدة مسجلة
+    (rule_id) — لا يُحوَّل الشكل الحر آلياً؛ والسبب متاح في ``reason``."""
+
     def evaluate(self, policy: Policy, context: Dict) -> Dict:
-        results = []
-        for rule in policy.rules:
-            results.append({'rule': rule.get('name'), 'passed': True})
-        return {'policy_id': policy.policy_id, 'passed': True, 'results': results}
+        from agos_kernel.governance.policy_evaluator import evaluate_rule_dicts
+        result = evaluate_rule_dicts(policy.rules, context)
+        return {'policy_id': policy.policy_id, 'passed': result["allowed"],
+                'results': result["results"], 'reason': result["reason"]}
 
 
 class PolicyRuntime:

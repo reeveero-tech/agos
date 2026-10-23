@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 101720,
-  "functions": 6153,
+  "lines": 101776,
+  "functions": 6154,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24445,
+   "lines": 24451,
    "functions": 1316,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 761,
-   "functions": 40,
+   "lines": 802,
+   "functions": 41,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1355,7 +1355,7 @@
   },
   "foundation": {
    "files": 11,
-   "lines": 849,
+   "lines": 858,
    "functions": 96,
    "stub_functions": 4,
    "hardcoded_paths": 0,
@@ -4905,13 +4905,16 @@
    "imported_by": [
     "K:civilization.foundation_integration.foundation"
    ],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/policy_runtime/policy.py",
    "module": "civilization.policy_runtime.policy",
    "root": "kernel",
-   "lines": 90,
+   "lines": 96,
    "syntax_ok": true,
    "classes": 5,
    "functions": 10,
@@ -4922,12 +4925,15 @@
     "datetime",
     "typing",
     "enum",
-    "uuid"
+    "uuid",
+    "agos_kernel.governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.policy_runtime.policy",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:governance.policy_evaluator"
+   ],
    "imported_by": [
     "K:civilization.policy_runtime"
    ],
@@ -8137,10 +8143,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 171,
+   "lines": 212,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 8,
+   "functions": 9,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -8155,8 +8161,10 @@
     "S:constitution.constitution"
    ],
    "imported_by": [
+    "K:civilization.policy_runtime.policy",
     "K:governance.runtime",
     "S:enterprise.governance",
+    "S:foundation.policy",
     "S:governance.enforcement"
    ],
    "tested_by_external": [
@@ -15106,7 +15114,7 @@
    "path": "agos/foundation/policy.py",
    "module": "foundation.policy",
    "root": "src",
-   "lines": 81,
+   "lines": 90,
    "syntax_ok": true,
    "classes": 4,
    "functions": 9,
@@ -15114,15 +15122,20 @@
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
-    "typing"
+    "typing",
+    "agos_kernel.governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:foundation.policy",
    "resolved_imports": [
+    "K:governance.policy_evaluator",
     "S:foundation"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16875,18 +16888,22 @@
    "imports": [
     "agos.constitution.constitution",
     "agos.enterprise.governance",
+    "agos.foundation.policy",
     "agos.governance.enforcement",
+    "agos_kernel.civilization.policy_runtime",
     "agos_kernel.governance",
     "agos_kernel.governance.policy_evaluator",
     "agos_kernel.governance.runtime"
    ],
    "scripts": [],
    "resolved": [
+    "K:civilization.policy_runtime",
     "K:governance",
     "K:governance.policy_evaluator",
     "K:governance.runtime",
     "S:constitution.constitution",
     "S:enterprise.governance",
+    "S:foundation.policy",
     "S:governance.enforcement"
    ]
   },
