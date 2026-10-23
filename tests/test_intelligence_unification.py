@@ -379,6 +379,88 @@ def test_engineer_awaits_approval_with_zero_execution():
     assert core.calls == []                       # لا أي استدعاء تنفيذ (الحارس)
 
 
+def test_engineer_plan_components_are_honest_projections():
+    """R-W1-006 المتبقي (سجل العمل 0043): مكونات خطة Engineer — إسقاط موثق
+    المصدر لما هو كائن فعلاً: المتطلبات مواصفة المرسل حرفياً، والبدائل مرشحو
+    دليل القرار، والتكلفة المدة المعلنة حرفياً؛ ولا يُختلق تقييم مخاطر ولا
+    تصميم معماري — None مع فجوة مسماة."""
+    interface, _ = _interface_with_core(_FakeCore())
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER, mission=_mission_spec()))
+    assert result.status is IntelligenceStatus.AWAITING_APPROVAL
+    ep = result.engineering_plan
+    assert ep is not None
+    # المتطلبات: مواصفة المرسل منقولة حرفياً بوسم مصدرها
+    reqs = {r["ref"]: r for r in ep["requirements"]}
+    assert reqs["mission.name"]["value"] == "مهمة اختبار"
+    assert reqs["mission.description"]["value"] == "وصف"
+    assert reqs["mission.capability"]["value"] == "GuardCap"
+    assert reqs["mission.parameters.x"]["value"] == 1
+    assert all(r["source"] == "caller-provided"
+               for r in ep["requirements"])
+    # البدائل: من دليل القرار — ليست بدائل تصميم/معمارية
+    assert ep["alternatives"]["kind"] == "capability-selection"
+    # التكلفة: المدة المعلنة حرفياً في الخطة — لا قياس يُدّعى
+    assert ep["cost"]["estimated_duration_ms"] == 5000
+    assert ep["cost"]["source"] == "declared-literal"
+    assert ep["cost"]["measured"] == []
+    # ما لا اشتقاق صادقاً له: لا يُختلق — None والفجوة مسماة
+    assert ep["risks"] is None
+    assert ep["architecture_design"] is None
+    for gap in ("engineering-plan-requirements-analysis",
+               "engineering-plan-risks",
+               "engineering-plan-design-alternatives",
+               "engineering-plan-cost-estimate",
+               "engineering-plan-architecture"):
+        assert gap in result.gaps
+
+
+def test_engineer_plan_components_project_real_decision_record():
+    """البدائل تُشتق من دليل قرار حقيقي: مرشحوه بدرجاتهم واستبعادهم
+    والاختيار وكسر التعادل — إسقاط مطابق للسجل لا نسخة منفصلة."""
+    from decision_pipeline import (
+        CandidateEvaluation, DecisionRecord, DecisionScore)
+    from intelligence.interface import _engineering_plan
+    record = DecisionRecord(
+        decision_id="d1", kind="capability", policy_id="p1",
+        policy_version="1",
+        candidates=[
+            CandidateEvaluation(
+                name="CapA", offered_skills=["s1"],
+                score=DecisionScore(total=2.0, skill_match=1.0),
+                values_used={"skill_match": {"s1": 1.0}}),
+            CandidateEvaluation(
+                name="CapB", offered_skills=["s2"],
+                excluded=True, exclusion_reason="skill-missing"),
+        ],
+        selected="CapA", ranked_alternatives=[],
+        tie_break="registration-order", status="selected")
+    mission = Mission(name="n", capability="CapA", parameters={"x": 1})
+    plan = MissionPlanner().plan(mission)
+    ep = _engineering_plan(mission, plan, [record])
+    alt = ep["alternatives"]
+    assert alt["kind"] == "capability-selection"
+    assert alt["selected"] == "CapA"
+    assert alt["tie_break"] == "registration-order"
+    assert [c["name"] for c in alt["candidates"]] == ["CapA", "CapB"]
+    # المستبعد باقٍ في الدليل بموضع فشله — لا يُحذف ولا يُجمّل
+    assert alt["candidates"][1]["excluded"] is True
+    assert alt["candidates"][1]["exclusion_reason"] == "skill-missing"
+    # المختار بدرجته كاملة لا بالإجمالي وحده
+    assert alt["candidates"][0]["score"]["total"] == 2.0
+    assert alt["candidates"][0]["score"]["skill_match"] == 1.0
+
+
+def test_engineer_failed_results_have_no_engineering_plan():
+    """الفشل قبل الخطة والاختيار لا يعرض مكونات — لا شيء يُسقط ولا يُختلق."""
+    interface, _ = _interface_with_core(_FakeCore())
+    result = interface.run(IntelligenceRequest(
+        mode=IntelligenceMode.ENGINEER,
+        mission={"name": "x", "capability": ""}))   # تحقق فاشل
+    assert result.status is IntelligenceStatus.FAILED
+    assert result.engineering_plan is None
+
+
 def test_engineer_validation_blocks_plan_and_approval():
     interface, _ = _interface_with_core(_FakeCore())
     result = interface.run(IntelligenceRequest(

@@ -45,11 +45,15 @@ INSTANT_GAPS = [
     "knowledge-driven-provider-selection",  # المفاضلة بسياسات معلنة (ADR-0006) لا بقاعدة معرفة/خبرة
 ]
 ENGINEER_GAPS = [
-    "engineering-plan-requirements",    # لا متطلبات تفصيلية في أي خط
-    "engineering-plan-risks",           # لا تقييم مخاطر
-    "engineering-plan-alternatives",    # لا بدائل مقارنة في الخطة
-    "engineering-plan-cost",            # لا تقدير تكلفة
-    "engineering-plan-architecture",   # المعمارية القائمة تحليل لما هو كائن لا تصميم
+    # مكونات خطة Engineer الآن إسقاط موثق المصدر لما هو كائن (سجل العمل
+    # 0043): متطلبات = مواصفة المرسل منقولة حرفياً، وبدائل = مرشحو دليل
+    # القرار المقيّمون، وتكلفة = المدة المعلنة في الخطة حرفياً. الفجوات
+    # المسماة أدناه هي ما تبقى بلا اشتقاق صادق — تُرد في كل مخرج لا تُخفى:
+    "engineering-plan-requirements-analysis",  # نقل حرفي فقط — لا تحليل/تفصيل متطلبات
+    "engineering-plan-risks",                 # لا تقييم مخاطر
+    "engineering-plan-design-alternatives",   # بدائل الاختيار منقولة — لا بدائل تصميم مقارنة
+    "engineering-plan-cost-estimate",         # مدة معلنة حرفياً — لا تقدير تكلفة مقيس
+    "engineering-plan-architecture",          # المعمارية القائمة تحليل لما هو كائن لا تصميم
 ]
 RESEARCH_GAPS = [
     "research-breadth",                  # تحليل مستودع واحد، لا بحث متعدد المستودعات
@@ -219,6 +223,9 @@ class IntelligenceResult:
     approval_id: Optional[str] = None
     comparison: Optional[ComparisonResult] = None
     evidence_snapshot: Optional[Dict[str, Any]] = None
+    #: مكونات خطة Engineer — إسقاط موثق المصدر لما هو كائن (R-W1-006):
+    #: لا تُعرض إلا حيث توجد خطة واختيار حقيقيان؛ الفشل المبكر يتركها None
+    engineering_plan: Optional[Dict[str, Any]] = None
     gaps: List[str] = field(default_factory=list)
 
 
@@ -275,6 +282,65 @@ def _plan_fingerprint(plan: Any) -> tuple:
         tuple(getattr(plan, "required_capabilities", ()) or ()),
         tuple(getattr(plan, "required_skills", ()) or ()),
     )
+
+
+def _engineering_plan(mission: Any, plan: Any,
+                       decision_records: List[Any]) -> Dict[str, Any]:
+    """مكونات خطة Engineer — إسقاط موثق المصدر لما هو كائن فعلاً (R-W1-006).
+
+    لا اختراع: كل مكوّن يُشتق من واقع قائم (مواصفة المرسل، الخطة، دليل
+    القرار) ويحمل مصدره بصدقه، وما لا اشتقاق له يبقى فجوة مسماة في
+    ``gaps`` لا قيمة مختلقة هنا. الإسقاط حتمي من محتوى مقيد بالبصمات
+    أصلاً (الخطة والمعاملات والاختيار — لقطة ADR-0009) فلا حالة مستقلة
+    تُحرَس بمعزل عنها.
+    """
+    # المتطلبات: مواصفة المرسل منقولة حرفياً بوسم مصدرها — ليست تحليل متطلبات
+    requirements: List[Dict[str, Any]] = []
+    for ref, value in (("mission.name", getattr(mission, "name", "")),
+                      ("mission.description", getattr(mission, "description", "")),
+                      ("mission.capability", getattr(mission, "capability", ""))):
+        if value not in ("", None):
+            requirements.append({"ref": ref, "value": value,
+                                 "source": "caller-provided"})
+    for key, value in (getattr(mission, "parameters", None) or {}).items():
+        requirements.append({"ref": f"mission.parameters.{key}",
+                             "value": value, "source": "caller-provided"})
+    # البدائل: مرشحو الاختيار كما قُيّموا فعلاً في دليل القرار — بدرجاتهم
+    # واستبعادهم واختيارهم وكسر تعادلهم؛ بدائل اختيار قدرة موثقة لا بدائل
+    # تصميم/معمارية مقارنة (تلك فجوة مسماة). دليل غير قابل للإسقاط يوسم
+    # بصدقه ولا يُستبدل
+    alternatives: Optional[Dict[str, Any]] = None
+    record = decision_records[0] if decision_records else None
+    if record is not None:
+        projected = record.to_dict() if hasattr(record, "to_dict") else None
+        if projected is not None:
+            alternatives = {
+                **projected,
+                # نوع السجل الأصلي محفوظ — لا يُستبدل بوسم المكوّن
+                "record_kind": projected.get("kind"),
+                "kind": "capability-selection",
+                "note": "مرشحو الاختيار المقيّمون في دليل القرار — ليست بدائل تصميم/معمارية مقارنة",
+            }
+        else:
+            alternatives = {
+                "kind": "capability-selection",
+                "note": "دليل قرار غير قابل للإسقاط من هذا النوع — انظر decision_records",
+                "record_type": type(record).__name__,
+            }
+    # التكلفة: ما هو معلن في الخطة فعلاً — مدة مقدرة حرفياً في المخطط
+    # لا قياساً؛ لا يُدّعى تقدير تكلفة
+    cost = {
+        "estimated_duration_ms": getattr(plan, "estimated_duration_ms", None),
+        "source": "declared-literal",
+        "measured": [],               # لا قياس — الفجوة مسماة
+    }
+    return {
+        "requirements": requirements,
+        "alternatives": alternatives,
+        "risks": None,               # لا تقييم مخاطر — الفجوة مسماة
+        "cost": cost,
+        "architecture_design": None,  # تحليل لما هو كائن لا تصميم — الفجوة مسماة
+    }
 
 
 @dataclass(frozen=True)
@@ -592,6 +658,7 @@ class IntelligenceInterface:
             plan=plan,
             approval_id=approval_request.id,
             decision_records=decision_records,
+            engineering_plan=_engineering_plan(mission, plan, decision_records),
             gaps=list(ENGINEER_GAPS))
 
     def approve(self, approval_id: str, approver: str) -> IntelligenceResult:

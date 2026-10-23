@@ -57,7 +57,7 @@
 | L2 | `agos-kernel` | quality | 23 | 5548 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/agos_runtime` | boot | 1 | 139 | 0 | yes | yes | yes | L4 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
-| L2 | `agos-kernel/approval` | human-loop | 2 | 184 | 0 | yes | no | yes | L1 | R-W3-015 |
+| L2 | `agos-kernel/approval` | human-loop | 2 | 196 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/collaboration` | human-loop | 2 | 238 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/crossdomain` | mission | 2 | 524 | 0 | yes | no | yes | L1 | R-W4-013 |
 | L2 | `agos-kernel/distributed` | cloud | 2 | 316 | 0 | yes | no | yes | L1 | R-W4-008 |
