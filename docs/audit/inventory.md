@@ -5,13 +5,13 @@
 ## Totals
 
 - **files**: 537
-- **functions**: 6156
+- **functions**: 6158
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 101825
+- **lines**: 101889
 - **not_imported_by_others**: 251
-- **stub_functions**: 788
+- **stub_functions**: 780
 - **syntax_errors**: 0
 
 ## Packages
@@ -141,7 +141,7 @@
 | `execution` | 11 | 556 | 55 | 0 | 0 | 11 | 0 | 10 |
 | `fabric` | 6 | 769 | 67 | 8 | 0 | 6 | 0 | 4 |
 | `foundation` | 11 | 858 | 96 | 4 | 0 | 11 | 0 | 10 |
-| `governance` | 4 | 465 | 32 | 14 | 0 | 4 | 0 | 3 |
+| `governance` | 4 | 529 | 34 | 6 | 0 | 4 | 0 | 3 |
 | `intelligence` | 6 | 435 | 57 | 8 | 0 | 6 | 0 | 5 |
 | `meta` | 7 | 626 | 54 | 0 | 0 | 7 | 0 | 6 |
 | `observatory` | 2 | 125 | 14 | 10 | 0 | 2 | 0 | 1 |

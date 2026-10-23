@@ -140,7 +140,7 @@
 | L5 | `execution` | execution | 11 | 556 | 0 | yes | no | yes | L1 | R-F-005, R-W1-003, R-W3-019 |
 | L5 | `fabric` | fabric | 6 | 769 | 8 | yes | no | yes | L1 | R-W1-013, R-W3-018 |
 | L5 | `foundation` | object-model | 11 | 858 | 4 | yes | no | yes | L1 | R-W1-012, R-W3-017 |
-| L5 | `governance` | governance | 4 | 465 | 14 | yes | no | yes | L1 | R-F-005, R-W1-007 |
+| L5 | `governance` | governance | 4 | 529 | 6 | yes | no | yes | L1 | R-F-005, R-W1-007 |
 | L5 | `meta` | registry | 7 | 626 | 0 | yes | no | no | L1 | R-W1-014, R-W3-017 |
 | L5 | `orchestration` | fabric | 1 | 161 | 12 | yes | no | no | L1 | R-W3-018 |
 | L5 | `resource` | object-model | 1 | 153 | 2 | yes | no | no | L1 | R-W3-017 |

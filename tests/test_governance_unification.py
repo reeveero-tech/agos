@@ -241,6 +241,96 @@ def test_enforcement_pipeline_blocks_on_rejection():
     assert result3["passed"] is True
 
 
+def test_unspec_validators_no_blind_allow():
+    """المصادقات الثماني بلا مواصفة (الشريحة الخامسة): لا True أعمى —
+    الإرجاع False بمعنى عدم ثبوت الامتثال لا مخالفة مثبتة، وlast_verdict
+    حكم unverified معلل بغياب المواصفة، والحكم عبر المقيم المعتمد."""
+    from agos.governance.enforcement import (
+        ArchitectureValidator, DependencyValidator, ContractValidator,
+        LayerValidator, NamingValidator, ImportValidator,
+        ConfigurationValidator, PolicyValidator)
+    cases = [
+        (ArchitectureValidator(), ("component",)),
+        (DependencyValidator(), ("source-a", "target-b")),
+        (ContractValidator(), ("contract",)),
+        (LayerValidator(), ("L1", "L2")),
+        (NamingValidator(), ("name",)),
+        (ImportValidator(), (["os"],)),
+        (ConfigurationValidator(), ({"k": 1},)),
+        (PolicyValidator(), ("policy",)),
+    ]
+    for validator, args in cases:
+        assert validator.validate(*args) is False
+        assert validator.last_verdict.verdict == "unverified"
+        assert "بلا مواصفة" in validator.last_verdict.reason
+
+
+def test_validate_all_reports_unspec_validators_and_no_arity_errors():
+    """عبر المجمّع (الشريحة الخامسة): أسباب رفض المصادقات الثماني تصل إلى
+    الإخفاقات، ولا خطأ عدد وسائط للمصادقتين ثنائيتي الوسيطين (حمولتهما
+    القاموسية تُفكك بحقول مسماة؛ ونقص الحقل يمرر None لا قيمة مختلقة —
+    عدم تحقق معلل لا TypeError مخفي) — وبكيان إصدار ممتثل حتى لا يخفي
+    رفض VersionValidator نتائج البقية."""
+    from agos.governance.enforcement import ArchitecturalEnforcement
+    from agos_kernel.governance.policy_evaluator import get_shared_evaluator
+    evaluator = get_shared_evaluator()
+    enforcement = ArchitecturalEnforcement()
+    # السجل يُحصر حول استدعاء المجمّع نفسه — البحث في السجل العالمي يخفي
+    # الخطأ (اختبارات أخرى تستدعي المصادقات مباشرة بنفس القيم)
+    log_start = len(evaluator.evaluation_log)
+    result = enforcement.validate_all({
+        "version": {"type": "Contracts", "version": "1.0"},  # ممتثل
+        "architecture": "component",
+        "dependency": {"source": "a", "target": "b"},
+        "contract": "contract",
+        "layer": {"source_layer": "L1", "target_layer": "L2"},
+        "naming": "name",
+        "import": ["os"],
+        "configuration": {"k": 1},
+        "policy": "policy",
+    })
+    assert result["passed"] is False            # لا نجاح مع غير مثبت
+    assert result["validators"]["version"] is True
+    for name in ("architecture", "dependency", "contract", "layer",
+                 "naming", "import", "configuration", "policy"):
+        assert result["validators"][name] is False
+        reasons = [f.get("reason") for f in result["failures"]
+                   if f.get("validator") == name]
+        assert reasons and "بلا مواصفة" in reasons[0]   # السبب وصل
+    # إثبات التوصيل الفعلي بمقطع سجل هذا الاستدعاء (لا يكفي غياب error —
+    # فقد يمرر المجمّع (None, None) أو يعكس الوسيطين ويظل unverified):
+    # ما وصل المصادقتين ثنائيتي الوسيطين قيم الحمولة في مواضعها بأسمائها
+    entries = evaluator.evaluation_log[log_start:]
+    assert ("enforcement-dependency-validation",
+            {"source": "a", "target": "b"}) in entries
+    assert ("enforcement-layer-validation",
+            {"source_layer": "L1", "target_layer": "L2"}) in entries
+    # نقص حقول الحمولة: تفكيك بحقول مسماة — لا TypeError ولا قيمة مختلقة
+    log_start2 = len(evaluator.evaluation_log)
+    enforcement2 = ArchitecturalEnforcement()
+    result2 = enforcement2.validate_all({"dependency": {}, "layer": {}})
+    assert result2["validators"]["dependency"] is False
+    assert result2["validators"]["layer"] is False
+    assert not any("error" in f for f in result2["failures"])
+    # والحمولة الفارغة وصلت (None, None) — بمقطع سجل استدعائها نفسه
+    entries2 = evaluator.evaluation_log[log_start2:]
+    assert ("enforcement-dependency-validation",
+            {"source": None, "target": None}) in entries2
+    assert ("enforcement-layer-validation",
+            {"source_layer": None, "target_layer": None}) in entries2
+    # حمولة ناقصة جزئياً: المقدمة تبقى في موضعها والمفقودة None بلا اختلاق
+    log_before = len(get_shared_evaluator().evaluation_log)
+    enforcement3 = ArchitecturalEnforcement()
+    result3 = enforcement3.validate_all({"dependency": {"source": "a"}})
+    new_entries = get_shared_evaluator().evaluation_log[log_before:]
+    assert ("enforcement-dependency-validation",
+            {"source": "a", "target": None}) in new_entries
+    assert result3["validators"]["dependency"] is False
+    assert any(f.get("validator") == "dependency"
+               and "بلا مواصفة" in f.get("reason", "")
+               for f in result3["failures"])
+
+
 def test_enterprise_policy_runtime_delegates_to_shared_evaluator():
     """الشريحة الثانية (enterprise.PolicyRuntime — ADR-0010): السماح والمنع
     وعدم التحقق عبر تفويض المقيم المعتمد — لا True أعمى؛ والنص الحر لا

@@ -2,30 +2,71 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-class ArchitectureValidator:
-    """Validates architecture compliance."""
+class _UnspecValidator:
+    """قاعدة مشتركة للمصادقات بلا مواصفة مسجلة (R-W1-007 — الشريحة الخامسة).
+
+    لا True أعمى: حكم ``unverified`` معلل عبر المقيم المعتمد بغياب المواصفة
+    التنفيذية لنوع الحكم — والإرجاع ``False`` بمعنى **عدم ثبوت الامتثال**
+    لا مخالفة مثبتة. لا تُسجل مواصفات صورية ولا تُستنتج قواعد من نص حر:
+    عند تسجيل مواصفة حقيقية لهذا النوع يصبح الفحص ممكناً عبر المسار نفسه.
+    ``RULE_ID`` معرّف نوع الحكم — يبقى بلا مواصفة عمداً حتى يُعرَّف فحصه.
+    """
+
+    RULE_ID = ""
+
+    def __init__(self):
+        self.last_verdict = None
+
+    def _evaluate_unspec(self, entity: Dict[str, Any]) -> bool:
+        from agos_kernel.governance.policy_evaluator import (
+            get_shared_evaluator)
+        # مسار عدم التحقق في المقيم المشترك: معرّف بلا مواصفة ⇒ unverified
+        # معلل — السبب متاح في last_verdict لنقله إلى إخفاقات التجميع
+        self.last_verdict = get_shared_evaluator().evaluate(
+            self.RULE_ID, entity)
+        return self.last_verdict.compliant_proven
+
+
+class ArchitectureValidator(_UnspecValidator):
+    """Validates architecture compliance — بلا مواصفة مسجلة: حكم unverified
+    معلل لا True أعمى (الامتثال غير مثبت — لا يُدَّعى فحص معماري)."""
+    RULE_ID = "enforcement-architecture-validation"
+
     def validate(self, component: str) -> bool:
-        return True
+        return self._evaluate_unspec({"component": component})
 
-class DependencyValidator:
-    """Validates no forbidden dependencies."""
+class DependencyValidator(_UnspecValidator):
+    """Validates no forbidden dependencies — لا مواصفة مسجلة لهذا الفحص
+    في المقيم المعتمد: unverified معلل (غياب المواصفة المثبت بالحصر، لا
+    الحكم على غياب القواعد من المشروع كله)."""
+    RULE_ID = "enforcement-dependency-validation"
+
     def validate(self, source: str, target: str) -> bool:
-        return True
+        return self._evaluate_unspec({"source": source, "target": target})
 
-class ContractValidator:
-    """Validates contract compliance."""
+class ContractValidator(_UnspecValidator):
+    """Validates contract compliance — بلا مواصفة مسجلة: unverified معلل."""
+    RULE_ID = "enforcement-contract-validation"
+
     def validate(self, contract: str) -> bool:
-        return True
+        return self._evaluate_unspec({"contract": contract})
 
-class LayerValidator:
-    """Validates layer boundaries."""
+class LayerValidator(_UnspecValidator):
+    """Validates layer boundaries — لا مواصفة مسجلة لهذا الفحص في المقيم
+    المعتمد: unverified معلل (غياب المواصفة المثبت بالحصر)."""
+    RULE_ID = "enforcement-layer-validation"
+
     def validate(self, source_layer: str, target_layer: str) -> bool:
-        return True
+        return self._evaluate_unspec({"source_layer": source_layer,
+                                      "target_layer": target_layer})
 
-class NamingValidator:
-    """Validates naming conventions."""
+class NamingValidator(_UnspecValidator):
+    """Validates naming conventions — لا مواصفة مسجلة لهذا الفحص في المقيم
+    المعتمد: unverified معلل (غياب المواصفة المثبت بالحصر)."""
+    RULE_ID = "enforcement-naming-validation"
+
     def validate(self, name: str) -> bool:
-        return True
+        return self._evaluate_unspec({"name": name})
 
 class VersionValidator:
     """Validates versioning compliance.
@@ -48,20 +89,29 @@ class VersionValidator:
         self.last_verdict = verdict
         return verdict.verdict == VERDICT_COMPLIANT
 
-class ImportValidator:
-    """Validates no forbidden imports."""
+class ImportValidator(_UnspecValidator):
+    """Validates no forbidden imports — لا مواصفة مسجلة لهذا الفحص في
+    المقيم المعتمد: unverified معلل (غياب المواصفة المثبت بالحصر)."""
+    RULE_ID = "enforcement-import-validation"
+
     def validate(self, imports: List[str]) -> bool:
-        return True
+        return self._evaluate_unspec({"imports": imports})
 
-class ConfigurationValidator:
-    """Validates configuration compliance."""
+class ConfigurationValidator(_UnspecValidator):
+    """Validates configuration compliance — بلا مواصفة مسجلة: unverified
+    معلل."""
+    RULE_ID = "enforcement-configuration-validation"
+
     def validate(self, config: Dict[str, Any]) -> bool:
-        return True
+        return self._evaluate_unspec({"config": config})
 
-class PolicyValidator:
-    """Validates policy compliance."""
+class PolicyValidator(_UnspecValidator):
+    """Validates policy compliance — بلا مواصفة مسجلة: unverified معلل
+    (النص الحر لا يُحوَّل آلياً إلى شرط تنفيذي)."""
+    RULE_ID = "enforcement-policy-validation"
+
     def validate(self, policy: str) -> bool:
-        return True
+        return self._evaluate_unspec({"policy": policy})
 
 class ArchitecturalEnforcement:
     """
@@ -109,9 +159,24 @@ class ArchitecturalEnforcement:
         self.failures = []
         results = {}
         
+        # توثيق حمولات المصادقتين ثنائيتي الوسيطين (تصحيح المراجعة — الشريحة
+        # الخامسة): حمولتهما قاموس بحقول مسماة بأسماء وسائطهما — تنقصها
+        # يُعرض كعدم تحقق معلل (المصادقة تُستدعى بلا قيمة مختلقة) لا كخطأ
+        # عدد وسائط مخفي: كان المجمّع يمرر وسيطاً واحداً لتواقيع تطلب اثنين
+        _TWO_ARG_FIELDS = {
+            "dependency": ("source", "target"),
+            "layer": ("source_layer", "target_layer"),
+        }
         for name, validator in self.validators.items():
             try:
-                results[name] = validator.validate(code.get(name, {}))
+                payload = code.get(name, {})
+                if name in _TWO_ARG_FIELDS:
+                    fields = payload if isinstance(payload, dict) else {}
+                    first, second = _TWO_ARG_FIELDS[name]
+                    results[name] = validator.validate(
+                        fields.get(first), fields.get(second))
+                else:
+                    results[name] = validator.validate(payload)
             except Exception as e:
                 self.failures.append({
                     "validator": name,
