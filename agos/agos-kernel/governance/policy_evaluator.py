@@ -174,28 +174,63 @@ def evaluate_rule_dicts(rules: List[Any],
         return {"allowed": False,
                 "reason": "السياسة بلا قواعد — لا فحص ولا سماح مثبت",
                 "results": results}
+    # نتيجة معللة لكل قاموس قاعدة بالترتيب (تصحيح المراجعة — الشريحة
+    # الثالثة): لا تُسقط نتائج القواعد اللاحقة بسبب أول رفض؛ وواجهة
+    # الحضارة السابقة كانت تُرجع نتيجة لكل قاموس قاعدة — والحكم الإجمالي
+    # يُحسب بعد جمع كل النتائج
+    decisive_reason = None
+
+    def _note(reason: str) -> None:
+        nonlocal decisive_reason
+        if decisive_reason is None:
+            decisive_reason = reason
+
     for rule in rules:
         if not isinstance(rule, dict) or "rule_id" not in rule:
-            return {"allowed": False,
-                    "reason": "قاعدة غير قابلة للفحص (ليست قاموساً بمعرّف "
-                              "قاعدة rule_id) — لا يُحوَّل الشكل الحر آلياً",
-                    "results": results}
+            # قاعدة غير قابلة للفحص: تظهر نتيجتها (passed=False و
+            # unverified) ولا تُختفى — عدم التحقق يشمل غياب المواصفة
+            # التنفيذية لا نقص مدخل قاعدة معروفة فقط
+            results.append({
+                "rule": (rule.get("name")
+                         if isinstance(rule, dict) else None),
+                "passed": False,
+                "verdict": VERDICT_UNVERIFIED,
+                "reason": "قاعدة غير قابلة للفحص (ليست قاموساً بمعرّف قاعدة "
+                          "rule_id) — لا يُحوَّل الشكل الحر آلياً"})
+            _note("قاعدة غير قابلة للفحص (ليست قاموساً بمعرّف قاعدة "
+                  "rule_id) — لا يُحوَّل الشكل الحر آلياً")
+            continue
         rule_id = str(rule["rule_id"])
         if evaluator.get_spec(rule_id) is None:
-            return {"allowed": False,
-                    "reason": "قاعدة غير قابلة للفحص (معرّف غير مسجل): "
-                              "{!r}".format(rule_id),
-                    "results": results}
+            results.append({
+                "rule": rule.get("name"),
+                "passed": False,
+                "rule_id": rule_id,
+                "verdict": VERDICT_UNVERIFIED,
+                "reason": "قاعدة غير قابلة للفحص (معرّف غير مسجل): "
+                          "{!r}".format(rule_id)})
+            _note("قاعدة غير قابلة للفحص (معرّف غير مسجل): "
+                  "{!r}".format(rule_id))
+            continue
         verdict = evaluator.evaluate(rule_id, context)
-        results.append({"rule": rule_id,
-                        "verdict": verdict.verdict})
+        # عقد المخرج المتداخل محفوظ: ``rule`` اسم القاعدة كما كان في واجهة
+        # الحضارة (لا المعرّف)؛ و``passed`` منطقي — True للامتثال المثبت
+        # فقط وFalse للمخالفة وعدم التحقق؛ وrule_id/verdict إضافتان لا
+        # استبدال
+        results.append({"rule": rule.get("name"),
+                        "passed": verdict.verdict == VERDICT_COMPLIANT,
+                        "rule_id": rule_id,
+                        "verdict": verdict.verdict,
+                        "reason": verdict.reason})
         if verdict.verdict != VERDICT_COMPLIANT:
             # مخالفة معللة أو تحقق متعذر — كلاهما لا يُعلن سماحاً
-            return {"allowed": False,
-                    "reason": "{}: {}".format(verdict.verdict, verdict.reason),
-                    "results": results}
-    return {"allowed": True,
-            "reason": "فحص كل قواعد السياسة ناجح — سماح مثبت",
+            _note("{}: {}".format(verdict.verdict, verdict.reason))
+    if decisive_reason is None:
+        return {"allowed": True,
+                "reason": "فحص كل قواعد السياسة ناجح — سماح مثبت",
+                "results": results}
+    return {"allowed": False,
+            "reason": decisive_reason,
             "results": results}
 
 

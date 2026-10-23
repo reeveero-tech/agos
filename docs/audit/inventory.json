@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 101776,
-  "functions": 6154,
+  "lines": 101811,
+  "functions": 6155,
   "stub_functions": 789,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 802,
-   "functions": 41,
+   "lines": 837,
+   "functions": 42,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -8143,10 +8143,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 212,
+   "lines": 247,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 9,
+   "functions": 10,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [

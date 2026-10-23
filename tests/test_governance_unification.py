@@ -440,6 +440,93 @@ def test_discovered_paths_delegation_traced_and_policy_change():
         PolicyType.EXECUTION, dict(entity))[0]["passed"] is True
 
 
+def test_civilization_nested_output_contract_preserved():
+    """عقد المخرج المتداخل محفوظ (تصحيح المراجعة على الشريحة الثالثة):
+    ``rule`` اسم القاعدة كما كان — لا المعرّف؛ و``passed`` منطقي — True
+    للامتثال المثبت فقط وFalse للمخالفة وعدم التحقق؛ وrule_id/verdict
+    إضافتان لا استبدال. بقاعدة اسمها مختلف عن معرّفها عبر evaluate_policies
+    في الحالات الثلاث."""
+    from agos_kernel.civilization.policy_runtime import (
+        PolicyRuntime as CivPolicyRuntime, PolicyType)
+    runtime = CivPolicyRuntime()
+    # قاعدة اسمها «قاعدة الإصدار» ومعرّفها المادة 5 — اسمان مختلفان
+    runtime.create_policy(
+        "named", PolicyType.COMPLIANCE,
+        [{"name": "قاعدة الإصدار",
+          "rule_id": CONSTITUTION_ARTICLE_5_RULE_ID}])
+    # امتثال: passed=True وrule بالاسم لا المعرّف
+    ok = runtime.evaluate_policies(
+        PolicyType.COMPLIANCE, {"type": "Contracts", "version": "1.0"})
+    entry_ok = ok[0]["results"][0]
+    assert entry_ok["rule"] == "قاعدة الإصدار"
+    assert entry_ok["rule_id"] == CONSTITUTION_ARTICLE_5_RULE_ID
+    assert entry_ok["passed"] is True
+    assert entry_ok["verdict"] == "compliant"
+    assert "امتثال مثبت" in entry_ok["reason"]   # سبب المقيم يصل نتيجتها
+    # مخالفة: passed=False والاسم كما هو
+    bad = runtime.evaluate_policies(
+        PolicyType.COMPLIANCE, {"type": "Contracts"})
+    entry_bad = bad[0]["results"][0]
+    assert entry_bad["rule"] == "قاعدة الإصدار"
+    assert entry_bad["passed"] is False
+    assert entry_bad["verdict"] == "violation"
+    assert "version" in entry_bad["reason"]      # سبب المخالفة يصل نتيجتها
+    assert bad[0]["passed"] is False
+    # عدم تحقق: passed=False والاسم كما هو
+    unv = runtime.evaluate_policies(
+        PolicyType.COMPLIANCE, {"version": "1.0"})
+    entry_unv = unv[0]["results"][0]
+    assert entry_unv["rule"] == "قاعدة الإصدار"
+    assert entry_unv["passed"] is False
+    assert entry_unv["verdict"] == "unverified"
+    assert "نوع الكيان غائب" in entry_unv["reason"]   # سبب عدم التحقق يصلها
+    assert unv[0]["passed"] is False
+
+
+def test_civilization_results_cover_every_rule_in_order():
+    """نتيجة معللة لكل قاموس قاعدة بالترتيب (تصحيح المراجعة على الشريحة
+    الثالثة): القواعد غير المتحققة تظهر نتائجها ولا تختفي؛ ولا تُسقط
+    نتائج القواعد اللاحقة بسبب أول رفض — وعدم التحقق يشمل غياب المواصفة
+    التنفيذية لا نقص مدخل قاعدة معروفة فقط."""
+    from agos_kernel.civilization.policy_runtime import (
+        PolicyRuntime as CivPolicyRuntime, PolicyType)
+    runtime = CivPolicyRuntime()
+    # (1) قاعدة مسماة بلا rule_id، وأخرى بمعرّف غير مسجل — تظهر نتيجتاهما
+    runtime.create_policy("mixed-uncheckable", PolicyType.EXECUTION, [
+        {"name": "قاعدة وصفية"},
+        {"name": "الثانية", "rule_id": "unknown-rule"},
+    ])
+    res = runtime.evaluate_policies(
+        PolicyType.EXECUTION, {"type": "Contracts", "version": "1.0"})
+    assert res[0]["passed"] is False
+    assert len(res[0]["results"]) == 2          # نتيجتان لا اختفاء
+    first, second = res[0]["results"]
+    assert first["rule"] == "قاعدة وصفية"      # بالاسم كما كان
+    assert first["passed"] is False
+    assert first["verdict"] == "unverified"
+    # سبب كل نتيجة على حدة يصل نتيجتها (لا الحكم الإجمالي وحده)
+    assert "rule_id" in first["reason"]         # تشرح غياب المعرّف
+    assert second["rule"] == "الثانية"
+    assert second["passed"] is False
+    assert second["verdict"] == "unverified"
+    assert "unknown-rule" in second["reason"]    # تشرح أن المعرّف غير مسجل
+    assert "غير قابلة للفحص" in res[0]["reason"]
+    # (2) عدة قواعد أولها مخالفة — تبقى نتيجة لكل قاعدة وبالترتيب
+    # (نوع مختلف حتى لا تختلط بسياستي الحالة الأولى في النتائج)
+    runtime.create_policy("ordered", PolicyType.SECURITY, [
+        {"name": "الأولى", "rule_id": CONSTITUTION_ARTICLE_5_RULE_ID},
+        {"name": "الثانية", "rule_id": CONSTITUTION_ARTICLE_5_RULE_ID},
+    ])
+    res2 = runtime.evaluate_policies(
+        PolicyType.SECURITY, {"type": "Contracts"})
+    assert res2[0]["passed"] is False
+    assert len(res2[0]["results"]) == 2
+    assert [r["rule"] for r in res2[0]["results"]] == ["الأولى", "الثانية"]
+    assert all(r["passed"] is False for r in res2[0]["results"])
+    assert res2[0]["results"][0]["verdict"] == "violation"
+    assert res2[0]["reason"].startswith("violation")
+
+
 def test_spec_comes_from_constitution_text():
     """المواصفة تُقرأ من النص الدستوري نفسه لا نسخة مستقلة عنه."""
     spec = get_shared_evaluator().get_spec(
