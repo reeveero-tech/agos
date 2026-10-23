@@ -14,7 +14,7 @@ import tempfile
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -96,11 +96,18 @@ class ExecutionTimeline:
     total_duration_ms: float = 0.0
 
 
+# ADR-0007 (R-W1-002): الحقول المشتركة واجهات حية إلى المرجع المحفوظ —
+# أسماء الحقول القديمة واجهات توافق (التوقيع محفوظ).
+_SHARED_TO_REFERENCE = {"id": "id", "created_at": "created_at"}
+
+
 class RepositoryDiscoveryMission:
     """Complete mission for repository analysis."""
     
     def __init__(self, repo_path: str = None, repo_url: str = None):
         self.id = str(uuid.uuid4())
+        # ADR-0007: طابع إنشاء فعلي يُختم عند الإنشاء (لا زمن تحويل)
+        self.created_at = datetime.now(timezone.utc)
         self.repo_path = repo_path
         self.repo_url = repo_url
         self.status = "pending"
@@ -112,6 +119,55 @@ class RepositoryDiscoveryMission:
         self.report: Optional[EngineeringReport] = None
         self.trust_score: Optional[TrustScore] = None
         self.evidence: Optional[EvidencePackage] = None
+        self._establish_reference()
+
+    def _establish_reference(self):
+        """ADR-0007: حد الإنشاء القائم يؤسس المرجع الموحد (المحفوظ للمهمة نفسها).
+
+        الشريحة مجال تنفيذي: حالتها النصية المعروفة تُترجم ملخصاً معلوماً. الحقول
+        المتخصصة (timeline/dna/...) تبقى على الشريحة.
+        """
+        from agos_kernel.mission import Mission as ReferenceMission, carry_lifecycle
+        local = self.__dict__
+        summary, carrier = carry_lifecycle("slice", local["status"])
+        self._reference = ReferenceMission(
+            id=local["id"],
+            name="",
+            created_at=local["created_at"],
+            status=summary,
+            lifecycle=carrier,
+        )
+        for local_key in _SHARED_TO_REFERENCE:
+            self.__dict__.pop(local_key, None)
+
+    def __getattribute__(self, key):
+        if key in _SHARED_TO_REFERENCE:
+            reference = object.__getattribute__(self, "_reference")
+            return getattr(reference, _SHARED_TO_REFERENCE[key])
+        return object.__getattribute__(self, key)
+
+    def __setattr__(self, key, value):
+        if key in _SHARED_TO_REFERENCE and "_reference" in self.__dict__:
+            setattr(self._reference, _SHARED_TO_REFERENCE[key], value)
+            return
+        if key == "status" and "_reference" in self.__dict__:
+            # عقد ADR-0007: تحقّق قبل التغيير — القيمة غير المعروفة تُرفض دون
+            # تغيير الحالة أو حامل المرجع.
+            from agos_kernel.mission import carry_lifecycle
+            reference = self._reference
+            previous = reference.status if (reference.lifecycle and reference.lifecycle.summary_known) else None
+            _, carrier = carry_lifecycle("slice", value, previous_summary=previous)
+            super().__setattr__(key, value)
+            # اعتماد الحامل عبر حدّ الاستبدال مرة واحدة (ADR-0007) — الحدّ يشتق
+            # الملخص ويعتمد الحقلين معاً؛ لا كتابة ملخص قبله.
+            reference.lifecycle = carrier
+            return
+        super().__setattr__(key, value)
+
+    @property
+    def canonical(self):
+        """المرجع الموحد (ADR-0007) — محفوظ للمهمة نفسها؛ إعادة الوصول تعيد نفسه."""
+        return self._reference
     
     def _add_step(self, name: str, duration_ms: float, status: str, details: Dict = None):
         self.timeline.steps.append({
@@ -126,6 +182,14 @@ class RepositoryDiscoveryMission:
         """Execute complete mission."""
         start = time.time()
         self.status = "running"
+        # ADR-0007 §2: ختم البدء عند حدث البدء الفعلي — مرة ولا يُستبدل.
+        if self._reference.started_at is None:
+            self._reference.started_at = datetime.now(timezone.utc)
+        # ADR-0007: حقول النتيجة للتنفيذ **الحالي** — تُمسح عند بدء تشغيل جديد
+        # فلا يبقى خطأ/نتيجة تشغيل سابق سجلاً تاريخياً ضمنياً.
+        self._reference.result = None
+        self._reference.error = None
+        self._reference.completed_at = None
         
         try:
             # 1. Clone
@@ -180,11 +244,17 @@ class RepositoryDiscoveryMission:
             
             self.status = "completed"
             self.timeline.total_duration_ms = (time.time() - start) * 1000
-            
-            return self._get_results()
+            # ADR-0007: النتيجة والأوقات على المرجع عند حدث الاكتمال الفعلي
+            result = self._get_results()
+            self._reference.completed_at = datetime.now(timezone.utc)
+            self._reference.result = result
+            return result
             
         except Exception as e:
             self.status = "failed"
+            # ADR-0007: الفشل يحدّث المرجع (اكتمال + خطأ) مع استمرار رفع الأصل
+            self._reference.completed_at = datetime.now(timezone.utc)
+            self._reference.error = str(e)
             self._add_step("error", 0, "failed", {"error": str(e)})
             raise
     

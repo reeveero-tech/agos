@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 534
-- **functions**: 6041
+- **functions**: 6074
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 532
-- **lines**: 98184
+- **lines**: 98756
 - **not_imported_by_others**: 251
 - **stub_functions**: 790
 - **syntax_errors**: 0
@@ -34,7 +34,7 @@
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/capabilities` | 13 | 5411 | 278 | 27 | 0 | 13 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24397 | 1312 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization` | 100 | 24442 | 1316 | 120 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -44,7 +44,7 @@
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contracts` | 1 | 124 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/core` | 24 | 3695 | 181 | 0 | 0 | 24 | 0 | 15 |
-| `agos-kernel/crossdomain` | 2 | 382 | 22 | 0 | 0 | 2 | 0 | 0 |
+| `agos-kernel/crossdomain` | 2 | 524 | 32 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 119 | 2 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision-pipeline` | 2 | 1921 | 47 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision_pipeline` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
@@ -79,7 +79,7 @@
 | `agos-kernel/longrunning` | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/marketplace` | 3 | 391 | 34 | 5 | 0 | 3 | 0 | 0 |
 | `agos-kernel/memory` | 3 | 394 | 19 | 0 | 0 | 3 | 0 | 0 |
-| `agos-kernel/mission` | 1 | 46 | 1 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/mission` | 1 | 207 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/mission-engine` | 1 | 257 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/mission_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/model_packs` | 1 | 149 | 7 | 0 | 0 | 1 | 0 | 0 |
@@ -119,7 +119,7 @@
 | `agos-kernel/trust` | 2 | 254 | 12 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/v2` | 2 | 239 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/verification` | 2 | 224 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/vertical_slices` | 1 | 413 | 15 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/vertical_slices` | 1 | 483 | 19 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/workflows` | 1 | 228 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos_kernel` | 1 | 172 | 10 | 0 | 0 | 1 | 0 | 1 |
 | `civilization` | 5 | 553 | 52 | 16 | 0 | 5 | 0 | 4 |
@@ -139,14 +139,14 @@
 | `enterprise` | 6 | 357 | 46 | 6 | 0 | 6 | 0 | 5 |
 | `evolution` | 6 | 405 | 48 | 17 | 0 | 6 | 0 | 5 |
 | `execution` | 11 | 552 | 55 | 0 | 0 | 11 | 0 | 10 |
-| `fabric` | 6 | 697 | 62 | 8 | 0 | 6 | 0 | 4 |
+| `fabric` | 6 | 765 | 67 | 8 | 0 | 6 | 0 | 4 |
 | `foundation` | 11 | 849 | 96 | 4 | 0 | 11 | 0 | 10 |
 | `governance` | 4 | 437 | 31 | 14 | 0 | 4 | 0 | 3 |
 | `intelligence` | 6 | 410 | 55 | 8 | 0 | 6 | 0 | 5 |
 | `meta` | 7 | 626 | 54 | 0 | 0 | 7 | 0 | 6 |
 | `observatory` | 2 | 125 | 14 | 10 | 0 | 2 | 0 | 1 |
 | `orchestration` | 1 | 161 | 16 | 12 | 0 | 1 | 0 | 1 |
-| `products` | 5 | 556 | 78 | 15 | 0 | 5 | 0 | 4 |
+| `products` | 5 | 642 | 84 | 15 | 0 | 5 | 0 | 4 |
 | `research` | 6 | 337 | 41 | 5 | 0 | 6 | 0 | 5 |
 | `resource` | 1 | 153 | 19 | 2 | 0 | 1 | 0 | 1 |
 | `rie` | 12 | 2606 | 97 | 20 | 0 | 12 | 0 | 11 |

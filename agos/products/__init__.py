@@ -29,11 +29,44 @@ class ProjectService:
         return []
 
 class MissionService:
+    def __init__(self):
+        # ADR-0007 (R-W1-002): مرجع موحد لكل هوية مهمة أنشأتها الخدمة — خزن
+        # داخلي إضافي؛ الشكل المعاد كما هو حرفياً.
+        self._references: Dict[str, Any] = {}
+
     def create(self, project_id: str, name: str, type: str) -> Dict[str, Any]:
-        return {"id": f"mission_{name}", "project_id": project_id, "name": name, "type": type}
-    
+        from agos_kernel.mission import Mission as ReferenceMission, carry_lifecycle
+        summary, carrier = carry_lifecycle("product", "pending", execution_states=False)
+        reference = ReferenceMission(
+            id=f"mission_{name}", name=name, status=summary, lifecycle=carrier)
+        # التكرار بالمعرّف نفسه يستبدل المرجع المخزن (لا دمج بمجرد تساوي السلاسل)
+        # — والمرجع المحتفظ به من الإنشاء الأول لا يُعدّل. مصدر الحقول المشتركة
+        # ومفتاح التخزين هو المرجع (ADR-0007)؛ المخرج العادي كما هو حرفياً.
+        self._references[reference.id] = reference
+        return {
+            "id": reference.id,
+            "project_id": project_id,
+            "name": reference.name,
+            "type": type,
+        }
+
     def execute(self, mission_id: str) -> Dict[str, Any]:
+        # حالة المنتج تُحمل على مرجع الهوية إن وُجد — بلا ادعاء تنفيذي (التنفيذ
+        # الصوري لا يصبح حقيقياً)، والمخرج كما هو حرفياً لمعرّف غير مسجل أيضاً.
+        from agos_kernel.mission import carry_lifecycle
+        reference = self._references.get(mission_id)
+        if reference is not None:
+            previous = reference.status if (reference.lifecycle and reference.lifecycle.summary_known) else None
+            _, carrier = carry_lifecycle("product", "executed", execution_states=False,
+                                          previous_summary=previous)
+            # اعتماد الحامل عبر حدّ الاستبدال مرة واحدة (ADR-0007) — لا كتابة
+            # ملخص قبله.
+            reference.lifecycle = carrier
         return {"id": mission_id, "status": "executed"}
+
+    def canonical(self, mission_id: str):
+        """المرجع الموحد لهوية أنشأتها الخدمة (ADR-0007) — أو None إن لم تُنشأ."""
+        return self._references.get(mission_id)
 
 class ExecutionService:
     def execute(self, capability_id: str, inputs: Dict[str, Any]) -> Dict[str, Any]:

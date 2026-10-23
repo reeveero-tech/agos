@@ -20,6 +20,11 @@ from agos_kernel.civilization.mission_planner.execution_graph import (
 )
 
 
+# ADR-0007 (R-W1-002): الحقول المشتركة تُقرأ من المرجع وتُكتب إليه — أسماء الحقول
+# القديمة واجهات توافق (التوقيع محفوظ).
+_SHARED_TO_REFERENCE = {"mission_id": "id", "description": "description", "created_at": "created_at"}
+
+
 @dataclass
 class Mission:
     """Mission model."""
@@ -30,6 +35,46 @@ class Mission:
     priority: str = "medium"
     deadline: str = ""
     metadata: Dict = field(default_factory=dict)
+    # ADR-0007: طابع إنشاء فعلي يُختم عند الإنشاء (لا زمن تحويل) — طلب التخطيط
+    # لا يحمل حالة تنفيذ أصلاً فلا يُختلق له وقت تنفيذ.
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def __post_init__(self):
+        """ADR-0007: حد الإنشاء القائم يؤسس المرجع الموحد (المحفوظ للمهمة نفسها).
+
+        طلب التخطيط لا يحمل حالة تنفيذ: غياب صريح مميز بنيوياً (لا ادعاء PENDING).
+        الـobjective لا يُحوّل تلقائياً إلى اسم ولا إلى capability.
+        """
+        from agos_kernel.mission import Mission as ReferenceMission, carry_lifecycle
+        local = self.__dict__
+        summary, carrier = carry_lifecycle("planning", None, execution_states=False)
+        self._reference = ReferenceMission(
+            id=str(local["mission_id"]),
+            name="",
+            description=local["description"],
+            created_at=local["created_at"],
+            status=summary,
+            lifecycle=carrier,
+        )
+        for local_key in _SHARED_TO_REFERENCE:
+            self.__dict__.pop(local_key, None)
+
+    def __getattribute__(self, key):
+        if key in _SHARED_TO_REFERENCE:
+            reference = object.__getattribute__(self, "_reference")
+            return getattr(reference, _SHARED_TO_REFERENCE[key])
+        return object.__getattribute__(self, key)
+
+    def __setattr__(self, key, value):
+        if key in _SHARED_TO_REFERENCE and "_reference" in self.__dict__:
+            setattr(self._reference, _SHARED_TO_REFERENCE[key], value)
+            return
+        super().__setattr__(key, value)
+
+    @property
+    def canonical(self):
+        """المرجع الموحد (ADR-0007) — محفوظ للمهمة نفسها؛ إعادة الوصول تعيد نفسه."""
+        return self._reference
 
 
 @dataclass

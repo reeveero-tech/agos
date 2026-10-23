@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 534,
-  "lines": 98184,
-  "functions": 6041,
+  "lines": 98756,
+  "functions": 6074,
   "stub_functions": 790,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -189,8 +189,8 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24397,
-   "functions": 1312,
+   "lines": 24442,
+   "functions": 1316,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -299,8 +299,8 @@
   },
   "agos-kernel/crossdomain": {
    "files": 2,
-   "lines": 382,
-   "functions": 22,
+   "lines": 524,
+   "functions": 32,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -684,8 +684,8 @@
   },
   "agos-kernel/mission": {
    "files": 1,
-   "lines": 46,
-   "functions": 1,
+   "lines": 207,
+   "functions": 5,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1124,8 +1124,8 @@
   },
   "agos-kernel/vertical_slices": {
    "files": 1,
-   "lines": 413,
-   "functions": 15,
+   "lines": 483,
+   "functions": 19,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1344,8 +1344,8 @@
   },
   "fabric": {
    "files": 6,
-   "lines": 697,
-   "functions": 62,
+   "lines": 765,
+   "functions": 67,
    "stub_functions": 8,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1421,8 +1421,8 @@
   },
   "products": {
    "files": 5,
-   "lines": 556,
-   "functions": 78,
+   "lines": 642,
+   "functions": 84,
    "stub_functions": 15,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -4784,10 +4784,10 @@
    "path": "agos/agos-kernel/civilization/mission_planner/planner.py",
    "module": "civilization.mission_planner.planner",
    "root": "kernel",
-   "lines": 561,
+   "lines": 606,
    "syntax_ok": true,
    "classes": 11,
-   "functions": 15,
+   "functions": 19,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -4796,17 +4796,22 @@
     "typing",
     "uuid",
     "agos_kernel.civilization.mission_planner.task",
-    "agos_kernel.civilization.mission_planner.execution_graph"
+    "agos_kernel.civilization.mission_planner.execution_graph",
+    "agos_kernel.mission"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.mission_planner.planner",
    "resolved_imports": [
     "K:civilization.mission_planner.execution_graph",
-    "K:civilization.mission_planner.task"
+    "K:civilization.mission_planner.task",
+    "K:mission"
    ],
    "imported_by": [
     "K:civilization.mission_planner"
+   ],
+   "tested_by_external": [
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -5984,7 +5989,8 @@
     "K:test_validation"
    ],
    "tested_by_external": [
-    "tests/test_kernel_facade.py"
+    "tests/test_kernel_facade.py",
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -6674,16 +6680,19 @@
    "imported_by": [
     "K:test_platform"
    ],
+   "tested_by_external": [
+    "tests/test_mission_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/crossdomain/runtime.py",
    "module": "crossdomain.runtime",
    "root": "kernel",
-   "lines": 374,
+   "lines": 516,
    "syntax_ok": true,
-   "classes": 10,
-   "functions": 22,
+   "classes": 11,
+   "functions": 32,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -6703,19 +6712,24 @@
     "uuid",
     "dataclasses",
     "datetime",
-    "typing"
+    "typing",
+    "agos_kernel.mission",
+    "agos_kernel.mission"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:crossdomain.runtime",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:mission"
+   ],
    "imported_by": [
     "K:crossdomain",
     "K:diagnostics.runtime",
     "K:platform_runtime.runtime"
    ],
    "tested_by_external": [
-    "tests/test_import_health.py"
+    "tests/test_import_health.py",
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -9209,10 +9223,10 @@
    "path": "agos/agos-kernel/mission/__init__.py",
    "module": "mission",
    "root": "kernel",
-   "lines": 46,
+   "lines": 207,
    "syntax_ok": true,
-   "classes": 2,
-   "functions": 1,
+   "classes": 3,
+   "functions": 5,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -9227,17 +9241,24 @@
    "id": "K:mission",
    "resolved_imports": [],
    "imported_by": [
+    "K:civilization.mission_planner.planner",
     "K:context",
     "K:core.kernel",
+    "K:crossdomain.runtime",
     "K:mission_engine",
     "K:pipeline",
     "K:resolvers",
-    "K:test_validation"
+    "K:test_validation",
+    "K:vertical_slices.repo_discovery.slice",
+    "S:fabric.mission",
+    "S:products",
+    "S:products.missions"
    ],
    "tested_by_external": [
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
-    "tests/test_kernel_facade.py"
+    "tests/test_kernel_facade.py",
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -9294,7 +9315,8 @@
    ],
    "tested_by_external": [
     "tests/test_bootstrap.py",
-    "tests/test_decision_unification.py"
+    "tests/test_decision_unification.py",
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -12732,10 +12754,10 @@
    "path": "agos/agos-kernel/vertical_slices/repo_discovery/slice.py",
    "module": "vertical_slices.repo_discovery.slice",
    "root": "kernel",
-   "lines": 413,
+   "lines": 483,
    "syntax_ok": true,
    "classes": 9,
-   "functions": 15,
+   "functions": 19,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -12754,6 +12776,8 @@
     "datetime",
     "pathlib",
     "typing",
+    "agos_kernel.mission",
+    "agos_kernel.mission",
     "agos.kernel",
     "agos.kernel",
     "agos.kernel",
@@ -12768,13 +12792,15 @@
    "id": "K:vertical_slices.repo_discovery.slice",
    "resolved_imports": [
     "K:clone_safety",
+    "K:mission",
     "K:stack_detection"
    ],
    "imported_by": [],
    "tested_by_external": [
     "tests/test_dependency_extraction.py",
     "tests/test_framework_detection.py",
-    "tests/test_language_weights.py"
+    "tests/test_language_weights.py",
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -14684,25 +14710,31 @@
    "path": "agos/fabric/mission.py",
    "module": "fabric.mission",
    "root": "src",
-   "lines": 106,
+   "lines": 174,
    "syntax_ok": true,
    "classes": 6,
-   "functions": 12,
+   "functions": 17,
    "stub_functions": 4,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "datetime",
     "enum",
-    "typing"
+    "typing",
+    "agos_kernel.mission",
+    "agos_kernel.mission"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:fabric.mission",
    "resolved_imports": [
+    "K:mission",
     "S:fabric"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_mission_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -15437,26 +15469,33 @@
    "path": "agos/products/__init__.py",
    "module": "products",
    "root": "src",
-   "lines": 142,
+   "lines": 175,
    "syntax_ok": true,
    "classes": 13,
-   "functions": 25,
+   "functions": 27,
    "stub_functions": 10,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "datetime",
-    "typing"
+    "typing",
+    "agos_kernel.mission",
+    "agos_kernel.mission"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:products",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:mission"
+   ],
    "imported_by": [
     "S:products.api",
     "S:products.artifacts",
     "S:products.missions",
     "S:products.projects"
+   ],
+   "tested_by_external": [
+    "tests/test_mission_unification.py"
    ],
    "import_status": "OK"
   },
@@ -15511,25 +15550,31 @@
    "path": "agos/products/missions.py",
    "module": "products.missions",
    "root": "src",
-   "lines": 96,
+   "lines": 149,
    "syntax_ok": true,
    "classes": 4,
-   "functions": 11,
+   "functions": 15,
    "stub_functions": 1,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
     "datetime",
     "enum",
-    "typing"
+    "typing",
+    "agos_kernel.mission",
+    "agos_kernel.mission"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "S:products.missions",
    "resolved_imports": [
+    "K:mission",
     "S:products"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_mission_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -16698,6 +16743,46 @@
     "K:main",
     "K:vertical_slices.repo_discovery.slice",
     "S:rie.application"
+   ]
+  },
+  {
+   "path": "tests/test_mission_unification.py",
+   "imports": [
+    "agos.fabric.mission",
+    "agos.kernel.mission",
+    "agos.kernel.vertical_slices.repo_discovery.slice",
+    "agos.products",
+    "agos.products.missions",
+    "agos_kernel.mission",
+    "asyncio",
+    "civilization.mission_planner.planner",
+    "core",
+    "crossdomain",
+    "crossdomain.runtime",
+    "dataclasses",
+    "datetime",
+    "flask",
+    "json",
+    "mission",
+    "mission_engine",
+    "pathlib",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:civilization.mission_planner.planner",
+    "K:core",
+    "K:crossdomain",
+    "K:crossdomain.runtime",
+    "K:mission",
+    "K:mission_engine",
+    "K:vertical_slices.repo_discovery.slice",
+    "S:fabric.mission",
+    "S:products",
+    "S:products.missions"
    ]
   },
   {

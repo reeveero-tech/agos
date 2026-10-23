@@ -11,6 +11,10 @@ MISSION_TYPES = [
     "Migrate", "Debug", "Recover"
 ]
 
+# ADR-0007 (R-W1-002): الحقول المشتركة تُقرأ من المرجع وتُكتب إليه — أسماء الحقول
+# القديمة واجهات توافق (التوقيع محفوظ).
+_SHARED_TO_REFERENCE = {"mission_id": "id", "name": "name", "created_at": "created_at"}
+
 @dataclass
 class Mission:
     mission_id: str
@@ -18,6 +22,55 @@ class Mission:
     type: str
     status: str = "pending"
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def __post_init__(self):
+        """ADR-0007: حد الإنشاء القائم يؤسس المرجع الموحد (المحفوظ للمهمة نفسها).
+
+        حالات المنتج حالات منتج (``execution_states=False``): تُحمل على الحامل
+        ولا تدعي ملخصاً تنفيذياً — «executed» ليس دليل نجاح تنفيذي (التنفيذ صوري).
+        """
+        from agos_kernel.mission import Mission as ReferenceMission, carry_lifecycle
+        local = self.__dict__
+        summary, carrier = carry_lifecycle("product", local["status"], execution_states=False)
+        self._reference = ReferenceMission(
+            id=str(local["mission_id"]),
+            name=local["name"],
+            created_at=local["created_at"],
+            status=summary,
+            lifecycle=carrier,
+        )
+        for local_key in _SHARED_TO_REFERENCE:
+            self.__dict__.pop(local_key, None)
+
+    def __getattribute__(self, key):
+        if key in _SHARED_TO_REFERENCE:
+            reference = object.__getattribute__(self, "_reference")
+            return getattr(reference, _SHARED_TO_REFERENCE[key])
+        return object.__getattribute__(self, key)
+
+    def __setattr__(self, key, value):
+        if key in _SHARED_TO_REFERENCE and "_reference" in self.__dict__:
+            setattr(self._reference, _SHARED_TO_REFERENCE[key], value)
+            return
+        if key == "status" and "_reference" in self.__dict__:
+            # عقد ADR-0007: تحقّق قبل التغيير — القيمة غير المقبولة تُرفض دون
+            # تغيير الحالة أو حامل المرجع. حالة المنتج تُحمل بلا ادعاء تنفيذي.
+            from agos_kernel.mission import carry_lifecycle
+            reference = self._reference
+            previous = reference.status if (reference.lifecycle and reference.lifecycle.summary_known) else None
+            _, carrier = carry_lifecycle("product", value, execution_states=False,
+                                         previous_summary=previous)
+            super().__setattr__(key, value)
+            # اعتماد الحامل عبر حدّ الاستبدال مرة واحدة (ADR-0007) — الحدّ يشتق
+            # الملخص ويعتمد الحقلين معاً؛ لا كتابة ملخص قبله.
+            reference.lifecycle = carrier
+            return
+        super().__setattr__(key, value)
+
+    @property
+    def canonical(self):
+        """المرجع الموحد (ADR-0007) — محفوظ للمهمة نفسها؛ إعادة الوصول تعيد نفسه."""
+        return self._reference
 
 class MissionRegistry:
     def __init__(self):

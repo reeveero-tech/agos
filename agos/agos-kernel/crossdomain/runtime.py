@@ -161,6 +161,131 @@ class MissionTimeline:
         })
 
 
+class LinkedMissionRecord(dict):
+    """سجل مهمة طويلة (ADR-0007 — R-W1-002): قاموس متوافق يفوّض المفاتيح
+    المشتركة إلى المرجع الموحد.
+
+    مصدر الاتساق هو **المخزن نفسه**: المرجع حدُّ كتابة يخطر السجلات المرتبطة
+    (إشعار مزامنة اختياري في ``Mission.__setattr__``) فيسقط السجل حقوله
+    المشتركة كتابةً محلية مباشرة (منع الدوران) — فيتطابق المخزن الفعلي مع
+    المرجع بما فيها التغييرات المباشرة عليه، وتقرأ طرق القاموس الموروثة كلها
+    (المفهرسة و``get``/``items``/``values``/``copy``/``dict()``) القيم الصحيحة،
+    وتبقى ``items``/``values`` عَرْضَين حيين كما في عقد القاموس الأصلي.
+    أنواع الواجهة القديمة محفوظة (تعدادات، طوابع ISO ساذجة — والنص يُعاد كما
+    كُتب حرفياً ما بقي المرجع مطابقاً له). التفويض عند كل نقاط الكتابة:
+    ``__setitem__`` وحدها لا تكفي لأن ``update``/``setdefault``/الدمج تتجاوزها
+    قاموسياً. حذف مفتاح مشترك يزيل النسخة المحلية (قراءته ترفع KeyError كما في
+    القاموس القديم) ولا يعدّل المرجع (هوية المهمة تبقى).
+    """
+
+    _LINKED_TIMESTAMPS = ("created_at", "started_at", "completed_at")
+
+    def __init__(self, reference, mapping=(), **kw):
+        super().__init__(mapping, **kw)
+        object.__setattr__(self, "_reference", reference)
+        # ADR-0007: تسجيل إشعار المزامنة والاعتراض القبلي — السجل إسقاط متسق
+        # للمرجع، وحالته الدقيقة يجب أن تبقى قابلة للتمثيل بتعدادها (الرفض
+        # قبل الحفظ لا بعده).
+        observers = getattr(reference, "_sync_observers", None)
+        if observers is None:
+            observers = []
+            setattr(reference, "_sync_observers", observers)
+        observers.append(self._sync_from_reference)
+        validators = getattr(reference, "_sync_validators", None)
+        if validators is None:
+            validators = []
+            setattr(reference, "_sync_validators", validators)
+        validators.append(self._validate_reference_lifecycle)
+
+    @property
+    def canonical(self):
+        """المرجع الموحد (ADR-0007) — محفوظ للسجل نفسه."""
+        return object.__getattribute__(self, "_reference")
+
+    def _validate_reference_lifecycle(self, carrier):
+        """اعتراض قبل أي تغيير (ADR-0007): الحالة الدقيقة يجب أن تكون قابلة
+        للتمثيل بتعداد ``MissionState`` — الرفض قبل الحفظ فيظل المرجع ومخزن
+        السجل كما كانا، ولا يُترك السجل على حالة قديمة صامتة."""
+        if carrier is not None and carrier.fine_state is not None:
+            MissionState(carrier.fine_state)  # ValueError إن لم تكن قابلة للتمثيل
+
+    def _sync_from_reference(self, key, value):
+        """إسقاط الحقول المشتركة من المرجع إلى المخزن المحلي — كتابة مباشرة
+        (``dict.__setitem__``) لا تمر عبر ``__setitem__`` المفوَّض فلا دوران،
+        ويُحفظ النص الأصلي للطابع ما بقي تمثيلاً مطابقاً."""
+        if key == "lifecycle":
+            if value is None or value.fine_state is None:
+                # الحدّ يرفض الغياب لمهمة مرتبطة بسجل — دفاعياً: إسقاط مرئي
+                # (KeyError عند القراءة) لا حالة قديمة صامتة.
+                dict.pop(self, "status", None)
+                return
+            # التمثيلية مضمونة بالاعتراض القبلي عند الحد — كتابة مباشرة بلا ابتلاع
+            dict.__setitem__(self, "status", MissionState(value.fine_state))
+            return
+        if key == "status":
+            # ADR-0007: للملخص مصدر واحد في السجل — لا استنتاج عكسي من الملخص
+            # إلى حالة دقيقة (كتابة الملخص تثبت معلوميته فقط؛ الحالة الدقيقة
+            # مصدرها الحامل وحده عبر حد انتقال صريح).
+            return
+        if key == "id":
+            dict.__setitem__(self, "id", str(value))
+            return
+        if key in self._LINKED_TIMESTAMPS:
+            if value is None:
+                dict.__setitem__(self, key, None)
+                return
+            local = dict.__getitem__(self, key) if dict.__contains__(self, key) else None
+            if isinstance(local, str):
+                try:
+                    if datetime.fromisoformat(local) == value:
+                        return  # النص المحلي تمثيل مطابق — يُحفظ كما هو
+                except ValueError:
+                    pass
+            elif isinstance(local, datetime) and local == value:
+                return
+            dict.__setitem__(self, key, value.isoformat())
+
+    def _carry_status(self, value):
+        from agos_kernel.mission import carry_lifecycle
+        reference = object.__getattribute__(self, "_reference")
+        fine = value.value if isinstance(value, MissionState) else str(value)
+        previous = reference.status if (reference.lifecycle and reference.lifecycle.summary_known) else None
+        _, carrier = carry_lifecycle("longrunning", fine, previous_summary=previous)
+        # اعتماد الحامل عبر حدّ الاستبدال مرة واحدة (ADR-0007) — الحدّ يتحقق
+        # (بما فيه اعتراض السجل القبلي) ثم يشتق الملخص ويعتمد الحقلين معاً؛
+        # لا كتابة ملخص قبله فيُرفض الانتقال بعد تغيير نصفه.
+        reference.lifecycle = carrier
+
+    def __setitem__(self, key, value):
+        reference = object.__getattribute__(self, "_reference")
+        if key == "id":
+            reference.id = str(value)
+        elif key == "status":
+            self._carry_status(value)  # قد يرفض القيمة غير المعروفة قبل أي تغيير
+        elif key in self._LINKED_TIMESTAMPS:
+            if value is None:
+                setattr(reference, key, None)
+            elif isinstance(value, datetime):
+                setattr(reference, key, value)
+            else:
+                setattr(reference, key, datetime.fromisoformat(value))
+        dict.__setitem__(self, key, value)
+
+    def update(self, *args, **kw):  # تمر عبر __setitem__ المعرف — لا تجاوز قاموسي
+        for k, v in dict(*args, **kw).items():
+            self[k] = v
+
+    def setdefault(self, key, default=None):
+        if key not in self:
+            self[key] = default
+        return self[key]
+
+    def __ior__(self, other):
+        for k, v in dict(other).items():
+            self[k] = v
+        return self
+
+
 class LongRunningMissionRuntime:
     """Universal Long-Running Mission Runtime."""
     
@@ -187,13 +312,30 @@ class LongRunningMissionRuntime:
             "checkpoints": [],
             "events": [],
         }
+        # ADR-0007: حد الإنشاء يؤسس المرجع من القيم المكتوبة فعلاً (طابع واحد —
+        # لا قراءة ثانية للساعة)؛ السجل المعاد هو المخزن نفسه (سلوك قائم).
+        from agos_kernel.mission import Mission as ReferenceMission, carry_lifecycle
+        summary, carrier = carry_lifecycle("longrunning", mission["status"].value)
+        reference = ReferenceMission(
+            id=str(mission["id"]),
+            name="",
+            status=summary,
+            lifecycle=carrier,
+            created_at=datetime.fromisoformat(mission["created_at"]),
+        )
+        record = LinkedMissionRecord(reference, mission)
         
-        self.missions[mission_id] = mission
+        self.missions[mission_id] = record
         self.checkpoints[mission_id] = []
         self.timelines[mission_id] = MissionTimeline(mission_id=mission_id)
         
-        return mission
+        return record
     
+    def canonical_mission(self, mission_id: str):
+        """المرجع الموحد لمهمة طويلة (ADR-0007) — أو None إن لم تُنشأ."""
+        record = self.missions.get(mission_id)
+        return None if record is None else record.canonical
+
     def start(self, mission_id: str) -> bool:
         """Start a mission."""
         if mission_id not in self.missions:
