@@ -4,16 +4,22 @@ from typing import Any, Dict, List
 REASONING_TYPES = ["Deductive", "Inductive", "Abductive", "Constraint", "Graph", "Policy", "Knowledge", "Architecture"]
 
 class DeductiveReasoner:
+    """الاستنتاج الاستنباطي غير منفذ — لا نتيجة تُختلق (ADR-0012، العمل 1)."""
+
     def reason(self, premises: List[str]) -> str:
-        return "deduced_conclusion"
+        return None
 
 class InductiveReasoner:
+    """الاستقراء غير منفذ — لا فرضية تُختلق (ADR-0012، العمل 1)."""
+
     def reason(self, observations: List[str]) -> str:
-        return "induced_hypothesis"
+        return None
 
 class AbductiveReasoner:
+    """الاجتزاء غير منفذ — لا تفسير يُختلق (ADR-0012، العمل 1)."""
+
     def reason(self, observations: List[str]) -> str:
-        return "abduced_explanation"
+        return None
 
 class UniversalReasoningRuntime:
     """
@@ -42,7 +48,8 @@ class UniversalReasoningRuntime:
             return self.inductive.reason(data)
         elif reasoning_type == "abductive":
             return self.abductive.reason(data)
-        return "reasoned"
+        # النوع المجهول: لا يُدَّعى استنتاج — None لا نصاً مختلقاً
+        return None
     
     def get_statistics(self) -> Dict[str, Any]:
         return {

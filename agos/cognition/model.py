@@ -30,8 +30,12 @@ class WorldGraph:
         return self._nodes.get(entity_id)
 
 class StateEngine:
+    """حالة الكيان غير مقيسة — لا حالة تُختلق (ADR-0012، العمل 1 —
+    model.py:29)."""
+
     def get_state(self, entity_id: str) -> Dict[str, Any]:
-        return {"status": "active"}
+        return {"status": None,
+                "reason": "حالة الكيان غير مقيسة — لا حالة تُختلق"}
 
 class RelationshipEngine:
     """يحل علاقات الكيان من الرسم المقيّد إن رُبط به.
@@ -51,8 +55,12 @@ class RelationshipEngine:
                 if e[0] == entity_id or e[1] == entity_id]
 
 class PredictionEngine:
+    """التنبؤ غير منفذ — لا تنبؤ ولا ثقة تُختلقان (ADR-0012، العمل 1 —
+    model.py:37)."""
+
     def predict(self, entity_id: str) -> Dict[str, Any]:
-        return {"prediction": "stable", "confidence": 0.9}
+        return {"prediction": None, "confidence": None,
+                "reason": "التنبؤ غير منفذ — لا تنبؤ يُختلق"}
 
 class UniversalWorldModel:
     """

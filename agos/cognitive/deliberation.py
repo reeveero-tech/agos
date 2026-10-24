@@ -14,8 +14,11 @@ class Deliberation:
     status: str = "pending"
 
 class AlternativeGenerator:
+    """توليد البدائل غير منفذ — لا بدائل تُختلق من عدس المسياق
+    (ADR-0012، العمل 1)."""
+
     def generate(self, context: Dict[str, Any]) -> List[str]:
-        return ["alternative_1", "alternative_2"]
+        return []
 
 class CritiqueEngine:
     def critique(self, alternative: str) -> Dict[str, Any]:
@@ -66,7 +69,8 @@ class UniversalDeliberationEngine:
             deliberation_id=f"del_{datetime.now().timestamp()}",
             pipeline=DELIBERATION_PIPELINE,
             alternatives=alternatives,
-            status="completed"
+            # المداولة لم تجري — لا يُدَّعى اكتمال مسار ثماني الخطوات
+            status="not_executed"
         )
         return deliberation
     

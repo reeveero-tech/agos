@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102084,
-  "functions": 6166,
+  "lines": 102171,
+  "functions": 6167,
   "stub_functions": 780,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -1245,8 +1245,8 @@
   },
   "cognition": {
    "files": 6,
-   "lines": 401,
-   "functions": 47,
+   "lines": 444,
+   "functions": 48,
    "stub_functions": 8,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1256,7 +1256,7 @@
   },
   "cognitive": {
    "files": 11,
-   "lines": 617,
+   "lines": 661,
    "functions": 58,
    "stub_functions": 6,
    "hardcoded_paths": 0,
@@ -13508,16 +13508,19 @@
     "S:cognition.model",
     "S:cognition.skill"
    ],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/cognition/composition.py",
    "module": "cognition.composition",
    "root": "src",
-   "lines": 59,
+   "lines": 73,
    "syntax_ok": true,
    "classes": 6,
-   "functions": 9,
+   "functions": 10,
    "stub_functions": 2,
    "abstract_functions": 0,
    "imports": [
@@ -13537,7 +13540,7 @@
    "path": "agos/cognition/core.py",
    "module": "cognition.core",
    "root": "src",
-   "lines": 88,
+   "lines": 96,
    "syntax_ok": true,
    "classes": 9,
    "functions": 11,
@@ -13560,7 +13563,7 @@
    "path": "agos/cognition/foundation.py",
    "module": "cognition.foundation",
    "root": "src",
-   "lines": 84,
+   "lines": 93,
    "syntax_ok": true,
    "classes": 2,
    "functions": 5,
@@ -13583,7 +13586,7 @@
    "path": "agos/cognition/model.py",
    "module": "cognition.model",
    "root": "src",
-   "lines": 86,
+   "lines": 94,
    "syntax_ok": true,
    "classes": 6,
    "functions": 12,
@@ -13609,7 +13612,7 @@
    "path": "agos/cognition/skill.py",
    "module": "cognition.skill",
    "root": "src",
-   "lines": 82,
+   "lines": 86,
    "syntax_ok": true,
    "classes": 5,
    "functions": 10,
@@ -13658,13 +13661,16 @@
     "S:cognitive.reasoning",
     "S:cognitive.strategy"
    ],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/cognitive/constraint.py",
    "module": "cognitive.constraint",
    "root": "src",
-   "lines": 60,
+   "lines": 66,
    "syntax_ok": true,
    "classes": 4,
    "functions": 5,
@@ -13712,7 +13718,7 @@
    "path": "agos/cognitive/decision.py",
    "module": "cognitive.decision",
    "root": "src",
-   "lines": 88,
+   "lines": 91,
    "syntax_ok": true,
    "classes": 3,
    "functions": 7,
@@ -13731,6 +13737,7 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_cognition_unification.py",
     "tests/test_decision_unification.py"
    ],
    "import_status": "OK"
@@ -13739,7 +13746,7 @@
    "path": "agos/cognitive/deliberation.py",
    "module": "cognitive.deliberation",
    "root": "src",
-   "lines": 79,
+   "lines": 83,
    "syntax_ok": true,
    "classes": 5,
    "functions": 6,
@@ -13763,7 +13770,7 @@
    "path": "agos/cognitive/evaluation.py",
    "module": "cognitive.evaluation",
    "root": "src",
-   "lines": 41,
+   "lines": 45,
    "syntax_ok": true,
    "classes": 2,
    "functions": 4,
@@ -13809,13 +13816,14 @@
    "path": "agos/cognitive/intent.py",
    "module": "cognitive.intent",
    "root": "src",
-   "lines": 66,
+   "lines": 78,
    "syntax_ok": true,
    "classes": 4,
    "functions": 7,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
+    "uuid",
     "dataclasses",
     "typing"
    ],
@@ -13826,13 +13834,16 @@
     "S:cognitive"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/cognitive/planning.py",
    "module": "cognitive.planning",
    "root": "src",
-   "lines": 54,
+   "lines": 58,
    "syntax_ok": true,
    "classes": 4,
    "functions": 5,
@@ -13856,7 +13867,7 @@
    "path": "agos/cognitive/reasoning.py",
    "module": "cognitive.reasoning",
    "root": "src",
-   "lines": 52,
+   "lines": 59,
    "syntax_ok": true,
    "classes": 4,
    "functions": 6,
@@ -13878,7 +13889,7 @@
    "path": "agos/cognitive/strategy.py",
    "module": "cognitive.strategy",
    "root": "src",
-   "lines": 38,
+   "lines": 42,
    "syntax_ok": true,
    "classes": 2,
    "functions": 4,
@@ -16715,13 +16726,21 @@
   {
    "path": "tests/test_cognition_unification.py",
    "imports": [
+    "agos.cognition",
     "agos.cognition.model",
-    "agos.cognition.skill"
+    "agos.cognition.skill",
+    "agos.cognitive",
+    "agos.cognitive.decision",
+    "agos.cognitive.intent"
    ],
    "scripts": [],
    "resolved": [
+    "S:cognition",
     "S:cognition.model",
-    "S:cognition.skill"
+    "S:cognition.skill",
+    "S:cognitive",
+    "S:cognitive.decision",
+    "S:cognitive.intent"
    ]
   },
   {

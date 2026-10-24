@@ -128,8 +128,8 @@
 | L4 | `agos-kernel/optimization` | optimization | 2 | 221 | 0 | yes | no | yes | L1 | R-W5-004 |
 | L4 | `agos-kernel/prediction` | optimization | 2 | 164 | 0 | yes | no | yes | L1 | R-W5-004 |
 | L4 | `agos-kernel/recommendation` | optimization | 2 | 175 | 0 | yes | no | yes | L1 | R-W5-004 |
-| L4 | `cognition` | cognition | 6 | 401 | 8 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
-| L4 | `cognitive` | cognition | 11 | 617 | 6 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
+| L4 | `cognition` | cognition | 6 | 444 | 8 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
+| L4 | `cognitive` | cognition | 11 | 661 | 6 | yes | no | yes | L1 | R-W1-010, R-W3-016 |
 | L4 | `intelligence` | intelligence | 6 | 435 | 8 | yes | no | yes | L1 | R-F-005, R-W1-006, R-W3-019 |
 | L4 | `research` | evolution | 6 | 337 | 5 | yes | no | no | L1 | R-W5-007 |
 | L5 | `agos-kernel/civilization` | civilization | 100 | 24469 | 119 | yes | yes | yes | L3 | R-F-003, R-W1-009, R-W3-014 |

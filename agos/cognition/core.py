@@ -25,12 +25,20 @@ class ReflectionEngine:
         return {"insights": [], "lessons": []}
 
 class EvaluationEngine:
+    """التقييم غير منفذ — لا درجة تُختلق ولا موافقة تُدَّعى (ADR-0012،
+    العمل 1 — core.py:29)."""
+
     def evaluate(self, candidate: Any, criteria: Dict[str, Any]) -> Dict[str, Any]:
-        return {"score": 100, "approved": True}
+        return {"score": None, "approved": None,
+                "reason": "التقييم غير منفذ في هذا السطح — لا درجة تُختلق"}
 
 class VerificationEngine:
+    """التحقق غير منفذ — False عدم ثبوت لا إثبات فساد (ADR-0012، العمل 1 —
+    core.py:33)."""
+
     def verify(self, result: Any) -> Dict[str, Any]:
-        return {"verified": True, "valid": True}
+        return {"verified": False, "valid": None,
+                "reason": "التحقق غير منفذ في هذا السطح — لا تحقق يُدَّعى"}
 
 class DecisionEngine:
     def decide(self, alternatives: List[Any], context: Dict[str, Any]) -> Any:

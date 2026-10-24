@@ -51,3 +51,101 @@ def test_skill_fabric_single_registry_compose_finds_public_registrations():
     assert fabric.composer.compose(["skill_missing"]) == []
     # سجل النسيج نفسه يجيب عليها (المسار العام كما كان)
     assert fabric.registry.get("skill_demo").name == "demo"
+
+
+def test_unsubstantiated_claims_removed_declare_not_executed():
+    """العمل 1 في ADR-0012: الادعاءات الثابتة المحددة بالأدلة صارت تصريحاً
+    صادقاً بعدم التنفيذ بمسوغ مسمّى — والعمل المنفذ يبقى بنتيجته (فحص الفراغ
+    والتسجيلات والصدى الحرفي)."""
+    from agos.cognitive import (constraint, deliberation, evaluation,
+                                planning, reasoning, strategy)
+    from agos.cognition import composition, core, foundation, model
+    from agos.cognition import skill as cog_skill
+
+    # حل القيود: لا يُدَّعى حل — والعدد المعلن يعاد حرفياً
+    r = constraint.ConstraintSolver().solve(["c1", "c2"])
+    assert r["solved"] is False and r["constraints"] == 2
+    assert "غير منفذ" in r["reason"]
+    # تحقق القيد: False عدم ثبوت لا مخالفة مثبتة
+    c = constraint.Constraint(constraint_id="c1", constraint_type="Time",
+                              name="t", value=1)
+    assert constraint.ConstraintValidator().validate(c) is False
+    # التقييم: لا درجات مقيسة تُختلق — المقياس المطلوب يعاد None
+    ev = evaluation.EvaluationEngine().evaluate("x", ["Quality", "Risk"])
+    assert ev == {"Quality": None, "Risk": None}
+    # الاستراتيجية: صدى النوع بلا ادعاء اختيار
+    sel = strategy.StrategySelector().select("Fastest", {})
+    assert sel["strategy"] == "Fastest" and sel["selected"] is None
+    assert "غير منفذ" in sel["reason"]
+    # محاكاة الخطة: لا نجاح يُدَّعى — وفحص الفراغ المنفذ يبقى بنتيجته
+    plan = planning.MissionPlan(plan_id="p", steps=[{"s": 1}])
+    sim = planning.PlanSimulator().simulate(plan)
+    assert sim["simulated"] is False and sim["outcome"] is None
+    assert "غير منفذة" in sim["reason"]
+    assert planning.PlanValidator().validate(plan) is True          # منفذ يبقى
+    assert planning.PlanValidator().validate(
+        planning.MissionPlan(plan_id="e", steps=[])) is False      # منفذ يبقى
+    # الاستنتاجات: لا نصوص تُختلق — والنوع المجهول لا يُدَّعى له استنتاج
+    assert reasoning.DeductiveReasoner().reason(["a"]) is None
+    assert reasoning.InductiveReasoner().reason(["a"]) is None
+    assert reasoning.AbductiveReasoner().reason(["a"]) is None
+    rt = reasoning.UniversalReasoningRuntime()
+    assert rt.reason("deductive", ["a"]) is None
+    assert rt.reason("unknown-type", ["a"]) is None
+    # المداولة: لا بدائل تُختلق ولا اكتمال يُدَّعى
+    assert deliberation.AlternativeGenerator().generate({}) == []
+    d = deliberation.UniversalDeliberationEngine().deliberate({})
+    assert d.status == "not_executed" and d.alternatives == []
+    # core: تقييم وتحقق بلا ادعاء
+    cev = core.EvaluationEngine().evaluate("x", {})
+    assert cev["score"] is None and cev["approved"] is None
+    cvr = core.VerificationEngine().verify("x")
+    assert cvr["verified"] is False and cvr["valid"] is None
+    assert "غير منفذ" in cvr["reason"]
+    # foundation: لا تحقق ولا قفل يُدَّعى
+    fv = foundation.VerificationEngine().verify("Kernel")
+    assert fv["verified"] is False and "غير منفذ" in fv["reason"]
+    assert all(v is False for v in foundation.AbsoluteFoundation().verify_all().values())
+    rel = foundation.AbsoluteFoundation().release()
+    assert rel["status"] == "not_locked"
+    assert rel["architecture_locked"] is False
+    assert rel["kernel_locked"] is False
+    assert rel["contracts_locked"] is False
+    # model: حالة/تنبؤ لا يُختلقان
+    assert model.StateEngine().get_state("x")["status"] is None
+    pr = model.PredictionEngine().predict("x")
+    assert pr["prediction"] is None and pr["confidence"] is None
+    # composition: تحقق/محاكاة لا يُدَّعيان — والحكم الصادق محمول مع التركيب
+    comp = composition.UniversalCompositionEngine().compose("n", ["a"])
+    assert comp["name"] == "n" and comp["components"] == ["a"]  # التخزين المنفذ يبقى
+    assert comp["validated"] is False
+    assert "غير منفذ" in comp["validation_reason"]
+    assert composition.CompositionSimulator().simulate(comp)["status"] == "not_simulated"
+    # skill: قياس لا يُختلق
+    bm = cog_skill.SkillBenchmark().benchmark("s")
+    assert bm["skill_id"] == "s" and bm["latency_ms"] is None and bm["cost"] is None
+
+
+def test_intent_registry_distinct_ids_preserve_independent_intents():
+    """العمل 3 في ADR-0012: كان معرّف النية الثابت يستبدل السابق (total=1
+    لنيتين) — الآن معرّفات مميزة تحفظ السجل نوايا مستقلة."""
+    from agos.cognitive.intent import UniversalIntentEngine
+    eng = UniversalIntentEngine()
+    i1 = eng.create_intent("أول نية")
+    i2 = eng.create_intent("نية ثانية")
+    assert i1.intent_id != i2.intent_id                     # مميزة
+    assert eng.get_statistics()["total_intents"] == 2       # كانت 1
+    # الأولى لم تُستبدل — التسجيل يحفظ نوايا مستقلة
+    assert eng.registry.get(i1.intent_id).description == "أول نية"
+    assert eng.registry.get(i2.intent_id).description == "نية ثانية"
+
+
+def test_class_docstrings_distinguish_implemented_from_promises():
+    """العمل 4 في ADR-0012: وصف الصنف لا يعد بما لا ينفذ — الوعود غير
+    المنفذة متميزة صراحة عن المنفذ."""
+    from agos.cognitive.decision import UniversalDecisionPlatform
+    from agos.cognitive.intent import UniversalIntentEngine
+    for cls in (UniversalDecisionPlatform, UniversalIntentEngine):
+        doc = cls.__doc__
+        assert "غير منفذ" in doc        # الوعود مُيّزت صراحة
+        assert "منفذ فعلاً" in doc      # والمنفذ موصوف بحدوده

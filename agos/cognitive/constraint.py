@@ -13,12 +13,18 @@ class Constraint:
     hard: bool = True
 
 class ConstraintSolver:
+    """حل القيود غير منفذ في هذا السطح — لا ادعاء بلا فحص (ADR-0012، العمل 1) — يُعاد عدد القيود المُعلنة حرفياً."""
+
     def solve(self, constraints: List[Constraint]) -> Dict[str, Any]:
-        return {"solved": True, "constraints": len(constraints)}
+        return {"solved": False, "constraints": len(constraints),
+                "reason": "حل القيود غير منفذ في هذا السطح — لا ادعاء بلا فحص (ADR-0012، العمل 1)"}
 
 class ConstraintValidator:
+    """التحقق غير منفذ — False تعني عدم ثبوت الصلاحية لا مخالفة مثبتة
+    (ADR-0012، العمل 1)."""
+
     def validate(self, constraint: Constraint) -> bool:
-        return True
+        return False
 
 class UniversalConstraintPlatform:
     """

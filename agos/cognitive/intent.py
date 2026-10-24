@@ -1,4 +1,5 @@
 """AGOS Universal Intent Engine - EXECUTION-000022."""
+import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
@@ -16,8 +17,17 @@ class Intent:
     acceptance_criteria: List[str] = field(default_factory=list)
 
 class IntentParser:
+    """تسجيل النية المعلنة من المرسل حرفياً — لا فصل للنية هنا.
+
+    الحد المسمى (ADR-0012، العمل 3): المحلل لا يستخرج أهدافاً ولا قيوداً —
+    الوصف يُحفظ كما ورد؛ ومعرّف النية صار مميزاً لكل تسجيل (كان ثابتاً
+    "parsed" فكان التسجيل الثاني يستبدل الأول ولا يحفظ السجل نوايا
+    مستقلة).
+    """
+
     def parse(self, raw_intent: str) -> Intent:
-        return Intent(intent_id="parsed", description=raw_intent)
+        return Intent(intent_id=f"intent_{uuid.uuid4().hex}",
+                      description=raw_intent)
 
 class IntentRegistry:
     def __init__(self):
@@ -37,9 +47,11 @@ class UniversalIntentEngine:
     Every mission begins with Intent.
     Intent is independent from language, model or provider.
     
-    Implements:
-    ✅ Intent Runtime, Parser, Normalizer, Validator
-    ✅ Intent Graph, Classifier, Registry, History
+    منفذ فعلاً (ADR-0012، العمل 4 — التمييز): Intent Runtime (create_intent)
+    وParser (تسجيل الوصف حرفياً — لا فصل نية) وRegistry (تخزين/استرجاع).
+    
+    غير منفذ (وعود سابقة مُيّزت — لا يُعد بها): Normalizer، Validator،
+    Intent Graph، Classifier، History.
     
     Intent Output (6):
     ✅ Goals, Constraints, Requirements, Preferences

@@ -44,9 +44,12 @@ class UniversalDecisionPlatform:
     
     Every decision is explicit. No implicit reasoning.
     
-    Implements:
-    ✅ Decision Runtime, Registry, Graph, Simulator
-    ✅ Evaluator, Optimizer, History, Replay
+    منفذ فعلاً (ADR-0012، العمل 4 — التمييز): Decision Runtime (create/
+    make_decision — تسجيل اختيار المرسل واشتقاق المرفوض من البدائل) و
+    Registry (تخزين/استرجاع) — بوسم مصدر caller-provided لا تقييماً.
+    
+    غير منفذ (وعود سابقة مُيّزت — لا يُعد بها): Graph، Simulator،
+    Evaluator، Optimizer، History، Replay.
     
     Every Decision Stores (8):
     ✅ Inputs, Alternatives, Evidence, Reasoning

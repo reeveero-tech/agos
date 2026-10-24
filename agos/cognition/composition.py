@@ -18,16 +18,26 @@ class CompositionCompiler:
         return f"compiled_{composition['name']}"
 
 class CompositionValidator:
+    """تحقق التركيب غير منفذ — False عدم ثبوت لا مخالفة مثبتة (ADR-0012،
+    العمل 1 — composition.py:22)."""
+
+    def __init__(self):
+        self.last_reason = "تحقق التركيب غير منفذ — لا فحص يجري"
+
     def validate(self, composition: Dict[str, Any]) -> bool:
-        return True
+        return False
 
 class CompositionOptimizer:
     def optimize(self, composition: Dict[str, Any]) -> Dict[str, Any]:
         return composition
 
 class CompositionSimulator:
+    """محاكاة التركيب غير منفذة — لا نجاح يُدَّعى (ADR-0012، العمل 1 —
+    composition.py:30)."""
+
     def simulate(self, composition: Dict[str, Any]) -> Dict[str, Any]:
-        return {"status": "simulated", "outcome": "success"}
+        return {"status": "not_simulated", "outcome": None,
+                "reason": "محاكاة التركيب غير منفذة — لا نتيجة تُدَّعى"}
 
 class UniversalCompositionEngine:
     """
@@ -48,7 +58,11 @@ class UniversalCompositionEngine:
     def compose(self, name: str, components: List[str]) -> Dict[str, Any]:
         composition = self.runtime.create(name, components)
         validated = self.validator.validate(composition)
-        optimized = self.optimizer.optimize(composition) if validated else None
+        # الحكم الصادق يُحمل مع التركيب — لا ادعاء فحص ناجح، والتخزين
+        # المنفذ يبقى بنتيجته (create ذخيرة فعلية)
+        composition["validated"] = validated
+        composition["validation_reason"] = self.validator.last_reason
+        optimized = self.optimizer.optimize(composition) if validated else composition
         return optimized
     
     def get_statistics(self) -> Dict[str, Any]:

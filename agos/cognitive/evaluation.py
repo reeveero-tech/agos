@@ -6,8 +6,12 @@ EVALUATE_TYPES = ["Plans", "Capabilities", "Providers", "Agents", "Models", "Arc
 METRICS = ["Quality", "Risk", "Cost", "Latency", "Complexity", "Reliability", "Maintainability", "Compatibility"]
 
 class EvaluationEngine:
+    """التقييم غير منفذ في هذا السطح — لا درجات مقيسة تُختلق؛ المقياس
+    المطلوب يُعاد None (لا قيمة) لا قيمة ثابتة تدعي قياساً (ADR-0012،
+    العمل 1)."""
+
     def evaluate(self, candidate: str, metrics: List[str]) -> Dict[str, Any]:
-        return {metric: 0.8 for metric in metrics}
+        return {metric: None for metric in metrics}
 
 class UniversalEvaluationPlatform:
     """

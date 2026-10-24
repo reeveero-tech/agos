@@ -42,8 +42,12 @@ class SkillComposer:
         self._registry = registry if registry is not None else SkillRegistry()
 
 class SkillBenchmark:
+    """قياس أداء المهارة غير منفذ — لا أرقام تُختلق (ADR-0012، العمل 1 —
+    skill.py:38)."""
+
     def benchmark(self, skill_id: str) -> Dict[str, Any]:
-        return {"skill_id": skill_id, "latency_ms": 100, "cost": 0.01}
+        return {"skill_id": skill_id, "latency_ms": None, "cost": None,
+                "reason": "قياس الأداء غير منفذ — لا أرقام تُختلق"}
 
 class UniversalSkillFabric:
     """

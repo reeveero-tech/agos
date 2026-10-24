@@ -17,8 +17,12 @@ ARCHITECTURE_GUARANTEES = [
 ]
 
 class VerificationEngine:
+    """تحقق المكون غير منفذ — False عدم ثبوت لا فساد مثبت (ADR-0012،
+    العمل 1 — foundation.py:21)."""
+
     def verify(self, component: str) -> Dict[str, Any]:
-        return {"component": component, "verified": True}
+        return {"component": component, "verified": False,
+                "reason": "تحقق المكون غير منفذ — لا فحص يجري"}
 
 class AbsoluteFoundation:
     """
@@ -60,19 +64,24 @@ class AbsoluteFoundation:
         self.verification = VerificationEngine()
     
     def verify_all(self) -> Dict[str, bool]:
-        return {c: True for c in ARCHITECTURE_COMPONENTS}
+        """لا تحقق يجري لأي مكون — False عدم ثبوت لكل واحد (ADR-0012،
+        العمل 1 — foundation.py:62)."""
+        return {c: False for c in ARCHITECTURE_COMPONENTS}
     
     def release(self) -> Dict[str, Any]:
+        """القفل ادعاء سابق أُزيل — لا قفل معماري ولا نواة ولا عقود بلا
+        فحص يُدَّعى (ADR-0012، العمل 1 — foundation.py:72)."""
         return {
             "version": self.version,
             "product": "AGOS Foundation",
-            "status": "locked",
+            "status": "not_locked",
             "components": len(ARCHITECTURE_COMPONENTS),
             "guarantees": len(ARCHITECTURE_GUARANTEES),
-            "architecture_locked": True,
-            "kernel_locked": True,
-            "contracts_locked": True,
-            "ready_for_evolution": True
+            "architecture_locked": False,
+            "kernel_locked": False,
+            "contracts_locked": False,
+            "ready_for_evolution": False,
+            "reason": "القفل والجاهزية غير منفذين — لا فحص يجري"
         }
     
     def get_statistics(self) -> Dict[str, Any]:

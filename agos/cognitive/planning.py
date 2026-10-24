@@ -15,8 +15,12 @@ class PlanValidator:
         return len(plan.steps) > 0
 
 class PlanSimulator:
+    """محاكاة الخطة غير منفذة — لا نتيجة تُدَّعى (ADR-0012، العمل 1)؛
+    فحص فراغ الخطوة في PlanValidator منفذ ويبقى بنتيجته."""
+
     def simulate(self, plan: MissionPlan) -> Dict[str, Any]:
-        return {"simulated": True, "outcome": "success"}
+        return {"simulated": False, "outcome": None,
+                "reason": "محاكاة الخطة غير منفذة — لا نجاح يُدَّعى"}
 
 class UniversalPlanningEngine:
     """

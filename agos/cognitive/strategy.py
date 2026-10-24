@@ -4,8 +4,12 @@ from typing import Any, Dict, List
 STRATEGIES = ["Fastest", "Cheapest", "Safest", "Highest Quality", "Lowest Risk", "Balanced", "Custom"]
 
 class StrategySelector:
+    """اختيار الاستراتيجية غير منفذ — صدى النوع المطلوب حرفياً، لا
+    اختيار يُدَّعى (ADR-0012، العمل 1)."""
+
     def select(self, strategy_type: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        return {"strategy": strategy_type, "selected": True}
+        return {"strategy": strategy_type, "selected": None,
+                "reason": "اختيار الاستراتيجية غير منفذ — صدى النوع لا اختيار"}
 
 class UniversalStrategyPlatform:
     """
