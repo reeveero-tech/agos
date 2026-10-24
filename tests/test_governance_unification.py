@@ -664,7 +664,11 @@ def test_authorize_execution_empty_policies_denies_with_reason():
     res = rt.authorize_execution({"version": "1.0"})
     assert res["authorized"] is False
     assert "نوع الكيان غائب" in res["reason"]   # السبب منقول
-    assert len(rt.auditor.audit_log) == 0            # لا تدقيق بعد منع
+    # أثر القرار المانع مرتبط بالطلب (المادة 6 — سجل العمل 0081)
+    assert len(rt.auditor.audit_log) == 1
+    assert rt.auditor.audit_log[-1]["authorized"] is False
+    assert rt.auditor.audit_log[-1]["action"] == {"version": "1.0"}
+    assert "نوع الكيان غائب" in rt.auditor.audit_log[-1]["reason"]
 
 
 def test_default_rule_source_is_enacted_constitution_legislation():
@@ -711,7 +715,10 @@ def test_default_rule_source_is_enacted_constitution_legislation():
     assert res["authorized"] is False
     assert "لا تشريع معتمد يمنح" in res["reason"]   # سبب الربط المسمى
     assert len(ev.evaluation_log) > log_before     # وصل المقيم المشترك فعلاً
-    assert len(rt.auditor.audit_log) == 0          # لا تدقيق بعد منع
+    # أثر القرار المانع (المادة 6 — سجل العمل 0081)
+    assert len(rt.auditor.audit_log) == 1
+    assert rt.auditor.audit_log[-1]["authorized"] is False
+    assert "لا تشريع معتمد يمنح" in rt.auditor.audit_log[-1]["reason"]
     # المخالفة تمنع بسببه المنقول (كيان منصوص بلا حقل الإصدار)
     res = rt.authorize_execution({"type": "Contracts"})
     assert res["authorized"] is False
@@ -727,7 +734,12 @@ def test_default_rule_source_is_enacted_constitution_legislation():
     res = rt.authorize_execution({"type": "mission",
                                   "mission": {"id": "m1", "version": "1.0"}})
     assert res["authorized"] is True
-    assert len(rt.auditor.audit_log) == 1
+    # أثر القرار السماحي مرتبط بهذا الطلب (المادة 6 — سجل العمل 0081) —
+    # الأثر الأخير في السجل (سجل نفسه رتّب قرارات هذا الاختبار قبله)
+    last = rt.auditor.audit_log[-1]
+    assert last["authorized"] is True
+    assert last["action"] == {"type": "mission",
+                              "mission": {"id": "m1", "version": "1.0"}}
 
 
 def test_execution_requires_explicit_authorization_grant():
@@ -749,7 +761,10 @@ def test_execution_requires_explicit_authorization_grant():
     res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
     assert res["authorized"] is False
     assert "لا تشريع معتمد يمنح" in res["reason"]
-    assert len(rt.auditor.audit_log) == 0
+    # أثر القرار المانع (المادة 6 — سجل العمل 0081)
+    assert len(rt.auditor.audit_log) == 1
+    assert rt.auditor.audit_log[-1]["authorized"] is False
+    assert rt.auditor.audit_log[-1]["action"] == {"type": "Contracts", "version": "1.0"}
 
     # البوابة تفتح فقط بتشريع معتمد يعلن المنح — منح عابر للاختبار يُعلن
     # في إعلان التشريع (لا في مواصفة قابلة لإعادة التسجيل) ويُستعاد بعده
@@ -806,7 +821,9 @@ def test_grant_authority_from_declaration_not_runtime_spec():
         res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
         assert res["authorized"] is False
         assert "لا تشريع معتمد يمنح" in res["reason"]
-        assert len(rt.auditor.audit_log) == 0
+        # أثر القرار المانع (المادة 6 — سجل العمل 0081)
+        assert len(rt.auditor.audit_log) == 1
+        assert rt.auditor.audit_log[-1]["authorized"] is False
     finally:
         ev._specs.clear()
         ev._specs.update(specs_before)
@@ -975,6 +992,10 @@ def test_authorize_execution_gate_order_and_right_to_block():
                 calls.append("audit")
                 self.audit_log.append(action)
 
+            def audit_decision(self, action, result, policy_results=None):
+                calls.append("audit")
+                self.audit_log.append(action)
+
         rt.emergency = RecEmergency()
         rt.authorizer = RecAuthorizer()
         rt.policy_enforcer = RealRecordingPolicy() if enforce == "real" else RecPassPolicy()
@@ -988,11 +1009,11 @@ def test_authorize_execution_gate_order_and_right_to_block():
     rt, calls = _recorded(stopped=True)
     assert rt.authorize_execution({"risk_level": 0.1}) == {
         "authorized": False, "reason": "Emergency stop active"}
-    assert calls == ["emergency"]
+    assert calls == ["emergency", "audit"]
     # (2) التفويض يمنع: [emergency, authorizer]
     rt, calls = _recorded(authorize=False)
     assert rt.authorize_execution({})["reason"] == "Not authorized"
-    assert calls == ["emergency", "authorizer"]
+    assert calls == ["emergency", "authorizer", "audit"]
     # (3) التوصيل الحقيقي بمخالفة قاعدة التشريع المفعّل (كيان منصوص بلا
     # حقل الإصدار): [emergency, authorizer, policy] فقط — المفوّض الحقيقي
     # يمنع بسببه المنقول ولا تُستدعى بوابة المنح بعده
@@ -1000,25 +1021,26 @@ def test_authorize_execution_gate_order_and_right_to_block():
     res = rt.authorize_execution({"type": "Contracts"})
     assert res["authorized"] is False
     assert "version" in res["reason"]
-    assert calls == ["emergency", "authorizer", "policy"]
+    assert calls == ["emergency", "authorizer", "policy", "audit"]
     # (4) بوابة المنح تمنع بغياب التشريع المانح: [.., policy, grants]
     # فقط — بسببه المسمى ولا تُستدعى السلامة بعده (سجل العمل 0078)
     rt, calls = _recorded(grants=False)
     res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
     assert res["authorized"] is False
     assert "لا تشريع معتمد يمنح" in res["reason"]
-    assert calls == ["emergency", "authorizer", "policy", "grants"]
+    assert calls == ["emergency", "authorizer", "policy", "grants", "audit"]
     # (5) السلامة تمنع: [emergency, authorizer, policy, grants, safety]
     rt, calls = _recorded(safe=False)
     assert rt.authorize_execution({})["reason"] == "Safety check failed"
-    assert calls == ["emergency", "authorizer", "policy", "grants", "safety"]
+    assert calls == ["emergency", "authorizer", "policy", "grants",
+                     "safety", "audit"]
     # (6) الموافقة البشرية تمنع: [...] + approval — بلا audit
     rt, calls = _recorded(requires_approval=True)
     assert rt.authorize_execution(
         {"risk_level": 0.9})["reason"] == "Requires human approval"
     assert calls == ["emergency", "authorizer", "policy",
-                     "grants", "safety", "approval"]
-    assert "audit" not in calls
+                     "grants", "safety", "approval", "audit"]
+    # الأثر يتركه الغلاف لكل قرار — سماحاً ومنعاً كلاهما (سجل العمل 0081)
 
 
 def test_mission_denied_before_workspace_and_resources():
@@ -1191,7 +1213,9 @@ def test_grant_conditions_tamper_proof():
         res = rt.authorize_execution(incomplete)
         assert res["authorized"] is False
         assert "تختلف عن إعلان التشريع" in res["reason"]
-        assert len(rt.auditor.audit_log) == 0
+        # أثر القرار المانع (المادة 6 — سجل العمل 0081)
+        assert len(rt.auditor.audit_log) == 1
+        assert rt.auditor.audit_log[-1]["authorized"] is False
 
         # الهجوم الثاني: تغيير نطاق المواصفة المسجلة ليستثني الواجب من
         # استشارة بوابة السياسات أصلاً (السياسات تمر ثم يمنع المنح)
@@ -1231,6 +1255,212 @@ def test_required_subfields_incomplete_spec_is_unverified():
         {"type": "mission", "mission": {"id": "m1", "version": "1.0"}})
     assert verdict.verdict == VERDICT_UNVERIFIED
     assert "مواصفة ناقصة" in verdict.reason
+
+
+def test_article_6_every_decision_leaves_linked_trace():
+    """المادة 6 (سجل العمل 0081 — نطاق محدود بمسار قرار الترخيص الموحد):
+    كل قرار يترك أثراً واحداً في السجل نفسه مرتبطاً بالطلب، بحكمه وسببه
+    المنقول من بوابة القرار — سماحاً ومنعاً كلاهما، عبر بوابات المسار.
+    الحد معلن: هذه الحالات الممثلة تثبت تغطية مسار الترخيص الموحد، لا
+    عبارة «كل تنفيذ» على مستوى المنظومة (خريطة الأدلة في ADR-0010)."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    mission_ok = {"type": "mission", "mission": {"id": "m1", "version": "1.0"}}
+    mission_missing = {"type": "mission", "mission": {"id": "m1"}}
+
+    def fresh(stopped=False, unauthorized=False, unsafe=False):
+        rt = AutoGovRuntime()
+        if stopped:
+            rt.emergency.is_stopped = lambda: True
+        if unauthorized:
+            rt.authorizer.authorize = lambda action: False
+        if unsafe:
+            rt.safety.validate = lambda action: {"safe": False, "warnings": []}
+        return rt
+
+    cases = [
+        ("سماح", fresh(), mission_ok, True, ""),
+        ("منع سياسات", fresh(), mission_missing, False, "version"),
+        ("طوارئ", fresh(stopped=True), mission_ok, False, "Emergency stop"),
+        ("تفويض", fresh(unauthorized=True), mission_ok, False, "Not authorized"),
+        ("سلامة", fresh(unsafe=True), mission_ok, False, "Safety check failed"),
+        ("موافقة", fresh(), {"type": "mission", "mission": {
+            "id": "m2", "version": "1.0", "risk_level": 0.9}},
+         False, "Requires human approval"),
+        ("نوع غير مغطى", fresh(), {"type": "uncovered-type"},
+         False, "لا قواعد تشريعية تنطبق"),
+    ]
+    for name, rt, action, expected, reason_part in cases:
+        before = len(rt.auditor.audit_log)
+        res = rt.authorize_execution(action)
+        assert res["authorized"] is expected, name
+        # أثر واحد جديد مرتبط بالطلب بحكمه وسببه (المادة 6)
+        assert len(rt.auditor.audit_log) == before + 1, name
+        entry = rt.auditor.audit_log[-1]
+        assert entry["action"] == action, name           # مرتبط بالطلب نفسه
+        assert entry["authorized"] is expected, name
+        assert entry["reason"] == res.get("reason", ""), name  # منقول كما هو
+        if reason_part:
+            assert reason_part in entry["reason"], name
+
+    # منع بوابة المنح (سحب عابر يستعاد): المهمة الممتثلة تمنع بسببه المسمى
+    grants_before = dict(pe._ENACTED_CONSTITUTION_GRANTS)
+    try:
+        pe._ENACTED_CONSTITUTION_GRANTS.clear()
+        rt = AutoGovRuntime()
+        res = rt.authorize_execution(mission_ok)
+        assert res["authorized"] is False
+        assert "لا تشريع معتمد يمنح" in res["reason"]
+        assert len(rt.auditor.audit_log) == 1
+        assert rt.auditor.audit_log[-1]["authorized"] is False
+        assert rt.auditor.audit_log[-1]["action"] == mission_ok
+    finally:
+        pe._ENACTED_CONSTITUTION_GRANTS.clear()
+        pe._ENACTED_CONSTITUTION_GRANTS.update(grants_before)
+
+
+def test_article_12_decision_repeatable():
+    """المادة 12 (سجل العمل 0081 — نطاق محدود بمسار قرار الترخيص الموحد):
+    القرار قابل للتكرار — نفس المدخل والسياق وإصدارات السياسات والحالة
+    الابتدائية يعطي نفس الحكم والسبب ونتائج القواعد المستشارة (لا مقارنة
+    بالطوابع الزمنية أو المعرفات العشوائية). الحد معلن: هذا تكرار مسار
+    الترخيص الموحد، لا إثبات «قابلية تكرار» لكل قرار في المنظومة."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    ev = pe.get_shared_evaluator()
+
+    def run(action):
+        rt = AutoGovRuntime()   # نفس الحالة الابتدائية — نواة جديدة بلا أثر سابق
+        res = rt.authorize_execution(action)
+        entry = rt.auditor.audit_log[-1]
+        # نتائج القواعد وسياقها من الأثر التاريخي نفسه — لا من نتيجة عابرة
+        results = [dict(r) for r in entry["policy_results"]]
+        context = entry["policy_context"]
+        trace = (entry["authorized"], entry.get("reason", ""))
+        return res, results, context, trace
+
+    cases = (
+        # (الفعل، {معرف القاعدة: passed المتوقع})
+        ({"type": "mission", "mission": {"id": "m1", "version": "1.0"}},
+         {"mission-execution-obligation": True}),    # سماح — واجب ممتثل
+        ({"type": "mission", "mission": {"id": "m1"}},
+         {"mission-execution-obligation": False}),   # منع سياسات — واجب مخالف
+        ({"type": "Contracts", "version": "1.0"},
+         {"constitution-article-5-versioning": True}),   # ممتثل رغم منع المنح
+        ({"type": "uncovered-type"}, {}),           # صفر منطبقة — فراغ مثبت
+    )
+    for action, expected in cases:
+        res1, results1, context1, trace1 = run(action)
+        res2, results2, context2, trace2 = run(action)
+        assert res1 == res2, action            # نفس الحكم والسبب
+        assert trace1 == trace2, action        # نفس أثر القرار حكماً وسبباً
+        assert results1 == results2, action    # نفس نتائج القواعد — دائماً
+        assert context1 == context2, action    # نفس سياق السياسة — دائماً
+        # النتائج المتوقعة صراحة (معرف + حكم passed) — لا يجتاز حكمان
+        # خاطئان متطابقان؛ وفراغها حيث لا تصل بوابة السياسات
+        assert {r["rule_id"]: r["passed"]
+                for r in results1} == expected, action
+        if expected:   # القواعد المختارة ومواصفاتها المسجلة الفعلية
+            assert {r["rule_id"] for r in context1["rules"]} == set(expected)
+            for rid in expected:
+                assert context1["specs"][rid] == ev.get_spec(rid), action
+        else:           # لم تصل بوابة السياسات — فراغ مثبت لا مجرد سكوت
+            assert context1 == {"rules": [], "specs": {}}, action
+
+
+def test_decision_trace_is_independent_snapshot():
+    """تصحيح المراجعة (سجل العمل 0081): أثر القرار لقطة مستقلة — تعديل
+    الطلب أو الكائنات المتداخلة بعد عودة القرار لا يغير الأثر التاريخي
+    (كان الأثر يحفظ الطلب بالمرجع نفسه فكان قابلاً للتحريف لاحقاً)."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    rt = AutoGovRuntime()
+    action = {"type": "mission", "mission": {"id": "m1", "version": "1.0"}}
+    res = rt.authorize_execution(action)
+    assert res["authorized"] is True
+    entry = rt.auditor.audit_log[-1]
+    recorded = entry["action"]
+    # تحريف متداخل بعد القرار — الطلب المسجل لا يتغير
+    action["mission"]["version"] = "999-mutated"
+    action["type"] = "uncovered-type"
+    assert recorded == {"type": "mission",
+                        "mission": {"id": "m1", "version": "1.0"}}
+    # ونتائج القواعد المسجلة لقطة كذلك — لا تتغير بتحريف نتيجة المقيم
+    # العابرة (last_outcome) التي التُقطت منها: الأثر التاريخي مستقل
+    assert entry["policy_results"]
+    rt.policy_enforcer.last_outcome["results"][0]["rule_id"] = "tampered"
+    assert rt.auditor.audit_log[-1]["policy_results"][0]["rule_id"] != "tampered"
+
+
+def test_decision_trace_keeps_policy_context_used_at_decision():
+    """تصحيح المراجعة (سجل العمل 0081): أثر القرار يحفظ سياق السياسة
+    المستخدم فعلياً وقت القرار — القواعد المختارة ومواصفاتها **المسجلة
+    الفعلية** ونتائج تقييمها؛ فإعادة تسجيل مواصفة القاعدة بعد القرار لا
+    تغيّر الأثر التاريخي (يحتفظ بالقديمة لا بالحالة الجديدة)."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    from copy import deepcopy
+    ev = pe.get_shared_evaluator()
+    rule_id = pe.MISSION_EXECUTION_OBLIGATION_RULE_ID
+    # لقطة مستقلة قبل القرار — لا مرجع الأثر بنفسه فيقارن الشيء بذاته
+    expected_spec = deepcopy(ev.get_spec(rule_id))
+    expected_results = {rule_id: True}
+
+    rt = AutoGovRuntime()
+    action = {"type": "mission", "mission": {"id": "m1", "version": "1.0"}}
+    res = rt.authorize_execution(action)
+    assert res["authorized"] is True
+    entry = rt.auditor.audit_log[-1]
+    assert entry["policy_context"]["specs"][rule_id] == expected_spec
+    assert {r["rule_id"]: r["passed"]
+            for r in entry["policy_results"]} == expected_results
+    results_snapshot = deepcopy(entry["policy_results"])
+
+    # إعادة تسجيل مواصفة أضعف بعد القرار — المواصفة الحالية تغيرت فعلاً،
+    # والأثر التاريخي يحتفظ بما استُخدم وقت القرار لا بالحالة الجديدة
+    ev.register_spec(rule_id, {
+        "kind": "required_fields", "required_fields": ["mission"],
+        "applies_to_types": ["mission"]})
+    try:
+        assert ev.get_spec(rule_id) != expected_spec     # الحالة الجديدة مختلفة
+        assert entry["policy_context"]["specs"][rule_id] == expected_spec
+        assert entry["policy_results"] == results_snapshot
+    finally:
+        ev.register_spec(rule_id, expected_spec)
+
+
+def test_early_rejection_does_not_inherit_previous_results():
+    """تصحيح المراجعة (سجل العمل 0081): الرفض المبكر لا يرث نتائج القواعد
+    المستشارة لطلب سابق — النتائج تُلتقط عند استشارة السياسات لهذا الطلب
+    نفسه، فالمسار الذي لا يصل البوابة أثره فارغ لا منقول من آخر نتيجة."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    rt = AutoGovRuntime()
+    mission_ok = {"type": "mission", "mission": {"id": "m1", "version": "1.0"}}
+    res1 = rt.authorize_execution(mission_ok)
+    assert res1["authorized"] is True
+    first = rt.auditor.audit_log[-1]
+    assert {r["rule_id"] for r in first["policy_results"]} == {
+        "mission-execution-obligation"}          # نتائج هذا الطلب مسجلة
+    assert first["policy_context"]["specs"]      # وسياقه (المواصفة) كذلك
+    # رفض مبكر على الكائن نفسه (الطوارئ) — لا يرث نتائج ولا سياق الطلب
+    # السابق — فراغ مثبت لا مجرد سكوت
+    rt.emergency.is_stopped = lambda: True
+    res2 = rt.authorize_execution(mission_ok)
+    assert res2["authorized"] is False
+    second = rt.auditor.audit_log[-1]
+    assert second["authorized"] is False
+    assert second["policy_results"] == []         # فراغ مثبت لا توريث
+    assert second["policy_context"] == {"rules": [], "specs": {}}
+    assert second["action"] == mission_ok         # مرتبط بالطلب نفسه
 
 
 def test_freeze_is_forbidden_and_membership_fixed():

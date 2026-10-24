@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
+from copy import deepcopy
 
 from agos_kernel.governance.policy_evaluator import (
     evaluate_rule_dicts, default_policy_rules, execution_authorization_grants,
@@ -860,13 +861,44 @@ class EmergencyStop:
 
 
 class ExecutionAuditor:
-    """Audits execution."""
-    
+    """Audits execution.
+
+    أثر قرار الترخيص (سجل العمل 0081 — المادة 6): كل قرار — سماحاً كان أو
+    منعاً — يترك أثراً واحداً في السجل نفسه مرتبطاً بالطلب، بحكمه وسببه
+    المنقول من بوابة القرار؛ الفجوة السابقة: الرفض المبكر كان يعود قبل
+    التدقيق فلا يترك أثراً إطلاقاً.
+    """
+
     def __init__(self):
         self.audit_log: List[Dict] = []
-    
+
     def audit(self, action: Dict) -> None:
         self.audit_log.append({'action': action, 'timestamp': datetime.now(timezone.utc).isoformat()})
+
+    def audit_decision(self, action: Dict, result: Dict,
+                      policy_evidence: Optional[Dict] = None) -> None:
+        """أثر قرار الترخيص — سماحاً ومنعاً كلاهما، في السجل نفسه.
+
+        لقطة مستقلة (نسخ عميقة) للطلب والنتيجة ونتائج القواعد المستشارة
+        وسياق السياسة المستخدم فعلياً (سجل العمل 0081): تعديل الطلب أو
+        الكائنات أو إعادة تسجيل المواصفات لاحقاً لا يغير الأثر التاريخي —
+        فالأثر يحفظ ما استُخدم وقت القرار لا الحالة اللاحقة؛ ونتائج
+        القواعد وسياقها يُلتقطان عند استشارة السياسات لهذا الطلب نفسه —
+        لا من آخر نتيجة عامة قد تعود لطلب سابق."""
+        evidence = policy_evidence if isinstance(policy_evidence, dict) else {}
+        self.audit_log.append({
+            'action': deepcopy(action),
+            'authorized': (bool(result.get('authorized'))
+                           if isinstance(result, dict) else False),
+            'reason': ((result.get('reason') or '')
+                       if isinstance(result, dict) else ''),
+            'policy_results': deepcopy(evidence.get('results') or []),
+            'policy_context': deepcopy({
+                'rules': evidence.get('rules') or [],
+                'specs': evidence.get('specs') or {},
+            }),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+        })
 
 
 class AuthorizationGrantGate:
@@ -913,22 +945,48 @@ class GovernanceRuntime:
         self.auditor = ExecutionAuditor()
     
     def authorize_execution(self, action: Dict) -> Dict:
+        """قرار ترخيص الفعل — وكل قرار يترك أثره (المادة 6 — سجل العمل
+        0081): السماح والمنع كلاهما يُسجّل لقطة مستقلة مرتبطة بالطلب
+        بحكمه وسببه ونتائج القواعد المستشارة له؛ الفجوة السابقة: الرفض
+        المبكر كان يعود قبل التدقيق فلا أثر له."""
+        result, policy_evidence = self._evaluate_authorization(action)
+        self.auditor.audit_decision(action, result, policy_evidence)
+        return result
+
+    def _evaluate_authorization(self, action: Dict) -> tuple:
+        """بوابات القرار — يعيد (نتيجة القرار، دليل السياسة لهذا الطلب:
+        نتائجه وسياقه المستخدم عند الاستشارة، أو None إن لم تصل)."""
         if self.emergency.is_stopped():
-            return {'authorized': False, 'reason': 'Emergency stop active'}
-        
+            return {'authorized': False, 'reason': 'Emergency stop active'}, None
+
         if not self.authorizer.authorize(action):
-            return {'authorized': False, 'reason': 'Not authorized'}
-        
+            return {'authorized': False, 'reason': 'Not authorized'}, None
+
         # القواعد المنطبقة فقط (الشريحة الثامنة — سجل العمل 0079): اختيار
         # مدخلات من التشريع المفعّل لا مقيم ثانٍ — القاعدة تُستثنى فقط إذا
         # ثبت خروج الفعل عن نطاقها الموثق؛ وصفر قواعد منطبقة = لا فحص
         # ولا سماح مثبت (نوع غير مغطى تشريعياً — منع معلل لا سماح أعمى)
         applicable = applicable_constitution_rules(action)
         if not applicable:
-            return {'authorized': False,
-                    'reason': 'لا قواعد تشريعية تنطبق على نوع الفعل '
-                              '{!r} — لا فحص ولا سماح مثبت (النوع غير '
-                              'مغطى تشريعياً)'.format(action.get("type"))}
+            return ({'authorized': False,
+                     'reason': 'لا قواعد تشريعية تنطبق على نوع الفعل '
+                               '{!r} — لا فحص ولا سماح مثبت (النوع غير '
+                               'مغطى تشريعياً)'.format(action.get("type"))},
+                    None)
+        # لقطة سياق السياسة المستخدم فعلياً (تصحيح المراجعة — سجل العمل
+        # 0081): القواعد المختارة ومواصفاتها **المسجلة الفعلية** عند
+        # الاستشارة، بنسخة عميقة عند الالتقاط — لا إصدار افتراضي ولا
+        # إعادة بناء من الإعلان لاحقاً؛ فيحفظ الأثر التاريخي ما استُخدم
+        # وقت القرار حتى لو أُعيد تسجيل المواصفات بعده
+        from agos_kernel.governance.policy_evaluator import get_shared_evaluator
+        rule_ids = [str(r.get("rule_id"))
+                    for r in applicable
+                    if isinstance(r, dict) and r.get("rule_id")]
+        policy_context = {
+            "rules": deepcopy(applicable),
+            "specs": {rid: deepcopy(get_shared_evaluator().get_spec(rid))
+                      for rid in rule_ids},
+        }
         if not self.policy_enforcer.enforce(action, applicable):
             # مصدر القواعد معتمد ومسلّطته معلنة (الشريحة السابعة — R-W1-007):
             # تشريع الدستور المفعّل في المصنع المعتمد، لا قائمة فارغة يمررها
@@ -936,34 +994,47 @@ class GovernanceRuntime:
             # بفحص ناجح لكل القواعد؛ وسبب المنع منقول من المقيم المعتمد كما هو
             # (غياب القواعد ليس مخالفة مثبتة كي يُختزل في «Policy violation»)
             outcome = getattr(self.policy_enforcer, "last_outcome", None) or {}
-            return {'authorized': False,
-                    'reason': outcome.get("reason", "Policy violation")}
+            return ({'authorized': False,
+                     'reason': outcome.get("reason", "Policy violation")},
+                    {"results": deepcopy(outcome.get("results") or []),
+                     **policy_context})
+
+        # نتائج القواعد المستشارة لهذا الطلب — من لحظة الاستشارة نفسها
+        # (تصحيح المراجعة — سجل العمل 0081): تُلتقط هنا بنسخة عميقة لا من
+        # آخر نتيجة عامة عند الخروج — فالرفض المبكر اللاحق لا يرث نتائج
+        # طلب سابق
+        outcome = getattr(self.policy_enforcer, "last_outcome", None) or {}
+        policy_evidence = {"results": deepcopy(outcome.get("results") or []),
+                           **policy_context}
 
         # ربط الترخيص صريح مع تحقق شروطه (تصحيحا المراجعة — سجلا العمل
         # 0078/0080): لا ترخيص بلا تشريع معتمد يعلن المنح، وشروط المنح
-        # تتحقق صراحة — الواجب المطلوب مستشار ناجح وبمواصفة مطابقة
+        # تتحقق صراحة — الواجب المطلوب مستشار ناجح وبواصفة مطابقة
         # لإعلان التشريع (إضعافه بإعادة تسجيل يُكتشف ويمنع)
         if not self.grant_gate.grants_verified(
                 action, policy_outcome=self.policy_enforcer.last_outcome):
-            return {'authorized': False,
-                    'reason': (self.grant_gate.last_reason
-                               or self.grant_gate.denial_reason(action))}
-        
+            return ({'authorized': False,
+                     'reason': (self.grant_gate.last_reason
+                                or self.grant_gate.denial_reason(action))},
+                    policy_evidence)
+
         safety = self.safety.validate(action)
         if not safety['safe']:
-            return {'authorized': False, 'reason': 'Safety check failed'}
-        
+            return ({'authorized': False, 'reason': 'Safety check failed'},
+                    policy_evidence)
+
         try:
             requires_approval = self.approval.requires_approval(action)
         except ValueError as exc:
             # قيمة المخاطرة غير الصالحة ترفض بسبب مسمى — قبل أي أثر لاحق
-            return {'authorized': False, 'reason': str(exc)}
+            return ({'authorized': False, 'reason': str(exc)}, policy_evidence)
         if requires_approval:
-            return {'authorized': False, 'reason': 'Requires human approval'}
-        
-        self.auditor.audit(action)
-        return {'authorized': True}
-    
+            return ({'authorized': False, 'reason': 'Requires human approval'},
+                    policy_evidence)
+
+        # الأثر يُسجّل في الغلاف (audit_decision) لكل قرار — سماحاً ومنعاً
+        return {'authorized': True}, policy_evidence
+
     def emergency_stop(self) -> None:
         self.emergency.stop()
     

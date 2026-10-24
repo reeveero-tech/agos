@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102495,
-  "functions": 6178,
+  "lines": 102566,
+  "functions": 6180,
   "stub_functions": 781,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -189,8 +189,8 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24562,
-   "functions": 1323,
+   "lines": 24633,
+   "functions": 1325,
    "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -3041,10 +3041,10 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 1081,
+   "lines": 1152,
    "syntax_ok": true,
    "classes": 70,
-   "functions": 119,
+   "functions": 121,
    "stub_functions": 29,
    "abstract_functions": 0,
    "imports": [
@@ -3053,8 +3053,10 @@
     "typing",
     "enum",
     "uuid",
+    "copy",
     "agos_kernel.governance.policy_evaluator",
-    "math"
+    "math",
+    "agos_kernel.governance.policy_evaluator"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
