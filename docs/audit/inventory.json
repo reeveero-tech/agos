@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102230,
-  "functions": 6170,
+  "lines": 102302,
+  "functions": 6172,
   "stub_functions": 781,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24494,
+   "lines": 24505,
    "functions": 1319,
    "stub_functions": 120,
    "hardcoded_paths": 0,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 1004,
-   "functions": 49,
+   "lines": 1065,
+   "functions": 51,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -3041,7 +3041,7 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 1013,
+   "lines": 1024,
    "syntax_ok": true,
    "classes": 70,
    "functions": 115,
@@ -8155,10 +8155,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 414,
+   "lines": 475,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 17,
+   "functions": 19,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -9043,6 +9043,9 @@
     "K:test_knowledge_enforcement",
     "K:test_knowledge_unification",
     "S:fabric.knowledge"
+   ],
+   "tested_by_external": [
+    "tests/test_governance_unification.py"
    ],
    "import_status": "OK"
   },
@@ -16958,7 +16961,9 @@
     "agos_kernel.civilization.policy_runtime",
     "agos_kernel.governance",
     "agos_kernel.governance.policy_evaluator",
-    "agos_kernel.governance.runtime"
+    "agos_kernel.governance.runtime",
+    "agos_kernel.knowledge.models",
+    "dataclasses"
    ],
    "scripts": [],
    "resolved": [
@@ -16968,6 +16973,7 @@
     "K:governance",
     "K:governance.policy_evaluator",
     "K:governance.runtime",
+    "K:knowledge.models",
     "S:constitution.constitution",
     "S:enterprise.governance",
     "S:foundation.policy",

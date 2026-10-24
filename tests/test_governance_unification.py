@@ -716,10 +716,11 @@ def test_default_rule_source_is_enacted_constitution_legislation():
     res = rt.authorize_execution({"type": "Contracts"})
     assert res["authorized"] is False
     assert "version" in res["reason"]
-    # غير المشمول بالتشريع لا يُمنح ترخيصاً (لا امتثال بلا فحص ناجح)
+    # غير المشمول بالتشريع لا يُمنح ترخيصاً (لا امتثال بلا فحص ناجح) —
+    # بعد الشريحة الثامنة: صفر قواعد منطبقة = منع معلل بأن النوع غير مغطى
     res = rt.authorize_execution({"type": "mission"})
     assert res["authorized"] is False
-    assert "لا تنطبق" in res["reason"]
+    assert "لا قواعد تشريعية تنطبق" in res["reason"]
 
 
 def test_execution_requires_explicit_authorization_grant():
@@ -741,19 +742,14 @@ def test_execution_requires_explicit_authorization_grant():
     assert "لا تشريع معتمد يمنح" in res["reason"]
     assert len(rt.auditor.audit_log) == 0
 
-    # البوابة تفتح فقط بتشريع معتمد يعلن المنح — تشريع عابر للاختبار
-    # يُعلن ويعاد بعده (لا يبقى تشريعاً دائماً)
+    # البوابة تفتح فقط بتشريع معتمد يعلن المنح — منح عابر للاختبار يُعلن
+    # في إعلان التشريع (لا في مواصفة قابلة لإعادة التسجيل) ويُستعاد بعده
     granted_rule = "test-authorization-grant"
-    enacted_before = pe.ENACTED_CONSTITUTION_RULE_IDS
-    ev = pe.get_shared_evaluator()
-    specs_before = dict(ev._specs)
+    grants_before = dict(pe._ENACTED_CONSTITUTION_GRANTS)
     try:
-        ev.register_spec(granted_rule, {
-            "kind": "required_fields", "required_fields": ["version"],
-            "applies_to_types": ["Contracts"], "grants": ["execute"],
-        })
-        pe.ENACTED_CONSTITUTION_RULE_IDS = enacted_before + (granted_rule,)
-        # المنح يعمل من التشريع المعلن — والمدخل الممتثل يُرخّص ويدقّق
+        pe._ENACTED_CONSTITUTION_GRANTS[granted_rule] = {
+            "grants": ["execute"], "applies_to_types": ["Contracts"]}
+        # المنح يعمل من إعلان التشريع — والمدخل الممتثل يُرخّص ويدقّق
         assert pe.execution_authorization_grants(
             {"type": "Contracts"}) == [{"rule_id": granted_rule}]
         # منح لنوع لا يفتح البوابة لغيره
@@ -768,12 +764,130 @@ def test_execution_requires_explicit_authorization_grant():
         assert res["authorized"] is False
         assert "version" in res["reason"]
     finally:
-        pe.ENACTED_CONSTITUTION_RULE_IDS = enacted_before
-        ev._specs.clear()
-        ev._specs.update(specs_before)
+        pe._ENACTED_CONSTITUTION_GRANTS.clear()
+        pe._ENACTED_CONSTITUTION_GRANTS.update(grants_before)
     # بعد الاستعادة: لا منح — البوابة مغلقة بصدق كما كانت
     assert pe.execution_authorization_grants(
         {"type": "Contracts", "version": "1.0"}) == []
+
+
+def test_grant_authority_from_declaration_not_runtime_spec():
+    """الشريحة الثامنة (سجل العمل 0079) — سد ثغرة سلطة المنح: إعادة تسجيل
+    مواصفة لمعرّف منصوص (المادة 5) بمنح مضاف وقت التشغيل لا يفتح الترخيص —
+    سلطة المنح من إعلان التشريع لا من المواصفات القابلة لإعادة التسجيل."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    ev = pe.get_shared_evaluator()
+    specs_before = dict(ev._specs)
+    try:
+        # الهجوم: إعادة تسجيل مواصفة المادة 5 نفسها بمنح مضاف — بلا مساس
+        # بإعلان التشريع
+        ev.register_spec(pe.CONSTITUTION_ARTICLE_5_RULE_ID, {
+            "kind": "required_fields", "required_fields": ["version"],
+            "applies_to_types": ["Contracts"], "grants": ["execute"],
+        })
+        # سلطة المنح لم تتأثر — الإعلان هو المصدر لا المواصفة
+        assert pe.execution_authorization_grants(
+            {"type": "Contracts", "version": "1.0"}) == []
+        rt = AutoGovRuntime()
+        res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+        assert res["authorized"] is False
+        assert "لا تشريع معتمد يمنح" in res["reason"]
+        assert len(rt.auditor.audit_log) == 0
+    finally:
+        ev._specs.clear()
+        ev._specs.update(specs_before)
+
+
+def test_applicable_rules_selector_scoped_and_fail_closed():
+    """الشريحة الثامنة (سجل العمل 0079) — محدد القواعد المنطبقة: اختيار
+    مدخلات من التشريع المفعّل لا مقيم ثانٍ؛ الاستثناء فقط عند ثبوت الخروج
+    عن النطاق الموثق (بيانات منظمة لا نص سبب)؛ وما لا يثبت خروجه يُستشار؛
+    وصفر قواعد منطبقة منع معلل لا سماح أعمى."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    # (1) قاعدة منطبقة تُستشار وخارج النطاق يُستثنى — كيان معرفة: المادة 5
+    # (Knowledge من الأنواع المنصوصة) والمادة 13 (نطاقها Knowledge)
+    # تُستشاران؛ قاعدة نطاقها نوع آخر تُستثنى (مثبت بسجل المقيم لا بالنص)
+    rules = pe.applicable_constitution_rules({"type": "Knowledge"})
+    assert {r["rule_id"] for r in rules} == {
+        pe.CONSTITUTION_ARTICLE_5_RULE_ID, pe.CONSTITUTION_ARTICLE_13_RULE_ID}
+    # (2) نوع غائب عن المدخل: لا يثبت الخروج فتُستشار كل القواعد ذات
+    # النطاق (كلها عدم تحقق معلل — منع لا سماح)
+    rules = pe.applicable_constitution_rules({"version": "1.0"})
+    assert {r["rule_id"] for r in rules} == set(pe.ENACTED_CONSTITUTION_RULE_IDS)
+    rt = AutoGovRuntime()
+    res = rt.authorize_execution({"version": "1.0"})
+    assert res["authorized"] is False
+    assert "نوع الكيان غائب" in res["reason"]
+    # (3) نوع معلوم غير مغطى تشريعياً: صفر منطبقة — منع معلل لا سماح أعمى
+    assert pe.applicable_constitution_rules({"type": "mission"}) == []
+    res = rt.authorize_execution({"type": "mission"})
+    assert res["authorized"] is False
+    assert "لا قواعد تشريعية تنطبق" in res["reason"]
+    # (4) قاعدة منطبقة ناقصة المواصفة تُستشار لا تُستثنى (لا يُسقط الفحص
+    # لنقص مواصفته) — تسجيل عابر لمواصفة ناقصة على معرّف منصوص ثم استعادة
+    ev = pe.get_shared_evaluator()
+    spec_before = ev.get_spec(pe.CONSTITUTION_ARTICLE_13_RULE_ID)
+    try:
+        ev.register_spec(pe.CONSTITUTION_ARTICLE_13_RULE_ID,
+                        {"kind": "required_fields", "required_fields": []})
+        rules = pe.applicable_constitution_rules({"type": "Knowledge"})
+        assert pe.CONSTITUTION_ARTICLE_13_RULE_ID in {
+            r["rule_id"] for r in rules}
+        # والاستشارة تمنع كعدم تحقق معلل (مواصفة ناقصة ليست قائمة سماح فارغة)
+        res = rt.authorize_execution(
+            {"type": "Knowledge", "version": "1", "source": "s",
+             "evidence": [], "confidence": None, "created_at": "t",
+             "lineage": []})
+        assert res["authorized"] is False
+        assert "مواصفة ناقصة" in res["reason"]
+    finally:
+        ev.register_spec(pe.CONSTITUTION_ARTICLE_13_RULE_ID, spec_before)
+
+
+def test_article_13_knowledge_contract_completeness():
+    """الشريحة الثامنة (سجل العمل 0079) — المادة 13 بعقد المعرفة الفعلي:
+    اكتمال العقد مثبت (الأبعاد الستة في عقد Knowledge نفسه)؛ والحد المعلن:
+    حضور الحقول يثبت اكتمال العقد لا صحة المصدر أو الأدلة (فحص الحقول لا
+    يثبت محتواها). «Timestamp» في المادة → created_at في العقد؛ وversion
+    خاصية تفويضية إلى metadata.version."""
+    import dataclasses
+    from agos_kernel.knowledge.models import Knowledge
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    # اكتمال عقد كائن المعرفة الفعلي — الأبعاد الستة كلها في العقد
+    names = {f.name for f in dataclasses.fields(Knowledge)}
+    for dimension in ("source", "evidence", "confidence",
+                      "created_at", "lineage"):
+        assert dimension in names, dimension
+    assert isinstance(getattr(Knowledge, "version"), property)
+
+    # البوابة: كيان معرفة كامل الأبعاد يجتاز فحص المادة 13 (والمادة 5
+    # بالإصدار) — والترخيص يبقى معلقاً على بوابة المنح (لا منح مشرّع)
+    rt = AutoGovRuntime()
+    full = {"type": "Knowledge", "version": "1.0", "source": "docs",
+            "evidence": [], "confidence": 0.5, "created_at": "2026-10-24",
+            "lineage": []}
+    log_before = len(pe.get_shared_evaluator().evaluation_log)
+    res = rt.authorize_execution(full)
+    assert res["authorized"] is False          # بوابة المنح ما تزال مغلقة
+    assert "لا تشريع معتمد يمنح" in res["reason"]
+    # المادتان 5 و13 استُشرتا فعلاً (فحصهما ناجح — المنع من بوابة المنح لا
+    # من السياسات)
+    assert len(pe.get_shared_evaluator().evaluation_log) >= log_before + 2
+    # الناقص بعداً واحداً يمنع بسببه المسمى (المادة 13)
+    missing = dict(full)
+    del missing["lineage"]
+    res = rt.authorize_execution(missing)
+    assert res["authorized"] is False
+    assert "lineage" in res["reason"]
 
 
 def test_authorize_execution_gate_order_and_right_to_block():
@@ -907,7 +1021,8 @@ def test_mission_denied_before_workspace_and_resources():
         lambda tid, req: (allocated.append(tid), True)[1])
     result = runtime.execute_mission_autonomously({"id": "m1"})
     assert result["status"] == "denied"
-    assert "لا تنطبق" in result["reason"]   # السبب منقول من المقيم
+    # بعد الشريحة الثامنة: صفر قواعد منطبقة — منع معلل بالنوع غير المغطى
+    assert "لا قواعد تشريعية تنطبق" in result["reason"]
     assert created == []       # الرفض قبل إنشاء مساحة العمل
     assert allocated == []     # وقبل تخصيص الموارد
 

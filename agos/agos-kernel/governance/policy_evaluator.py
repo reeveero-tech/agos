@@ -218,6 +218,28 @@ def constitution_article_5_spec(
 
 
 # ---------------------------------------------------------------
+# المادة 13 — كائن المعرفة (الشريحة الثامنة، سجل العمل 0079): فحص حد
+# أدنى بعقد المعرفة الفعلي (`agos_kernel.knowledge.models.Knowledge`)
+# لا بحقول مختلقة. «Timestamp» في المادة → `created_at` في العقد (زمن
+# الإنشاء الفعلي)؛ و`version` خاصية تفويضية إلى `metadata.version`.
+# الحد المعلن: حضور الأبعاد الستة يثبت اكتمال عقد كائن المعرفة لا صحة
+# المصدر أو الأدلة — فحص الحقول لا يثبت محتواها.
+# ---------------------------------------------------------------
+CONSTITUTION_ARTICLE_13_RULE_ID = "constitution-article-13"
+
+
+def constitution_article_13_spec() -> Dict[str, Any]:
+    """مواصفة المادة 13 — الأبعاد الستة بعقد المعرفة الفعلي."""
+    return {
+        "kind": "required_fields",
+        "source": "الدستور المادة 13 — Knowledge Object Requirements",
+        "applies_to_types": ["Knowledge"],
+        "required_fields": ["source", "evidence", "confidence",
+                           "version", "created_at", "lineage"],
+    }
+
+
+# ---------------------------------------------------------------
 # قاعدة تغييرات التجميد المعماري: حكم العضوية في قوائم إعلان التجميد
 # (الشريحة السادسة — R-W1-007). المواصفة تُبنى من الإعلان الحالي نفسه
 # عند كل حكم فلا تنفصل القوائم التي يقرأها المدير عن التي يحكم بها
@@ -352,9 +374,19 @@ def get_shared_evaluator() -> PolicyEvaluator:
 _ENACTED_CONSTITUTION_SPEC_BUILDERS = {
     CONSTITUTION_ARTICLE_5_RULE_ID: lambda: constitution_article_5_spec(
         _constitution_versioned_entities()),
+    CONSTITUTION_ARTICLE_13_RULE_ID: constitution_article_13_spec,
 }
 
 ENACTED_CONSTITUTION_RULE_IDS = tuple(_ENACTED_CONSTITUTION_SPEC_BUILDERS)
+
+# ---------------------------------------------------------------
+# إعلان منح الترخيص — جزء من إعلان التشريع نفسه (الشريحة الثامنة، سجل
+# العمل 0079): سلطة المنح تستمد من هذا الإعلان لا من مواصفات قابلة
+# لإعادة التسجيل وقت التشغيل (إعادة تسجيل مواصفة لمعرّف منصوص بمنح
+# مضاف لا يفتح الترخيص — مختبر). لا منح مشرّع حالياً — القرار للحوكمة
+# المعلنة لا يُخترع.
+# ---------------------------------------------------------------
+_ENACTED_CONSTITUTION_GRANTS: Dict[str, Dict[str, Any]] = {}
 
 
 def _constitution_versioned_entities() -> List[str]:
@@ -385,27 +417,56 @@ def default_policy_rules() -> List[Dict[str, Any]]:
     return [{"rule_id": rule_id} for rule_id in ENACTED_CONSTITUTION_RULE_IDS]
 
 
+def applicable_constitution_rules(entity: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """القواعد الدستورية المنطبقة على الكيان — اختيار مدخلات لا مقيم ثانٍ
+    (الشريحة الثامنة، سجل العمل 0079).
+
+    القاعدة تُستثنى فقط إذا **ثبت خروج الكيان عن نطاقها** الموثق في
+    مواصفتها (بيانات النطاق المنظمة ``applies_to_types``، لا نص السبب)؛
+    وما لا يثبت خروجه يُستشار — قاعدة بلا مواصفة أو بلا نطاق معلن تنطبق
+    على الكل فتُستشار وتمنع كعدم تحقق. غياب النوع من المدخل لا يثبت
+    الخروج فتُستشار القواعد ذات النطاق (كلها ترجع عدم تحقق معللاً). صفر
+    قواعد منطبقة ⇒ لا فحص ولا سماح مثبت — البوابة مغلقة بصدق للأنواع
+    غير المغطاة تشريعياً.
+    """
+    if not isinstance(entity, dict):
+        return []
+    entity_type = entity.get("type")
+    evaluator = get_shared_evaluator()
+    applicable: List[Dict[str, Any]] = []
+    for rule_id in ENACTED_CONSTITUTION_RULE_IDS:
+        spec = evaluator.get_spec(rule_id)
+        if isinstance(spec, dict):
+            applies = spec.get("applies_to_types")
+            if (isinstance(applies, list) and entity_type is not None
+                    and entity_type not in applies):
+                continue  # ثبت خروجه عن النطاق الموثق — استثناء معلن
+        # بلا مواصفة أو بلا نطاق معلن أو داخل النطاق ⇒ تُستشار
+        applicable.append({"rule_id": rule_id})
+    return applicable
+
+
 def execution_authorization_grants(action: Dict[str, Any]) -> List[Dict[str, Any]]:
     """قواعد التشريع المفعّل التي **تمنح** ترخيص تنفيذ هذا الفعل.
 
-    الربط صريح لا ضمني (تصحيح المراجعة — سجل العمل 0078): المنح يعلن في
-    مواصفة القاعدة ``grants`` (تحوي ``"execute"``) ونطاق أنواعها في
-    ``applies_to_types`` — فالامتثال لواجب (كالمادة 5: فحص وجود حقل
-    الإصدار) يثبت شرط الواجب **ولا يمنح ترخيصاً**؛ ولا ترخيص إلا بتشريع
-    معتمد يعلن المنح لنوع الفعل. لا تشريع حالياً يعلن منحاً — فالبوابة
-    مغلقة بصدق حتى يشرّع الحوكمة منحاً (قرار معلن لا يُخترع)، وتغيير
-    تسمية النوع ليس طريقاً من المنع إلى السماح.
+    الربط صريح لا ضمني (تصحيح المراجعة — سجل العمل 0078): الامتثال لواجب
+    (كالمادة 5: فحص وجود حقل الإصدار) يثبت شرط الواجب **ولا يمنح
+    ترخيصاً**؛ ولا ترخيص إلا بتشريع معتمد يعلن المنح لنوع الفعل. **سلطة
+    المنح من إعلان التشريع لا من المواصفات القابلة لإعادة التسجيل وقت
+    التشغيل (الشريحة الثامنة، سجل العمل 0079): إعادة تسجيل مواصفة لمعرّف
+    منصوص بمنح مضاف لا يفتح الترخيص — مختبر.** لا تشريع حالياً يعلن
+    منحاً — فالبوابة مغلقة بصدق حتى يشرّع الحوكمة منحاً (قرار معلن لا
+    يُخترع)، وتغيير تسمية النوع ليس طريقاً من المنع إلى السماح.
     """
     grants: List[Dict[str, Any]] = []
     entity_type = action.get("type") if isinstance(action, dict) else None
-    for rule_id in ENACTED_CONSTITUTION_RULE_IDS:
-        spec = get_shared_evaluator().get_spec(rule_id)
-        if not isinstance(spec, dict):
+    for rule_id, declaration in _ENACTED_CONSTITUTION_GRANTS.items():
+        if not isinstance(declaration, dict):
             continue
-        granted = spec.get("grants")
+        granted = declaration.get("grants")
         if not isinstance(granted, list) or "execute" not in granted:
             continue  # واجب/فحص — ليس منح ترخيص
-        applies = spec.get("applies_to_types")
+        applies = declaration.get("applies_to_types")
         if not isinstance(applies, list) or entity_type is None:
             continue  # لا نطاق معلناً يربط المنح بهذا الفعل
         if entity_type in applies:

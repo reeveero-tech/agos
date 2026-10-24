@@ -13,7 +13,8 @@ from enum import Enum
 import uuid
 
 from agos_kernel.governance.policy_evaluator import (
-    evaluate_rule_dicts, default_policy_rules, execution_authorization_grants)
+    evaluate_rule_dicts, default_policy_rules, execution_authorization_grants,
+    applicable_constitution_rules)
 
 
 # ============================================================
@@ -872,7 +873,17 @@ class GovernanceRuntime:
         if not self.authorizer.authorize(action):
             return {'authorized': False, 'reason': 'Not authorized'}
         
-        if not self.policy_enforcer.enforce(action, default_policy_rules()):
+        # القواعد المنطبقة فقط (الشريحة الثامنة — سجل العمل 0079): اختيار
+        # مدخلات من التشريع المفعّل لا مقيم ثانٍ — القاعدة تُستثنى فقط إذا
+        # ثبت خروج الفعل عن نطاقها الموثق؛ وصفر قواعد منطبقة = لا فحص
+        # ولا سماح مثبت (نوع غير مغطى تشريعياً — منع معلل لا سماح أعمى)
+        applicable = applicable_constitution_rules(action)
+        if not applicable:
+            return {'authorized': False,
+                    'reason': 'لا قواعد تشريعية تنطبق على نوع الفعل '
+                              '{!r} — لا فحص ولا سماح مثبت (النوع غير '
+                              'مغطى تشريعياً)'.format(action.get("type"))}
+        if not self.policy_enforcer.enforce(action, applicable):
             # مصدر القواعد معتمد ومسلّطته معلنة (الشريحة السابعة — R-W1-007):
             # تشريع الدستور المفعّل في المصنع المعتمد، لا قائمة فارغة يمررها
             # المحرك فيُرفض التنفيذ الافتراضي دائماً — والسماح يبقى مثبتاً
