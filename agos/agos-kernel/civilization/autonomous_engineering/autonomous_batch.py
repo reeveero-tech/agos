@@ -14,7 +14,7 @@ import uuid
 
 from agos_kernel.governance.policy_evaluator import (
     evaluate_rule_dicts, default_policy_rules, execution_authorization_grants,
-    applicable_constitution_rules)
+    applicable_constitution_rules, execution_grant_decision)
 
 
 # ============================================================
@@ -796,14 +796,49 @@ class RiskThresholdManager:
 
 
 class HumanApprovalGate:
-    """Human approval gates."""
-    
+    """Human approval gates.
+
+    مخاطرة المهمة تستمد **داخل حد الترخيص نفسه** (تصحيح المراجعة — سجل
+    العمل 0080): البوابة تعتبر مخاطرة الحمولة (حقل mission) مع مخاطرة
+    الغلاف — فلا تخفي قيمة منخفضة في الغلاف مخاطرة الحمولة، والاستدعاء
+    المباشر لحد الترخيص محموم مثل المستهلك الإنتاجي. والقيم غير الصالحة
+    (None/نص/NaN/∞) ترفض بسبب واضح — لا تعامل كمخاطرة منخفضة.
+    """
+
     def __init__(self):
         self.gates: Dict[str, bool] = {}
-    
+
     def requires_approval(self, action: Dict) -> bool:
-        return action.get('risk_level', 0) > 0.8
-    
+        return self._effective_risk(action) > 0.8
+
+    def _effective_risk(self, action: Dict) -> float:
+        """أعلى مخاطرة صالحة من الغلاف وحمولة المهمة — مع التحقق."""
+        candidates = [("الغلاف", action.get('risk_level', 0))]
+        payload = action.get('mission')
+        if isinstance(payload, dict):
+            candidates.append(("الحمولة", payload.get('risk_level', 0)))
+        risks = []
+        for source, value in candidates:
+            self._validate_risk(value, source)
+            risks.append(value)
+        return max(risks)
+
+    @staticmethod
+    def _validate_risk(value, source: str) -> None:
+        """القيم غير الصالحة ترفض بسبب مسمى — لا تمتد كمخاطرة منخفضة."""
+        import math
+        if value is None or isinstance(value, bool) \
+                or not isinstance(value, (int, float)):
+            raise ValueError(
+                "قيمة المخاطرة غير صالحة من {}: {!r} — يجب رقم صالح "
+                "(لا None ولا نص)؛ القيم غير الصالحة ترفض لا تعامل "
+                "كمخاطرة منخفضة".format(source, value))
+        if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+            raise ValueError(
+                "قيمة المخاطرة غير صالحة من {}: {!r} — لا NaN ولا ∞؛ "
+                "القيم غير الصالحة ترفض لا تعامل كمخاطرة منخفضة".format(
+                    source, value))
+
     def approve(self, action_id: str) -> None:
         self.gates[action_id] = True
 
@@ -835,20 +870,31 @@ class ExecutionAuditor:
 
 
 class AuthorizationGrantGate:
-    """بوابة منح الترخيص — لا ترخيص إلا بتشريع معتمد يعلن المنح (سجل العمل 0078).
-
-    الامتثال لواجب (كالمادة 5) يثبت شرط الواجب ولا يمنح ترخيص تنفيذ؛
-    فغياب الربط يمنع الترخيص بسببه المسمى — حتى للمدخل الممتثل.
+    """بوابة منح الترخيص — لا ترخيص إلا بتشريع معتمد يعلن المنح (سجل العمل 0078)،
+    وشروطه محققة صراحة لا «بحكم ترتيب البوابات» وحده (سجل العمل 0080):
+    الواجب المطلوب موجود ومنطبق ومستشار ناجح وبمواصفة مطابقة لإعلان
+    التشريع — وإضعافه بإعادة تسجيل مواصفة أضعف يُكتشف ويمنع.
     """
 
+    def __init__(self):
+        self.last_reason: Optional[str] = None
+
     def grants(self, action: Dict) -> List[Dict]:
+        """مطابقة إعلان المنح — التوقيع الأصلي محفوظ (G2: لا تغيير تواقيع
+        قائمة — دالة جديدة لاستقبال نتيجة السياسات والتحقق)."""
         return execution_authorization_grants(action)
+
+    def grants_verified(self, action: Dict,
+                         policy_outcome: Optional[Dict] = None) -> List[Dict]:
+        """قرار المنح مع تحقق شروطه — البوابة تستدعي هذه (سجل العمل 0080)."""
+        granted, reason, grants = execution_grant_decision(action, policy_outcome)
+        self.last_reason = reason
+        return grants
 
     @staticmethod
     def denial_reason(action: Dict) -> str:
         return ("لا تشريع معتمد يمنح ترخيص تنفيذ هذا الفعل — الامتثال "
-                "لواجب لا يمنح ترخيصاً (ربط الترخيص بالأفعال فجوة مسماة "
-                "مفتوحة؛ التشريع قرار حوكمة معلن لا يُخترع)")
+                "لواجب لا يمنح ترخيصاً (لا منح مشرّع مطابق لهذا النوع)")
 
 
 class GovernanceRuntime:
@@ -893,18 +939,26 @@ class GovernanceRuntime:
             return {'authorized': False,
                     'reason': outcome.get("reason", "Policy violation")}
 
-        # ربط الترخيص صريح (تصحيح المراجعة — سجل العمل 0078): لا ترخيص
-        # بلا تشريع معتمد يعلن المنح — الامتثال لواجب (المادة 5) يثبت شرطه
-        # ولا يمنح ترخيص تنفيذ؛ وتغيير تسمية النوع ليس طريقاً للسماح
-        if not self.grant_gate.grants(action):
+        # ربط الترخيص صريح مع تحقق شروطه (تصحيحا المراجعة — سجلا العمل
+        # 0078/0080): لا ترخيص بلا تشريع معتمد يعلن المنح، وشروط المنح
+        # تتحقق صراحة — الواجب المطلوب مستشار ناجح وبمواصفة مطابقة
+        # لإعلان التشريع (إضعافه بإعادة تسجيل يُكتشف ويمنع)
+        if not self.grant_gate.grants_verified(
+                action, policy_outcome=self.policy_enforcer.last_outcome):
             return {'authorized': False,
-                    'reason': self.grant_gate.denial_reason(action)}
+                    'reason': (self.grant_gate.last_reason
+                               or self.grant_gate.denial_reason(action))}
         
         safety = self.safety.validate(action)
         if not safety['safe']:
             return {'authorized': False, 'reason': 'Safety check failed'}
         
-        if self.approval.requires_approval(action):
+        try:
+            requires_approval = self.approval.requires_approval(action)
+        except ValueError as exc:
+            # قيمة المخاطرة غير الصالحة ترفض بسبب مسمى — قبل أي أثر لاحق
+            return {'authorized': False, 'reason': str(exc)}
+        if requires_approval:
             return {'authorized': False, 'reason': 'Requires human approval'}
         
         self.auditor.audit(action)
@@ -982,8 +1036,11 @@ class AutonomousEngineeringRuntime:
     
     def execute_mission_autonomously(self, mission: Dict) -> Dict:
         """Execute a mission autonomously under governance."""
-        # Step 1: Authorize
-        auth = self.governance.authorize_execution({'type': 'mission', 'mission': mission})
+        # Step 1: Authorize — مخاطرة المهمة تستمد داخل حد الترخيص نفسه
+        # (تصحيح المراجعة — سجل العمل 0080): بوابة الموافقة تعتبر مخاطرة
+        # الحمولة مع الغلاف فلا يحتاج المستهلك نقلها ولا يخفيها غلاف منخفض
+        auth = self.governance.authorize_execution(
+            {'type': 'mission', 'mission': mission})
         if not auth['authorized']:
             return {'status': 'denied', 'reason': auth['reason']}
         

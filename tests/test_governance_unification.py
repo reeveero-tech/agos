@@ -717,10 +717,17 @@ def test_default_rule_source_is_enacted_constitution_legislation():
     assert res["authorized"] is False
     assert "version" in res["reason"]
     # غير المشمول بالتشريع لا يُمنح ترخيصاً (لا امتثال بلا فحص ناجح) —
-    # بعد الشريحة الثامنة: صفر قواعد منطبقة = منع معلل بأن النوع غير مغطى
-    res = rt.authorize_execution({"type": "mission"})
+    # صفر قواعد منطبقة = منع معلل بأن النوع غير مغطى (نوع مجهول حقاً —
+    # 'mission' صارت مغطاة بواجب التشرييع في سجل العمل 0080)
+    res = rt.authorize_execution({"type": "uncovered-type"})
     assert res["authorized"] is False
     assert "لا قواعد تشريعية تنطبق" in res["reason"]
+    # مهمة كاملة الحمولة: الواجب ناجح والمنح المشرّع مطابق — ترخيص مثبت
+    # وتدقيق (تشرييع منح تنفيذ المهام — سجل العمل 0080)
+    res = rt.authorize_execution({"type": "mission",
+                                  "mission": {"id": "m1", "version": "1.0"}})
+    assert res["authorized"] is True
+    assert len(rt.auditor.audit_log) == 1
 
 
 def test_execution_requires_explicit_authorization_grant():
@@ -732,10 +739,12 @@ def test_execution_requires_explicit_authorization_grant():
     from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
         GovernanceRuntime as AutoGovRuntime)
 
-    # لا منح في التشريع المفعّل — كل الأنواع ممنوعة بسببه المسمى
+    # المنح من التشريع المفعّل: مهمة تنفيذ فقط (سجل العمل 0080)؛ وما
+    # سواها ممنوع بسببه المسمى — حتى الممتثل لقواعد واجبات أخرى
     assert pe.execution_authorization_grants(
         {"type": "Contracts", "version": "1.0"}) == []
-    assert pe.execution_authorization_grants({"type": "mission"}) == []
+    assert {g["rule_id"] for g in pe.execution_authorization_grants(
+        {"type": "mission"})} == {"mission-execution-grant"}
     rt = AutoGovRuntime()
     res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
     assert res["authorized"] is False
@@ -751,9 +760,11 @@ def test_execution_requires_explicit_authorization_grant():
             "grants": ["execute"], "applies_to_types": ["Contracts"]}
         # المنح يعمل من إعلان التشريع — والمدخل الممتثل يُرخّص ويدقّق
         assert pe.execution_authorization_grants(
-            {"type": "Contracts"}) == [{"rule_id": granted_rule}]
+            {"type": "Contracts"}) == [{
+            "rule_id": granted_rule,
+            "requires_rule_ids": []}][0:1]
         # منح لنوع لا يفتح البوابة لغيره
-        assert pe.execution_authorization_grants({"type": "mission"}) == []
+        assert pe.execution_authorization_grants({"type": "uncovered-type"}) == []
         rt2 = AutoGovRuntime()
         res = rt2.authorize_execution(
             {"type": "Contracts", "version": "1.0"})
@@ -825,8 +836,9 @@ def test_applicable_rules_selector_scoped_and_fail_closed():
     assert res["authorized"] is False
     assert "نوع الكيان غائب" in res["reason"]
     # (3) نوع معلوم غير مغطى تشريعياً: صفر منطبقة — منع معلل لا سماح أعمى
-    assert pe.applicable_constitution_rules({"type": "mission"}) == []
-    res = rt.authorize_execution({"type": "mission"})
+    # ('mission' مغطاة بواجب التشرييع في سجل العمل 0080 — نوع مجهول حقاً هنا)
+    assert pe.applicable_constitution_rules({"type": "uncovered-type"}) == []
+    res = rt.authorize_execution({"type": "uncovered-type"})
     assert res["authorized"] is False
     assert "لا قواعد تشريعية تنطبق" in res["reason"]
     # (4) قاعدة منطبقة ناقصة المواصفة تُستشار لا تُستثنى (لا يُسقط الفحص
@@ -935,8 +947,11 @@ def test_authorize_execution_gate_order_and_right_to_block():
 
         class RecGrantGate:
             # بديل مضبوط لبوابة المنح — بلا بديل لا تُختبر البوابات
-            # اللاحقة (لا تشريع مانح في التشريع المفعّل)
-            def grants(self, action):
+            # اللاحقة (بوابة المنح الحقيقية تُختبر في اختبارات المنح؛
+            # البوابة تستدعي grants_verified — التوقيع الأصلي grants محفوظ)
+            def __init__(self):
+                self.last_reason = None
+            def grants_verified(self, action, policy_outcome=None):
                 calls.append("grants")
                 return [{"rule_id": "stub"}] if grants else []
 
@@ -1021,10 +1036,201 @@ def test_mission_denied_before_workspace_and_resources():
         lambda tid, req: (allocated.append(tid), True)[1])
     result = runtime.execute_mission_autonomously({"id": "m1"})
     assert result["status"] == "denied"
-    # بعد الشريحة الثامنة: صفر قواعد منطبقة — منع معلل بالنوع غير المغطى
-    assert "لا قواعد تشريعية تنطبق" in result["reason"]
+    # بعد تشرييع منح المهام (سجل العمل 0080): المهمة الناقصة تمنع بسببه
+    # الواجب المسمى — الحمولة تخلو من version بقيمة نصية غير فارغة
+    assert "version" in result["reason"]
     assert created == []       # الرفض قبل إنشاء مساحة العمل
     assert allocated == []     # وقبل تخصيص الموارد
+
+
+def test_mission_grant_opens_path_end_to_end():
+    """تشرييع منح تنفيذ المهام (سجل العمل 0080 — قرار المالك «الخيار أ»):
+    المسار الإنتاجي نفسه (execute_mission_autonomously) بمكوناته الحقيقية —
+    المهمة الكاملة الحمولة (id وversion نصيان غير فارغان) تجتاز الواجب
+    والمنح المشرّع المشروط وتُرخّص وتُدقّق وتصل للمراحل اللاحقة؛ والناقصة
+    تمنع بسببه المسمى بلا آثار لاحقة. المثبت هنا وصول المسار للمراحل
+    اللاحقة (تسجيل استدعاءات المكونات) — لا ادعاء نجاح عمل هندسي؛ وحد
+    فاحص السلامة معلن: يعيد safe دائماً (ليس فحص سلامة منفذاً)."""
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        AutonomousEngineeringRuntime)
+
+    def runtime_with_spies():
+        runtime = AutonomousEngineeringRuntime()
+        created, allocated, coordinated = [], [], []
+        real_create = runtime.workspace.create_workspace
+        real_allocate = runtime.resource_manager.allocate
+        real_coordinate = runtime.coordinator.coordinate_mission
+        runtime.workspace.create_workspace = (
+            lambda mid: (created.append(mid), real_create(mid))[1])
+        runtime.resource_manager.allocate = (
+            lambda tid, req: (allocated.append((tid, req)),
+                              real_allocate(tid, req))[1])
+        runtime.coordinator.coordinate_mission = (
+            lambda mission: (coordinated.append(mission),
+                             real_coordinate(mission))[1])
+        return runtime, created, allocated, coordinated
+
+    # (1) مهمة كاملة الحمولة: واجب ناجح + منح مشرّع مشروط + تدقيق + وصول
+    # للمراحل اللاحقة (مساحة العمل والموارد والتنسيق بالمعرّف الفعلي)
+    runtime, created, allocated, coordinated = runtime_with_spies()
+    result = runtime.execute_mission_autonomously(
+        {"id": "m-complete", "version": "1.0"})
+    assert result["status"] == "success"
+    assert created == ["m-complete"]          # الوصول للمراحل اللاحقة مثبت
+    assert allocated == [("m-complete", {})]
+    assert [m["id"] for m in coordinated] == ["m-complete"]
+    assert len(runtime.governance.auditor.audit_log) == 1  # التدقيق بعد الترخيص
+
+    # (2) الناقصة/الفارغة/غير النصية/غير القاموسية: منع بسببه المسمى بلا
+    # آثار لاحقة
+    for mission, expected in [
+        ({"id": "m1"}, "version"),                       # غياب الإصدار
+        ({"version": "1.0"}, "id"),                       # غياب المعرّف
+        ({"id": "", "version": "1.0"}, "id"),             # معرّف فارغ
+        ({"id": "m1", "version": ""}, "version"),        # إصدار فارغ
+        ({"id": "m1", "version": None}, "version"),       # إصدار None
+        ({"id": 7, "version": "1.0"}, "id"),              # معرّف غير نصي
+    ]:
+        runtime, created, allocated, coordinated = runtime_with_spies()
+        result = runtime.execute_mission_autonomously(mission)
+        assert result["status"] == "denied", mission
+        assert expected in result["reason"], (mission, result["reason"])
+        # لا آثار لاحقة — مثبت لكل حالة (مساحة عمل وموارد وتنسيق)
+        assert created == [] and allocated == [] and coordinated == []
+    runtime, created, allocated, coordinated = runtime_with_spies()
+    result = runtime.execute_mission_autonomously("نص لا قاموساً")
+    assert result["status"] == "denied"
+    assert "ليست قاموساً" in result["reason"]
+    assert created == [] and allocated == [] and coordinated == []
+
+    # (3) سحب المنح (عابر داخل الاختبار ويُستعاد): المسار يغلق مجدداً —
+    # لا مساحة عمل ولا موارد، بسببه المسمى
+    from agos_kernel.governance import policy_evaluator as pe
+    grants_before = dict(pe._ENACTED_CONSTITUTION_GRANTS)
+    try:
+        pe._ENACTED_CONSTITUTION_GRANTS.clear()
+        runtime, created, allocated, coordinated = runtime_with_spies()
+        result = runtime.execute_mission_autonomously(
+            {"id": "m-revoked", "version": "1.0"})
+        assert result["status"] == "denied"
+        assert "لا تشريع معتمد يمنح" in result["reason"]
+        assert created == [] and allocated == [] and coordinated == []
+    finally:
+        pe._ENACTED_CONSTITUTION_GRANTS.clear()
+        pe._ENACTED_CONSTITUTION_GRANTS.update(grants_before)
+
+    # (4) المنح لا يتجاوز البوابات الأخرى: الطوارئ والسلامة والموافقة
+    # تمنع المهمة ذات المنح — والمخاطرة العالية تمنع قبل أي أثر لاحق
+    runtime, created, allocated, coordinated = runtime_with_spies()
+    runtime.governance.emergency.is_stopped = lambda: True
+    result = runtime.execute_mission_autonomously(
+        {"id": "m-stop", "version": "1.0"})
+    assert result["status"] == "denied"
+    assert "Emergency stop" in result["reason"]
+    assert created == [] and allocated == [] and coordinated == []
+    runtime, created, allocated, coordinated = runtime_with_spies()
+    runtime.governance.safety.validate = lambda action: {
+        "safe": False, "warnings": []}
+    result = runtime.execute_mission_autonomously(
+        {"id": "m-unsafe", "version": "1.0"})
+    assert result["status"] == "denied"
+    assert "Safety check failed" in result["reason"]
+    assert created == [] and allocated == [] and coordinated == []
+    # مخاطرة المهمة تستمد داخل حد الترخيص نفسه (تصحيح المراجعة — سجل
+    # العمل 0080): من الحمولة لا من نقل المستهلك — فتمنع قبل إنشاء
+    # مساحة العمل أو تخصيص الموارد، والاستدعاء المباشر للحد محموم مثله
+    runtime, created, allocated, coordinated = runtime_with_spies()
+    result = runtime.execute_mission_autonomously(
+        {"id": "m-risk", "version": "1.0", "risk_level": 0.9})
+    assert result["status"] == "denied"
+    assert "Requires human approval" in result["reason"]
+    assert created == [] and allocated == [] and coordinated == []
+    # الاستدعاء المباشر لحد الترخيص: مخاطرة الحمولة تعتبر — وقيمة منخفضة
+    # في الغلاف لا تخفيها (فحص الحد نفسه لا سلوك المستهلك وحده)
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as _Gov)
+    gov = _Gov()
+    res = gov.authorize_execution({"type": "mission", "mission": {
+        "id": "m-direct", "version": "1.0", "risk_level": 0.9}})
+    assert res["authorized"] is False
+    assert "Requires human approval" in res["reason"]
+    res = gov.authorize_execution({"type": "mission", "risk_level": 0.1,
+                                   "mission": {"id": "m-hide", "version": "1.0",
+                                               "risk_level": 0.9}})
+    assert res["authorized"] is False
+    assert "Requires human approval" in res["reason"]
+    # القيم غير الصالحة ترفض بسبب مسمى لا تعامل كمخاطرة منخفضة — عبر
+    # المستهلك الحقيقي وبلا أي أثر لاحق (None/نص/NaN)
+    for bad in (None, "0.9", float("nan")):
+        runtime, created, allocated, coordinated = runtime_with_spies()
+        result = runtime.execute_mission_autonomously(
+            {"id": "m-bad", "version": "1.0", "risk_level": bad})
+        assert result["status"] == "denied", bad
+        assert "قيمة المخاطرة غير صالحة" in result["reason"], bad
+        assert created == [] and allocated == [] and coordinated == []
+
+
+def test_grant_conditions_tamper_proof():
+    """مانع تفعيل (سجل العمل 0080): إضعاف واجب المنح بإعادة تسجيل مواصفته
+    الأضعف يُكتشف ويمنع بوضوح — المهمة الناقصة لا تُرخّص رغم وجود المنح،
+    لأن شرطه يتحقق صراحة: الواجب مستشار ناجح وبمواصفة مطابقة لإعلان
+    التشريع. وكذلك تغيير نطاق المواصفة المسجلة ليستثني الواجب من الاستشارة."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    ev = pe.get_shared_evaluator()
+    spec_before = ev.get_spec(pe.MISSION_EXECUTION_OBLIGATION_RULE_ID)
+    incomplete = {"type": "mission", "mission": {"id": "m1"}}
+    try:
+        # الهجوم الأول: مواصفة أضعف تفحص وجود الغلاف فقط (تجتاز الناقصة)
+        ev.register_spec(pe.MISSION_EXECUTION_OBLIGATION_RULE_ID, {
+            "kind": "required_fields", "required_fields": ["mission"],
+            "applies_to_types": ["mission"]})
+        rt = AutoGovRuntime()
+        res = rt.authorize_execution(incomplete)
+        assert res["authorized"] is False
+        assert "تختلف عن إعلان التشريع" in res["reason"]
+        assert len(rt.auditor.audit_log) == 0
+
+        # الهجوم الثاني: تغيير نطاق المواصفة المسجلة ليستثني الواجب من
+        # استشارة بوابة السياسات أصلاً (السياسات تمر ثم يمنع المنح)
+        ev.register_spec(pe.MISSION_EXECUTION_OBLIGATION_RULE_ID, {
+            "kind": "required_fields", "required_fields": ["mission"],
+            "applies_to_types": ["not-mission"]})
+        rt = AutoGovRuntime()
+        res = rt.authorize_execution(incomplete)
+        assert res["authorized"] is False
+        # الاستثناء من الاستشارة يمنع في بوابة السياسات نفسها (النوع صار
+        # غير مغطى بالمواصفة المسجلة المغيّرة) — مانع أبكر لا أضعف
+        assert ("لم يُستشر" in res["reason"]
+                or "تختلف عن إعلان التشريع" in res["reason"]
+                or "لا قواعد تشريعية تنطبق" in res["reason"])
+    finally:
+        ev.register_spec(pe.MISSION_EXECUTION_OBLIGATION_RULE_ID, spec_before)
+    # بعد الاستعادة: الناقصة تمنع بسببه المسمى (الواجب) كما يجب
+    rt = AutoGovRuntime()
+    res = rt.authorize_execution(incomplete)
+    assert res["authorized"] is False
+    assert "version" in res["reason"]
+
+
+def test_required_subfields_incomplete_spec_is_unverified():
+    """المواصفة الناقصة لفحص الحمولة unverified — لا امتثالاً افتراضياً
+    (سجل العمل 0080): غياب حقل الحمولة أو الحقول المطلوبة = لا فحص ولا
+    امتثال مثبت، والمطابقة الكاملة منفصلة عن هذه الحالة."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.governance.policy_evaluator import (
+        VERDICT_UNVERIFIED, PolicyEvaluator)
+
+    evaluator = PolicyEvaluator()
+    evaluator.register_spec("test-subfields-incomplete", {
+        "kind": "required_subfields", "applies_to_types": ["mission"]})
+    verdict = evaluator.evaluate(
+        "test-subfields-incomplete",
+        {"type": "mission", "mission": {"id": "m1", "version": "1.0"}})
+    assert verdict.verdict == VERDICT_UNVERIFIED
+    assert "مواصفة ناقصة" in verdict.reason
 
 
 def test_freeze_is_forbidden_and_membership_fixed():

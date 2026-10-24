@@ -121,6 +121,46 @@ class PolicyEvaluator:
                 verdict=VERDICT_COMPLIANT,
                 reason="فحص الحقول المطلوبة ناجح — امتثال مثبت",
             )
+        if kind == "required_subfields":
+            # فحص الحمولة المتداخلة (سجل العمل 0080 — تشرييع منح المهام):
+            # الغلاف يحمل الحمولة تحت حقل معلن، والفحص على الحمولة الفعلية لا
+            # على الغلاف؛ والمواصفة الناقصة unverified لا امتثالاً افتراضياً.
+            # الحقل المطلوب يجب أن يكون نصاً غير فارغ — وجود المفتاح بقيمة
+            # None أو "" لا يحقق الشرط (لا امتثال شكلي بلا مضمون)
+            container = spec.get("field")
+            required = spec.get("required_fields")
+            if (not isinstance(container, str) or not container
+                    or not isinstance(required, list) or not required):
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_UNVERIFIED,
+                    reason="مواصفة ناقصة — حقل الحمولة أو الحقول المطلوبة "
+                           "غير معرفة، فلا فحص ولا امتثال مثبت",
+                )
+            payload = entity.get(container)
+            if not isinstance(payload, dict):
+                return PolicyVerdict(
+                    rule_id=rule_id,
+                    verdict=VERDICT_VIOLATION,
+                    reason="الحمولة {!r} ليست قاموساً — لا يمكن فحص "
+                           "حقولها المطلوبة (مخالفة معلنة)".format(container),
+                )
+            for field_name in required:
+                value = payload.get(field_name)
+                if (field_name not in payload
+                        or not isinstance(value, str) or not value.strip()):
+                    return PolicyVerdict(
+                        rule_id=rule_id,
+                        verdict=VERDICT_VIOLATION,
+                        reason="الحمولة {!r} تخلو من الحقل المطلوب {!r} "
+                               "بقيمة نصية غير فارغة (مخالفة معلنة)".format(
+                                   container, field_name),
+                    )
+            return PolicyVerdict(
+                rule_id=rule_id,
+                verdict=VERDICT_COMPLIANT,
+                reason="فحص حقول الحمولة المطلوبة ناجح — امتثال مثبت",
+            )
         if kind == "declared_membership":
             # عضوية قيمة في قوائم معلنة (توحيد حالة وعضوية كاملة — لا بحث
             # عن عبارات داخل نص حر): حكم على التصنيف النصي المقدم وفق
@@ -236,6 +276,28 @@ def constitution_article_13_spec() -> Dict[str, Any]:
         "applies_to_types": ["Knowledge"],
         "required_fields": ["source", "evidence", "confidence",
                            "version", "created_at", "lineage"],
+    }
+
+
+# ---------------------------------------------------------------
+# واجب تنفيذ المهمة (سجل العمل 0080 — تشرييع منح تنفيذ المهام): فحص
+# الحمولة الفعلية لا الغلاف — المهمة قاموس يحمل id وversion نصيين غير
+# فارغين. الإصدار التزام دستوري قائم («Missions» منصوصة في المادة 5 —
+# الربط المحلي بين النوع الحرفي 'mission' في المستهلك الإنتاجي والصيغة
+# الدستورية موثق هنا دون تغيير قائمة الأنواع العالمية)؛ والمعرّف شرط
+# تشغيل (مساحة العمل والموارد تعملان به في المستهلك نفسه).
+# ---------------------------------------------------------------
+MISSION_EXECUTION_OBLIGATION_RULE_ID = "mission-execution-obligation"
+
+
+def mission_execution_obligation_spec() -> Dict[str, Any]:
+    """مواصفة واجب تنفيذ المهمة — الحمولة الفعلية لا الغلاف."""
+    return {
+        "kind": "required_subfields",
+        "source": "تشرييع منح تنفيذ المهام — سجل العمل 0080",
+        "applies_to_types": ["mission"],
+        "field": "mission",
+        "required_fields": ["id", "version"],
     }
 
 
@@ -375,6 +437,7 @@ _ENACTED_CONSTITUTION_SPEC_BUILDERS = {
     CONSTITUTION_ARTICLE_5_RULE_ID: lambda: constitution_article_5_spec(
         _constitution_versioned_entities()),
     CONSTITUTION_ARTICLE_13_RULE_ID: constitution_article_13_spec,
+    MISSION_EXECUTION_OBLIGATION_RULE_ID: mission_execution_obligation_spec,
 }
 
 ENACTED_CONSTITUTION_RULE_IDS = tuple(_ENACTED_CONSTITUTION_SPEC_BUILDERS)
@@ -383,10 +446,21 @@ ENACTED_CONSTITUTION_RULE_IDS = tuple(_ENACTED_CONSTITUTION_SPEC_BUILDERS)
 # إعلان منح الترخيص — جزء من إعلان التشريع نفسه (الشريحة الثامنة، سجل
 # العمل 0079): سلطة المنح تستمد من هذا الإعلان لا من مواصفات قابلة
 # لإعادة التسجيل وقت التشغيل (إعادة تسجيل مواصفة لمعرّف منصوص بمنح
-# مضاف لا يفتح الترخيص — مختبر). لا منح مشرّع حالياً — القرار للحوكمة
-# المعلنة لا يُخترع.
+# مضاف لا يفتح الترخيص — مختبر). **تشرييع منح تنفيذ المهام (سجل العمل
+# 0080 — قرار المالك المعتمد «الخيار أ»):** منح مشروط صراحة بواببته —
+# الواجب المطلوب في requires_rule_ids يجب أن يكون موجوداً في الإعلان،
+# منطبقاً على الفعل، مستشاراً ناجحاً في بوابة السياسات، وبمواصفة مسجلة
+# مطابقة لإعلان التشريع (إعادة تسجيلها بمواصفة أضعف تُكتشف وتمنع —
+# مانع تفعيل لا تحسين اختباري). المنح وحده لا يفتح المسار: بوابة
+# السياسات قبله وبوابات السلامة والموافقة والتدقيق بعده.
 # ---------------------------------------------------------------
-_ENACTED_CONSTITUTION_GRANTS: Dict[str, Dict[str, Any]] = {}
+_ENACTED_CONSTITUTION_GRANTS: Dict[str, Dict[str, Any]] = {
+    "mission-execution-grant": {
+        "grants": ["execute"],
+        "applies_to_types": ["mission"],
+        "requires_rule_ids": [MISSION_EXECUTION_OBLIGATION_RULE_ID],
+    },
+}
 
 
 def _constitution_versioned_entities() -> List[str]:
@@ -454,9 +528,13 @@ def execution_authorization_grants(action: Dict[str, Any]) -> List[Dict[str, Any
     ترخيصاً**؛ ولا ترخيص إلا بتشريع معتمد يعلن المنح لنوع الفعل. **سلطة
     المنح من إعلان التشريع لا من المواصفات القابلة لإعادة التسجيل وقت
     التشغيل (الشريحة الثامنة، سجل العمل 0079): إعادة تسجيل مواصفة لمعرّف
-    منصوص بمنح مضاف لا يفتح الترخيص — مختبر.** لا تشريع حالياً يعلن
-    منحاً — فالبوابة مغلقة بصدق حتى يشرّع الحوكمة منحاً (قرار معلن لا
-    يُخترع)، وتغيير تسمية النوع ليس طريقاً من المنع إلى السماح.
+    منصوص بمنح مضاف لا يفتح الترخيص — مختبر.** تشرييع منح تنفيذ المهام
+    قائم (سجل العمل 0080): `mission-execution-grant` — **هذه الدالة مطابقة
+    إعلان فقط؛ التحقق من شروط المنح صراحة في ``execution_grant_decision``
+    (الواجب المطلوب مستشار ناجح وبمواصفة مطابقة للإعلان — لا يفصل بينهما
+    إلا مراجع نتيجة السياسات)**؛ وبقية الأنواع بلا منح مشرّع — مغلقة بصدق
+    حتى يشرّع الحوكمة (قرار معلن لا يُخترع)، وتغيير تسمية النوع ليس
+    طريقاً من المنع إلى السماح.
     """
     grants: List[Dict[str, Any]] = []
     entity_type = action.get("type") if isinstance(action, dict) else None
@@ -470,5 +548,63 @@ def execution_authorization_grants(action: Dict[str, Any]) -> List[Dict[str, Any
         if not isinstance(applies, list) or entity_type is None:
             continue  # لا نطاق معلناً يربط المنح بهذا الفعل
         if entity_type in applies:
-            grants.append({"rule_id": rule_id})
+            required = declaration.get("requires_rule_ids")
+            grants.append({
+                "rule_id": rule_id,
+                "requires_rule_ids": (list(required)
+                                       if isinstance(required, list) else []),
+            })
     return grants
+
+
+def execution_grant_decision(
+        action: Dict[str, Any],
+        policy_outcome: Optional[Dict[str, Any]] = None,
+) -> tuple:
+    """قرار المنح مع تحقق شروطه — يعيد (هل يُمنح، السبب عند المنع، المنح).
+
+    الشروط في ``requires_rule_ids`` يتحقق منها صراحة لا «بحكم ترتيب
+    البوابات» وحده (تصحيح المراجعة — سجل العمل 0080): إضعاف واجب موجود
+    بإعادة تسجيل مواصفته الأضعف يجب أن يُكتشف ويمنع بوضوح. لكل واجب
+    مطلوب: (1) موجود في إعلان التشريع ومنطبق على الفعل؛ (2) استُشر في
+    بوابة السياسات ونجح فعلاً؛ (3) مواصفته المسجلة مطابقة لإعلان
+    التشريع (لم تُستبدل). أي فشل يمنع بسببه المسمى.
+    """
+    matched = execution_authorization_grants(action)
+    if not matched:
+        return (False, "لا تشريع معتمد يمنح ترخيص تنفيذ هذا الفعل — "
+                       "الامتثال لواجب لا يمنح ترخيصاً (لا منح مشرّع "
+                       "مطابق لهذا النوع)", [])
+    entity_type = action.get("type") if isinstance(action, dict) else None
+    declared_specs = enacted_constitution_specs()
+    consulted: Dict[str, Dict[str, Any]] = {}
+    if isinstance(policy_outcome, dict):
+        for entry in policy_outcome.get("results") or []:
+            if isinstance(entry, dict) and entry.get("rule_id"):
+                consulted[str(entry["rule_id"])] = entry
+    for grant in matched:
+        for rule_id in grant.get("requires_rule_ids") or []:
+            declared = declared_specs.get(rule_id)
+            if declared is None:
+                return (False, "شرط المنح {!r} مفقود من إعلان التشريع — "
+                               "لا منح بشرط غائب".format(rule_id), [])
+            applies = declared.get("applies_to_types")
+            if (isinstance(applies, list)
+                    and (entity_type is None or entity_type not in applies)):
+                return (False, "شرط المنح {!r} لا ينطبق على نوع الفعل — "
+                               "لا منح بشرط خارج نطاقه".format(rule_id), [])
+            entry = consulted.get(rule_id)
+            if entry is None:
+                return (False, "شرط المنح {!r} لم يُستشر في بوابة "
+                               "السياسات — لا منح بفحص لم يجري".format(
+                                   rule_id), [])
+            if entry.get("passed") is not True:
+                return (False, "شرط المنح {!r} لم ينجح في فحصه — لا منح "
+                               "بواجب فاشل".format(rule_id), [])
+            registered = get_shared_evaluator().get_spec(rule_id)
+            if registered != declared:
+                return (False, "المواصفة المسجلة لشرط المنح {!r} تختلف عن "
+                               "إعلان التشريع — منع واضح لا تجاهل "
+                               "(إعادة تسجيل مواصفة أضعف لا تفتح "
+                               "المنح)".format(rule_id), [])
+    return (True, "منح مشرّع مطابق وشروطه محققة", matched)
