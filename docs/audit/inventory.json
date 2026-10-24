@@ -1,9 +1,9 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102171,
-  "functions": 6167,
-  "stub_functions": 780,
+  "lines": 102230,
+  "functions": 6170,
+  "stub_functions": 781,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
   "not_imported_by_others": 251,
@@ -189,9 +189,9 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24469,
-   "functions": 1317,
-   "stub_functions": 119,
+   "lines": 24494,
+   "functions": 1319,
+   "stub_functions": 120,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 35,
@@ -552,8 +552,8 @@
   },
   "agos-kernel/governance": {
    "files": 3,
-   "lines": 976,
-   "functions": 48,
+   "lines": 1004,
+   "functions": 49,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1256,7 +1256,7 @@
   },
   "cognitive": {
    "files": 11,
-   "lines": 661,
+   "lines": 667,
    "functions": 58,
    "stub_functions": 6,
    "hardcoded_paths": 0,
@@ -3041,11 +3041,11 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 988,
+   "lines": 1013,
    "syntax_ok": true,
-   "classes": 69,
-   "functions": 113,
-   "stub_functions": 28,
+   "classes": 70,
+   "functions": 115,
+   "stub_functions": 29,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
@@ -8155,10 +8155,10 @@
    "path": "agos/agos-kernel/governance/policy_evaluator.py",
    "module": "governance.policy_evaluator",
    "root": "kernel",
-   "lines": 386,
+   "lines": 414,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 16,
+   "functions": 17,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -13563,7 +13563,7 @@
    "path": "agos/cognition/foundation.py",
    "module": "cognition.foundation",
    "root": "src",
-   "lines": 93,
+   "lines": 90,
    "syntax_ok": true,
    "classes": 2,
    "functions": 5,
@@ -13580,13 +13580,16 @@
     "S:cognition"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/cognition/model.py",
    "module": "cognition.model",
    "root": "src",
-   "lines": 94,
+   "lines": 97,
    "syntax_ok": true,
    "classes": 6,
    "functions": 12,
@@ -13670,7 +13673,7 @@
    "path": "agos/cognitive/constraint.py",
    "module": "cognitive.constraint",
    "root": "src",
-   "lines": 66,
+   "lines": 68,
    "syntax_ok": true,
    "classes": 4,
    "functions": 5,
@@ -13746,7 +13749,7 @@
    "path": "agos/cognitive/deliberation.py",
    "module": "cognitive.deliberation",
    "root": "src",
-   "lines": 83,
+   "lines": 84,
    "syntax_ok": true,
    "classes": 5,
    "functions": 6,
@@ -13764,6 +13767,9 @@
     "S:cognitive"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_cognition_unification.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -13843,7 +13849,7 @@
    "path": "agos/cognitive/planning.py",
    "module": "cognitive.planning",
    "root": "src",
-   "lines": 58,
+   "lines": 60,
    "syntax_ok": true,
    "classes": 4,
    "functions": 5,
@@ -13889,7 +13895,7 @@
    "path": "agos/cognitive/strategy.py",
    "module": "cognitive.strategy",
    "root": "src",
-   "lines": 42,
+   "lines": 43,
    "syntax_ok": true,
    "classes": 2,
    "functions": 4,
@@ -16727,19 +16733,24 @@
    "path": "tests/test_cognition_unification.py",
    "imports": [
     "agos.cognition",
+    "agos.cognition.foundation",
     "agos.cognition.model",
     "agos.cognition.skill",
     "agos.cognitive",
     "agos.cognitive.decision",
-    "agos.cognitive.intent"
+    "agos.cognitive.deliberation",
+    "agos.cognitive.intent",
+    "inspect"
    ],
    "scripts": [],
    "resolved": [
     "S:cognition",
+    "S:cognition.foundation",
     "S:cognition.model",
     "S:cognition.skill",
     "S:cognitive",
     "S:cognitive.decision",
+    "S:cognitive.deliberation",
     "S:cognitive.intent"
    ]
   },

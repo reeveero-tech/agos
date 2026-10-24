@@ -383,3 +383,31 @@ def default_policy_rules() -> List[Dict[str, Any]]:
     القواعد (لا امتثال بلا فحص).
     """
     return [{"rule_id": rule_id} for rule_id in ENACTED_CONSTITUTION_RULE_IDS]
+
+
+def execution_authorization_grants(action: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """قواعد التشريع المفعّل التي **تمنح** ترخيص تنفيذ هذا الفعل.
+
+    الربط صريح لا ضمني (تصحيح المراجعة — سجل العمل 0078): المنح يعلن في
+    مواصفة القاعدة ``grants`` (تحوي ``"execute"``) ونطاق أنواعها في
+    ``applies_to_types`` — فالامتثال لواجب (كالمادة 5: فحص وجود حقل
+    الإصدار) يثبت شرط الواجب **ولا يمنح ترخيصاً**؛ ولا ترخيص إلا بتشريع
+    معتمد يعلن المنح لنوع الفعل. لا تشريع حالياً يعلن منحاً — فالبوابة
+    مغلقة بصدق حتى يشرّع الحوكمة منحاً (قرار معلن لا يُخترع)، وتغيير
+    تسمية النوع ليس طريقاً من المنع إلى السماح.
+    """
+    grants: List[Dict[str, Any]] = []
+    entity_type = action.get("type") if isinstance(action, dict) else None
+    for rule_id in ENACTED_CONSTITUTION_RULE_IDS:
+        spec = get_shared_evaluator().get_spec(rule_id)
+        if not isinstance(spec, dict):
+            continue
+        granted = spec.get("grants")
+        if not isinstance(granted, list) or "execute" not in granted:
+            continue  # واجب/فحص — ليس منح ترخيص
+        applies = spec.get("applies_to_types")
+        if not isinstance(applies, list) or entity_type is None:
+            continue  # لا نطاق معلناً يربط المنح بهذا الفعل
+        if entity_type in applies:
+            grants.append({"rule_id": rule_id})
+    return grants

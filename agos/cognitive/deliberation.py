@@ -78,5 +78,6 @@ class UniversalDeliberationEngine:
         return {
             "version": self.version,
             "pipeline_steps": DELIBERATION_PIPELINE,
-            "status": "COGNITIVE_FOUNDATION_PHASE_COMPLETE"
+            # لا يُدَّعى اكتمال مرحلة — المداولة نفسها not_executed
+            "status": "not_executed"
         }

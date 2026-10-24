@@ -38,8 +38,10 @@ class UniversalConstraintPlatform:
     ✅ Technology, Policies, Compliance, Resources
     ✅ Risk, Compatibility, Availability
     
-    Implements:
-    ✅ Constraint Runtime, Solver, Validator, Graph, Optimizer
+    منفذ فعلاً (ADR-0012، العمل 4): Constraint Runtime (create_constraint —
+    معرّف مميز وطوابع)، والتسجيل في الحزمة. Solver وValidator موجودان
+    كتصريح صادق بعدم التنفيذ (العمل 1 — solved=False بمسوغ وvalidate=False
+    عدم ثبوت). غير منفذ (وعود سابقة مُيّزت): Graph، Optimizer.
     
     OUTPUT: Universal Constraint Platform
     """

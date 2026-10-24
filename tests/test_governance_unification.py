@@ -703,13 +703,15 @@ def test_default_rule_source_is_enacted_constitution_legislation():
         ev._specs.clear()
         ev._specs.update(specs_before)
 
-    # بوابة السياسات على عقد كيان منصوص: امتثال مثبت يمر البوابات كلها ويدقّق
+    # بوابة السياسات على عقد كيان منصوص: الامتثال يثبت الواجب — والربط
+    # الصريح يمنع الترخيص (لا تشريع يعلن المنح — حتى للمدخل الممتثل)
     rt = AutoGovRuntime()
     log_before = len(ev.evaluation_log)
     res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
-    assert res["authorized"] is True
+    assert res["authorized"] is False
+    assert "لا تشريع معتمد يمنح" in res["reason"]   # سبب الربط المسمى
     assert len(ev.evaluation_log) > log_before     # وصل المقيم المشترك فعلاً
-    assert len(rt.auditor.audit_log) == 1          # التدقيق بعد الترخيص
+    assert len(rt.auditor.audit_log) == 0          # لا تدقيق بعد منع
     # المخالفة تمنع بسببه المنقول (كيان منصوص بلا حقل الإصدار)
     res = rt.authorize_execution({"type": "Contracts"})
     assert res["authorized"] is False
@@ -720,22 +722,76 @@ def test_default_rule_source_is_enacted_constitution_legislation():
     assert "لا تنطبق" in res["reason"]
 
 
+def test_execution_requires_explicit_authorization_grant():
+    """تصحيح المراجعة (سجل العمل 0078): لا ترخيص بلا تشريع معتمد يعلن
+    المنح — الامتثال لواجب (المادة 5: وجود حقل الإصدار) يثبت شرط الواجب
+    ولا يمنح ترخيص تنفيذ؛ وتغيير تسمية النوع ليس طريقاً من المنع إلى
+    السماح. والبوابة تفتح فقط بتشريع معتمد يعلن المنح لنوع الفعل."""
+    from agos_kernel.governance import policy_evaluator as pe
+    from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
+        GovernanceRuntime as AutoGovRuntime)
+
+    # لا منح في التشريع المفعّل — كل الأنواع ممنوعة بسببه المسمى
+    assert pe.execution_authorization_grants(
+        {"type": "Contracts", "version": "1.0"}) == []
+    assert pe.execution_authorization_grants({"type": "mission"}) == []
+    rt = AutoGovRuntime()
+    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    assert res["authorized"] is False
+    assert "لا تشريع معتمد يمنح" in res["reason"]
+    assert len(rt.auditor.audit_log) == 0
+
+    # البوابة تفتح فقط بتشريع معتمد يعلن المنح — تشريع عابر للاختبار
+    # يُعلن ويعاد بعده (لا يبقى تشريعاً دائماً)
+    granted_rule = "test-authorization-grant"
+    enacted_before = pe.ENACTED_CONSTITUTION_RULE_IDS
+    ev = pe.get_shared_evaluator()
+    specs_before = dict(ev._specs)
+    try:
+        ev.register_spec(granted_rule, {
+            "kind": "required_fields", "required_fields": ["version"],
+            "applies_to_types": ["Contracts"], "grants": ["execute"],
+        })
+        pe.ENACTED_CONSTITUTION_RULE_IDS = enacted_before + (granted_rule,)
+        # المنح يعمل من التشريع المعلن — والمدخل الممتثل يُرخّص ويدقّق
+        assert pe.execution_authorization_grants(
+            {"type": "Contracts"}) == [{"rule_id": granted_rule}]
+        # منح لنوع لا يفتح البوابة لغيره
+        assert pe.execution_authorization_grants({"type": "mission"}) == []
+        rt2 = AutoGovRuntime()
+        res = rt2.authorize_execution(
+            {"type": "Contracts", "version": "1.0"})
+        assert res["authorized"] is True
+        assert len(rt2.auditor.audit_log) == 1
+        # المخالفة ما تزال تمنع — المنح لا يلغي الواجب
+        res = rt2.authorize_execution({"type": "Contracts"})
+        assert res["authorized"] is False
+        assert "version" in res["reason"]
+    finally:
+        pe.ENACTED_CONSTITUTION_RULE_IDS = enacted_before
+        ev._specs.clear()
+        ev._specs.update(specs_before)
+    # بعد الاستعادة: لا منح — البوابة مغلقة بصدق كما كانت
+    assert pe.execution_authorization_grants(
+        {"type": "Contracts", "version": "1.0"}) == []
+
+
 def test_authorize_execution_gate_order_and_right_to_block():
-    """ترتيب البوابات وحق المنع (الشريحة الرابعة — تصحيح المراجعة + تصحيح
-    السابعة): بدائل تسجّل كل استدعاء، ويتحقق الاختبار من **تسلسل
-    الاستدعاءات كاملاً حتى المنع** — لا خلو سجل التدقيق وحده: الطوارئ
-    تمنع بـ[emergency] فقط، والتفويض بـ[emergency, authorizer]، والتوصيل
-    الحقيقي بمخالفة قاعدة التشريع المفعّل (المادة 5 — كيان منصوص بلا
-    حقل الإصدار) بـ[emergency, authorizer, policy] مع السبب المنقول،
-    والسلامة بـ[...policy, safety]، والموافقة البشرية بـ[...safety,
+    """ترتيب البوابات وحق المنع (الشريحة الرابعة + تصحيحا المراجعة):
+    بدائل تسجّل كل استدعاء، ويتحقق الاختبار من **تسلسل الاستدعاءات كاملاً
+    حتى المنع** — لا خلو سجل التدقيق وحده: الطوارئ تمنع بـ[emergency] فقط،
+    والتفويض بـ[emergency, authorizer]، والتوصيل الحقيقي بمخالفة قاعدة
+    التشريع المفعّل (المادة 5 — كيان منصوص بلا حقل الإصدار)
+    بـ[emergency, authorizer, policy] مع السبب المنقول، وبوابة المنح بغياب
+    التشريع المانح بـ[...policy, grants] بسببه المسمى (سجل العمل 0078)،
+    والسلامة بـ[...grants, safety]، والموافقة البشرية بـ[...safety,
     approval] بلا audit. هذه اختبارات ترتيب لا دليل نجاح المسار الحقيقي
-    بسياسات معتمدة للمخالف؛ والممتثل عبر التشريع المفعّل مختبر في اختبار
-    المصدر المعتمد."""
+    بسياسات معتمدة؛ والسماح الحقيقي عبر تشريع مانح مختبر في اختبار المنح."""
     from agos_kernel.civilization.autonomous_engineering.autonomous_batch import (
         GovernanceRuntime as AutoGovRuntime, PolicyEnforcer)
 
     def _recorded(stopped=False, authorize=True, enforce=True,
-                  safe=True, requires_approval=False):
+                  safe=True, requires_approval=False, grants=True):
         rt = AutoGovRuntime()
         calls = []
 
@@ -763,6 +819,16 @@ def test_authorize_execution_gate_order_and_right_to_block():
                 calls.append("policy")
                 return True
 
+        class RecGrantGate:
+            # بديل مضبوط لبوابة المنح — بلا بديل لا تُختبر البوابات
+            # اللاحقة (لا تشريع مانح في التشريع المفعّل)
+            def grants(self, action):
+                calls.append("grants")
+                return [{"rule_id": "stub"}] if grants else []
+
+            def denial_reason(self, action):
+                return "لا تشريع معتمد يمنح ترخيص تنفيذ هذا الفعل"
+
         class RecSafety:
             def validate(self, action):
                 calls.append("safety")
@@ -783,6 +849,7 @@ def test_authorize_execution_gate_order_and_right_to_block():
         rt.emergency = RecEmergency()
         rt.authorizer = RecAuthorizer()
         rt.policy_enforcer = RealRecordingPolicy() if enforce == "real" else RecPassPolicy()
+        rt.grant_gate = RecGrantGate()
         rt.safety = RecSafety()
         rt.approval = RecApproval()
         rt.auditor = RecAuditor()
@@ -799,23 +866,29 @@ def test_authorize_execution_gate_order_and_right_to_block():
     assert calls == ["emergency", "authorizer"]
     # (3) التوصيل الحقيقي بمخالفة قاعدة التشريع المفعّل (كيان منصوص بلا
     # حقل الإصدار): [emergency, authorizer, policy] فقط — المفوّض الحقيقي
-    # يمنع بسببه المنقول ولا تُستدعى السلامة بعده (الممتثل عبر التشريع
-    # المفعّل يمر — مختبر في اختبار المصدر المعتمد)
+    # يمنع بسببه المنقول ولا تُستدعى بوابة المنح بعده
     rt, calls = _recorded(enforce="real")
     res = rt.authorize_execution({"type": "Contracts"})
     assert res["authorized"] is False
     assert "version" in res["reason"]
     assert calls == ["emergency", "authorizer", "policy"]
-    # (4) السلامة تمنع: [emergency, authorizer, policy, safety]
+    # (4) بوابة المنح تمنع بغياب التشريع المانح: [.., policy, grants]
+    # فقط — بسببه المسمى ولا تُستدعى السلامة بعده (سجل العمل 0078)
+    rt, calls = _recorded(grants=False)
+    res = rt.authorize_execution({"type": "Contracts", "version": "1.0"})
+    assert res["authorized"] is False
+    assert "لا تشريع معتمد يمنح" in res["reason"]
+    assert calls == ["emergency", "authorizer", "policy", "grants"]
+    # (5) السلامة تمنع: [emergency, authorizer, policy, grants, safety]
     rt, calls = _recorded(safe=False)
     assert rt.authorize_execution({})["reason"] == "Safety check failed"
-    assert calls == ["emergency", "authorizer", "policy", "safety"]
-    # (5) الموافقة البشرية تمنع: [...] + approval — بلا audit
+    assert calls == ["emergency", "authorizer", "policy", "grants", "safety"]
+    # (6) الموافقة البشرية تمنع: [...] + approval — بلا audit
     rt, calls = _recorded(requires_approval=True)
     assert rt.authorize_execution(
         {"risk_level": 0.9})["reason"] == "Requires human approval"
     assert calls == ["emergency", "authorizer", "policy",
-                     "safety", "approval"]
+                     "grants", "safety", "approval"]
     assert "audit" not in calls
 
 

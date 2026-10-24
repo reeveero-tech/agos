@@ -52,12 +52,9 @@ class AbsoluteFoundation:
     or engineering paradigm can be integrated by implementing adapters and contracts only.
     Kernel modifications are prohibited.
     
-    Released:
-    ✅ AGOS Foundation v10.0
-    ✅ Architecture Locked
-    ✅ Kernel Locked
-    ✅ Public Contracts Locked
-    ✅ SDK Contracts Locked
+    Released (تصحيح — سجل العمل 0079): لا قفل معمارياً ولا نواة ولا عقود
+    يُدَّعى — ``release()`` تصرح بذلك صراحة (not_locked)؛ الوصف السابق كان
+    يعد بالقفل بينما لا فحص يجري.
     """
     def __init__(self):
         self.version = "10.0.0"

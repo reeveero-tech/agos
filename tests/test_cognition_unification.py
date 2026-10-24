@@ -141,11 +141,55 @@ def test_intent_registry_distinct_ids_preserve_independent_intents():
 
 
 def test_class_docstrings_distinguish_implemented_from_promises():
-    """العمل 4 في ADR-0012: وصف الصنف لا يعد بما لا ينفذ — الوعود غير
-    المنفذة متميزة صراحة عن المنفذ."""
+    """العمل 4 في ADR-0012 (+ تصحيح المراجعة — سجل العمل 0079): وصف الصنف
+    لا يعد بما لا ينفذ — الوعود غير المنفذة متميزة صراحة عن المنفذ،
+    والأوصاف التي كانت تناقض السلوك المصحح (القفل المزعوم في المؤسسة،
+    واكتمال المداولة) صارت صادقة."""
     from agos.cognitive.decision import UniversalDecisionPlatform
     from agos.cognitive.intent import UniversalIntentEngine
     for cls in (UniversalDecisionPlatform, UniversalIntentEngine):
         doc = cls.__doc__
         assert "غير منفذ" in doc        # الوعود مُيّزت صراحة
         assert "منفذ فعلاً" in doc      # والمنفذ موصوف بحدوده
+
+
+def test_world_model_public_interface_resolves_relationships():
+    """تصحيح المراجعة (سجل العمل 0079): العيب المعاد إنتاجه كان يظهر عبر
+    الواجهة العامة — استعلام العلاقات عبر UniversalWorldModel يرى حواف
+    رسمه الفعلي (كان إما AttributeError ثم قائمة فارغة أبدية بعد إصلاح
+    المحرك بلا توصيل)."""
+    from agos.cognition.model import UniversalWorldModel
+    model = UniversalWorldModel()
+    model.add("org1", "Organizations", {"name": "x"})
+    model.add("proj1", "Projects", {"name": "y"})
+    # الحافة على رسم الواجهة نفسه — والاستعلام عبر الواجهة العامة
+    model.graph.add_edge("org1", "proj1", "owns")
+    assert model.relationships.find_relationships("org1") == [
+        ("org1", "proj1", "owns")]
+    assert model.relationships.find_relationships("proj1") == [
+        ("org1", "proj1", "owns")]
+    assert model.relationships.find_relationships("unknown") == []
+
+
+def test_remaining_claims_contradictions_removed():
+    """تصحيح المراجعة (سجل العمل 0079): الادعاءات المتبقية التي كانت تناقض
+    السلوك المصحح أُزيلت — وصف المؤسسة لا يعد بقفل، ووصف المنصات يميز
+    وعوده، وإحصاء المداولة لا تدعي اكتمالاً."""
+    from agos.cognition.foundation import AbsoluteFoundation
+    import inspect
+    # وصف المؤسسة لا يعد بقفل معماري/نواة/عقود
+    doc = AbsoluteFoundation.__doc__
+    assert "Architecture Locked" not in doc
+    assert "Kernel Locked" not in doc
+    assert "Contracts Locked" not in doc
+    assert "not_locked" in doc or "لا قفل" in doc
+    # إحصاء المداولة لا يدعي اكتمال مرحلة (يناقض not_executed)
+    from agos.cognitive.deliberation import UniversalDeliberationEngine
+    stats = UniversalDeliberationEngine().get_statistics()
+    assert stats["status"] == "not_executed"
+    assert stats["status"] != "COGNITIVE_FOUNDATION_PHASE_COMPLETE"
+    # أوصاف المنصات المتبقية مُيّزت (لا Implements عارية تعد بما لا ينفذ)
+    from agos.cognitive import constraint, planning, strategy
+    for mod in (constraint, planning, strategy):
+        src = inspect.getsource(mod)
+        assert "منفذ فعلاً" in src and "غير منفذ" in src

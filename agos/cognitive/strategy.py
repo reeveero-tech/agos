@@ -21,9 +21,10 @@ class UniversalStrategyPlatform:
     ✅ Fastest, Cheapest, Safest, Highest Quality
     ✅ Lowest Risk, Balanced, Custom
     
-    Implements:
-    ✅ Strategy Runtime, Registry, Templates
-    ✅ Strategy Optimizer, Evaluator, Selector
+    منفذ فعلاً (ADR-0012، العمل 4): Strategy Runtime (select_strategy — صدى
+    النوع حرفياً). Selector موجود كصدى بلا ادعاء اختيار (العمل 1 —
+    selected=None بمسوغ). غير منفذ (وعود سابقة مُيّزت): Registry، Templates،
+    Optimizer، Evaluator.
     
     OUTPUT: Universal Strategy Platform
     """

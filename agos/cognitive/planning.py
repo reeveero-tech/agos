@@ -31,9 +31,11 @@ class UniversalPlanningEngine:
     Pipeline:
     Intent → Goals → Constraints → Knowledge → Capabilities → Execution Graph → Mission Plan
     
-    Implements:
-    ✅ Planner, Alternative Planner, Plan Optimizer
-    ✅ Plan Validator, Simulator, Benchmark
+    منفذ فعلاً (ADR-0012، العمل 4): Plan Validator (فحص فراغ الخطوات — منفذ
+    ويثبت) وcreate_plan (إنشاء كائن خطة بخطوة واحدة من مدخلات المرسل —
+    ليس توليد تخطيط) والتخزين في الحزمة. Simulator موجود كتصريح صادق بعدم
+    التنفيذ (العمل 1). غير منفذ (وعود سابقة مُيّزت): Alternative Planner،
+    Plan Optimizer، Benchmark.
     
     OUTPUT: Universal Planning Platform
     """

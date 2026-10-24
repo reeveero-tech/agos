@@ -13,7 +13,7 @@ from enum import Enum
 import uuid
 
 from agos_kernel.governance.policy_evaluator import (
-    evaluate_rule_dicts, default_policy_rules)
+    evaluate_rule_dicts, default_policy_rules, execution_authorization_grants)
 
 
 # ============================================================
@@ -833,6 +833,23 @@ class ExecutionAuditor:
         self.audit_log.append({'action': action, 'timestamp': datetime.now(timezone.utc).isoformat()})
 
 
+class AuthorizationGrantGate:
+    """بوابة منح الترخيص — لا ترخيص إلا بتشريع معتمد يعلن المنح (سجل العمل 0078).
+
+    الامتثال لواجب (كالمادة 5) يثبت شرط الواجب ولا يمنح ترخيص تنفيذ؛
+    فغياب الربط يمنع الترخيص بسببه المسمى — حتى للمدخل الممتثل.
+    """
+
+    def grants(self, action: Dict) -> List[Dict]:
+        return execution_authorization_grants(action)
+
+    @staticmethod
+    def denial_reason(action: Dict) -> str:
+        return ("لا تشريع معتمد يمنح ترخيص تنفيذ هذا الفعل — الامتثال "
+                "لواجب لا يمنح ترخيصاً (ربط الترخيص بالأفعال فجوة مسماة "
+                "مفتوحة؛ التشريع قرار حوكمة معلن لا يُخترع)")
+
+
 class GovernanceRuntime:
     """Autonomous Governance Runtime - EXECUTION-000009"""
     
@@ -841,6 +858,7 @@ class GovernanceRuntime:
     def __init__(self):
         self.authorizer = ExecutionAuthorizer()
         self.policy_enforcer = PolicyEnforcer()
+        self.grant_gate = AuthorizationGrantGate()
         self.safety = SafetyValidator()
         self.risk = RiskThresholdManager()
         self.approval = HumanApprovalGate()
@@ -863,6 +881,13 @@ class GovernanceRuntime:
             outcome = getattr(self.policy_enforcer, "last_outcome", None) or {}
             return {'authorized': False,
                     'reason': outcome.get("reason", "Policy violation")}
+
+        # ربط الترخيص صريح (تصحيح المراجعة — سجل العمل 0078): لا ترخيص
+        # بلا تشريع معتمد يعلن المنح — الامتثال لواجب (المادة 5) يثبت شرطه
+        # ولا يمنح ترخيص تنفيذ؛ وتغيير تسمية النوع ليس طريقاً للسماح
+        if not self.grant_gate.grants(action):
+            return {'authorized': False,
+                    'reason': self.grant_gate.denial_reason(action)}
         
         safety = self.safety.validate(action)
         if not safety['safe']:

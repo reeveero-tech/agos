@@ -78,7 +78,10 @@ class UniversalWorldModel:
         self.version = "10.0.0"
         self.graph = WorldGraph()
         self.state = StateEngine()
-        self.relationships = RelationshipEngine()
+        # المحرك مقيّد برسم الواجهة نفسه (تصحيح المراجعة — سجل العمل 0079):
+        # استعلام العلاقات عبر الواجهة العامة يرى حواف الرسم الفعلي لا
+        # قائمة فارغة أبدية (كان العيب المعاد إنتاجه يظهر هنا)
+        self.relationships = RelationshipEngine(self.graph)
         self.prediction = PredictionEngine()
     
     def add(self, entity_id: str, entity_type: str, properties: Dict[str, Any]) -> Entity:
