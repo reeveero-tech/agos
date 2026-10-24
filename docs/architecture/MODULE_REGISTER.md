@@ -61,7 +61,7 @@
 | L2 | `agos-kernel/collaboration` | human-loop | 2 | 238 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/crossdomain` | mission | 2 | 524 | 0 | yes | no | yes | L1 | R-W4-013 |
 | L2 | `agos-kernel/distributed` | cloud | 2 | 316 | 0 | yes | no | yes | L1 | R-W4-008 |
-| L2 | `agos-kernel/execution` | execution | 5 | 1641 | 0 | yes | yes | yes | L4 | R-W3-003 |
+| L2 | `agos-kernel/execution` | execution | 5 | 1687 | 0 | yes | yes | yes | L4 | R-W3-003 |
 | L2 | `agos-kernel/finalization` | quality | 1 | 1142 | 0 | yes | no | no | L1 | R-W5-002 |
 | L2 | `agos-kernel/governance` | governance | 3 | 1201 | 0 | yes | no | yes | L1 | R-W1-007, R-W3-015 |
 | L2 | `agos-kernel/hardening` | quality | 1 | 404 | 0 | yes | no | no | L1 | R-F-007, R-Q-007 |

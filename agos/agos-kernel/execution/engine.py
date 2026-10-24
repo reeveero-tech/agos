@@ -157,6 +157,11 @@ class ExecutionEngine:
         self.event_handlers: Dict[ExecutionEvent, List[Callable]] = {}
         self._metrics: Dict[str, List[float]] = {}
         self._traces: Dict[str, List[Dict]] = {}
+        # مهمة التنفيذ الداخلية وطلب الإلغاء الصريح (سجل العمل 0082):
+        # الفهرسان يحددان نافذة العمل القابل للإلغاء — من تسجيل المهمة
+        # حتى انتهاء المسار فعلياً في finally
+        self._execution_tasks: Dict[str, Any] = {}
+        self._cancel_requests: Dict[str, bool] = {}
     
     def invoke_sync(self, func, *args, **kwargs) -> InvocationOutcome:
         """الواجهة المتزامنة للنواة المشتركة (ADR-0008): استدعاء واحد بلا مهلة
@@ -238,28 +243,69 @@ class ExecutionEngine:
         
         policy = self.get_policy(policy_name)
         self.active_executions[execution_id] = context
-        
+
         start_time = datetime.now()
-        self._emit_event(ExecutionEvent.STARTED, context)
-        
+        execution_result = None
+        inner_task = None
+
         try:
+            # مهمة داخلية يملكها المحرك (سجل العمل 0082): تُسجَّل قبل إصدار
+            # STARTED — فمستمع البدء يستطيع طلب الإلغاء فوراً قبل أي أثر
+            # للمهارة؛ ولا يُستخدم current_task لإلغاء مهمة المستدعي قط
+            # (إلغاء المستدعي شأن مستقل ينتشر كما هو) — يُستخدم فقط لفحص
+            # حالة الإلغاء المعلقة لمهمة المستدعي عند تمييز المصدر
+            inner_task = asyncio.ensure_future(
+                self._execute_skill(context, policy))
+            self._execution_tasks[execution_id] = inner_task
+            self._emit_event(ExecutionEvent.STARTED, context)
+
             # Simulate execution with timeout
             result = await asyncio.wait_for(
-                self._execute_skill(context, policy),
+                inner_task,
                 timeout=policy.timeout_seconds
             )
-            
+
             status = ExecutionStatus.COMPLETED
             context.completed_at = datetime.now()
             self._emit_event(ExecutionEvent.COMPLETED, context)
-            
+
             execution_result = ExecutionResult(
                 execution_id=execution_id,
                 status=status,
                 output=result,
                 metrics=self._compute_metrics(execution_id, start_time),
             )
-            
+
+        except asyncio.CancelledError:
+            # تمييز مصدر الإلغاء تزامنياً (تصحيح المراجعة — سجل العمل
+            # 0082): العلامة وحدها لا تكفي — إن طلب المحرك الإلغاء ثم
+            # ألغى المستدعي مهمته قبل معالجة الطلب، بقيت العلامة True
+            # فيبتلع الفرع إلغاء المستدعي ويعيد نتيجة عادية. الفيصل:
+            # هل لمهمة المستدعي نفسها طلب إلغاء معلق (cancelling) —
+            # فحص حالة الإلغاء لا إلغاء المهمة (المنع السابق كان على
+            # استخدام current_task لإلغاء مهمة المستدعي)
+            current = asyncio.current_task()
+            caller_cancel_pending = (
+                current is not None and current.cancelling() > 0)
+            if (not caller_cancel_pending
+                    and self._cancel_requests.get(execution_id)):
+                # إلغاء صريح من المحرك (طلب cancel): النهاية الفعلية هنا —
+                # نتيجة إلغاء صريحة وحدث CANCELLED واحد مؤكد (لا عند مجرد
+                # قبول الطلب)
+                execution_result = ExecutionResult(
+                    execution_id=execution_id,
+                    status=ExecutionStatus.CANCELLED,
+                    error="Execution cancelled by request",
+                )
+                self._emit_event(ExecutionEvent.CANCELLED, context)
+            else:
+                # إلغاء المستدعي لمهمته (أو سباق المصدرين) — أوقف العمل
+                # الداخلي ثم انتشر الانتشار كما هو: لا يتحول بصمت إلى
+                # نتيجة عادية حتى لو كانت علامة طلب المحرك مثبتة
+                if inner_task is not None and not inner_task.done():
+                    inner_task.cancel()
+                raise
+
         except asyncio.TimeoutError:
             status = ExecutionStatus.FAILED
             execution_result = ExecutionResult(
@@ -268,7 +314,7 @@ class ExecutionEngine:
                 error=f"Execution timed out after {policy.timeout_seconds}s",
             )
             self._emit_event(ExecutionEvent.FAILED, context)
-            
+
         except Exception as e:
             status = ExecutionStatus.FAILED
             execution_result = ExecutionResult(
@@ -277,12 +323,17 @@ class ExecutionEngine:
                 error=str(e),
             )
             self._emit_event(ExecutionEvent.FAILED, context)
-        
+
         finally:
-            self.completed_executions[execution_id] = execution_result
+            # تخزين محروس — الاستثناء المنتشر (إلغاء المستدعي) لا يترك
+            # نتيجة نصف مكتملة ولا خطأ متغير غير مهيأ
+            if execution_result is not None:
+                self.completed_executions[execution_id] = execution_result
             if execution_id in self.active_executions:
                 del self.active_executions[execution_id]
-        
+            self._execution_tasks.pop(execution_id, None)
+            self._cancel_requests.pop(execution_id, None)
+
         return execution_result
     
     async def _execute_skill(
@@ -411,13 +462,24 @@ class ExecutionEngine:
         return True
     
     def cancel(self, execution_id: str) -> bool:
-        """Cancel an execution."""
-        context = self.active_executions.get(execution_id)
-        if not context:
-            return False
-        
-        self._emit_event(ExecutionEvent.CANCELLED, context)
-        del self.active_executions[execution_id]
+        """طلب إلغاء تنفيذ جارٍ — قبول الطلب لا اكتماله.
+
+        يعيد True إذا قُبل الطلب (معرّف عمل داخلي جارٍ لم يُطلب إلغاؤه
+        سابقاً)، ويعيد False للمجهول أو المنتهي أو الطلب المكرر. النتيجة
+        النهائية وحدث CANCELLED تصفان النهاية الفعلية داخل execute — لا
+        يُعلن الاكتمال هنا، ولا يُنظف الفهرس قبل انتهاء المسار فعلياً
+        (إصلاح الإلغاء الحقيقي — سجل العمل 0082: الإلغاء السابق كان إدارة
+        فهرس فقط والعمل يستمر حتى الاكتمال بنجاح بعد الإلغاء)."""
+        if self._cancel_requests.get(execution_id):
+            return False                       # طلب مكرر
+        task = self._execution_tasks.get(execution_id)
+        if task is None:
+            return False                        # مجهول أو انتهى مساره
+        if task.done():
+            return False                        # العمل انتهى فعلاً — لا طلب
+        if not task.cancel():
+            return False                        # المهمة لا تقبل الإلغاء
+        self._cancel_requests[execution_id] = True
         return True
     
     def checkpoint(self, execution_id: str) -> Optional[Dict]:

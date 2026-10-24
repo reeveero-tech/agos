@@ -204,6 +204,257 @@ def test_kernel_engine_timeout_is_deterministic():
 
 
 # ===============================================================
+# 2ب) الإلغاء الحقيقي للعمل غير المتزامن (سجل العمل 0082 — R-W1-007):
+# المادة 14 «Cancelable» بمسار ExecutionEngine.execute — الإلغاء السابق كان
+# إدارة فهرس فقط: العمل كان يستمر حتى الاكتمال بنجاح بعد طلب الإلغاء
+# (اكتُشف بفحص حي). الإصلاح: مهمة داخلية يملكها المحرك تُسجَّل قبل إصدار
+# STARTED، وcancel يطلب إلغاءها، والنهاية الفعلية تُوصف داخل execute بنتيجة
+# إلغاء صريحة وحدث CANCELLED واحد. الحد المعلن: إلغاء تعاوني عند نقاط
+# الانتظار — ليس إيقافاً قسرياً لشيفرة متزامنة ولا لمهارة تبتلع
+# CancelledError وتواصل العمل.
+# ===============================================================
+def test_engine_cancel_stops_running_work_at_wait_point():
+    """الإلغاء أثناء عمل جارٍ: ينتظر الفحص إشارة دخول المهارة نفسها
+    (entered) لا اقتراعاً زمنياً — ثم يطلب الإلغاء ويحرر الانتظار.
+    العمل يتوقف فعلاً عند نقطة الانتظار: الأثر الثاني لا يُنتج، والنتيجة
+    إلغاء صريحة، وحدث CANCELLED واحد، ولا COMPLETED ولا RETRY بعده."""
+    async def working_skill(context):
+        effects.append("effect-1")          # أثر قبل الانتظار
+        entered.set()                        # وصلت نقطة الانتظار فعلياً
+        await release.wait()                 # انتظار إشارة — لا زمن تخميني
+        effects.append("effect-2")           # أثر بعد الانتظار — لا يُنتج
+        return {"done": True}
+
+    engine = ExecutionEngine()
+    effects, entered, release = [], asyncio.Event(), asyncio.Event()
+    started_ids, cancelled_ids, completed_ids, retried = [], [], [], []
+    engine._skill_logic = working_skill
+    engine.on_event(ExecutionEvent.STARTED,
+                    lambda ctx, d: started_ids.append(ctx.execution_id))
+    engine.on_event(ExecutionEvent.CANCELLED,
+                    lambda ctx, d: cancelled_ids.append(ctx.execution_id))
+    engine.on_event(ExecutionEvent.COMPLETED,
+                    lambda ctx, d: completed_ids.append(ctx.execution_id))
+    engine.on_event(ExecutionEvent.RETRY,
+                    lambda ctx, d: retried.append(ctx.execution_id))
+
+    async def scenario():
+        task = asyncio.create_task(
+            engine.execute("cap", "skill", "prov", {}))
+        await entered.wait()                 # المهارة وصلت نقطة الانتظار
+        exec_id = started_ids[0]
+        accepted = engine.cancel(exec_id)    # طلب الإلغاء أثناء الانتظار
+        release.set()                        # حرر الانتظار
+        result = await task
+        return exec_id, accepted, result
+
+    exec_id, accepted, result = asyncio.run(scenario())
+    assert accepted is True                  # الطلب قُبل
+    assert effects == ["effect-1"]           # الأثر الثاني لم يُنتج — توقف فعلي
+    assert result.status.value == "cancelled"
+    assert result.execution_id == exec_id
+    assert cancelled_ids == [exec_id]         # حدث إلغاء واحد مؤكد
+    assert completed_ids == []                # لا نجاح بعد الإلغاء
+    assert retried == []                      # ولا إعادة محاولة بعده
+    assert engine.get_active_count() == 0     # الفهارس نظيفة بعد النهاية
+    assert engine.get_completed_count() == 1
+    assert engine.completed_executions[exec_id].status.value == "cancelled"
+    # الطلب المكرر بعد النهاية يرفض — والعمل المنتهي كذلك
+    assert engine.cancel(exec_id) is False
+
+
+def test_engine_cancel_from_started_handler_before_any_effect():
+    """الإلغاء من مستمع STARTED نفسه: تسجيل المهمة الداخلية يسبق إصدار
+    الحدث — فالطلب فوري وقبل أي أثر للمهارة (لا مهارة محاكاة هنا أصلاً)."""
+    engine = ExecutionEngine()
+    cancelled_ids, completed_ids = [], []
+    engine.on_event(ExecutionEvent.STARTED,
+                    lambda ctx, d: engine.cancel(ctx.execution_id))
+    engine.on_event(ExecutionEvent.CANCELLED,
+                    lambda ctx, d: cancelled_ids.append(ctx.execution_id))
+    engine.on_event(ExecutionEvent.COMPLETED,
+                    lambda ctx, d: completed_ids.append(ctx.execution_id))
+
+    async def never_runs(context):
+        effects.append("must-not-run")
+        return {"done": True}
+
+    effects = []
+    engine._skill_logic = never_runs
+    result = asyncio.run(engine.execute("cap", "skill", "prov", {}))
+    assert result.status.value == "cancelled"
+    assert effects == []                      # لا أثر إطلاقاً
+    assert len(cancelled_ids) == 1
+    assert completed_ids == []
+
+
+def test_engine_caller_cancel_propagates_without_swallowing():
+    """إلغاء المستدعي لمهمته ينتشر كما هو: لا يتحول بصمت إلى نتيجة عادية،
+    ولا خطأ متغير غير مهيأ في التنظيف، ولا مهمة داخلية متروكة جارية.
+    الفحص ينتظر إشارة دخول المهارة نفسها (لا زمناً تخمينياً)، ويتحقق من
+    انتهاء المهمة الداخلية ونظافة الفهارس داخل الحلقة الجارية قبل خروج
+    asyncio.run — فإغلاق الحلقة قد يخفي عملاً متروكاً."""
+    engine = ExecutionEngine()
+    entered, release = asyncio.Event(), asyncio.Event()
+    inner_refs = {}
+
+    async def long_skill(context):
+        entered.set()                          # وصلت نقطة الانتظار فعلياً
+        await release.wait()                   # عمل طويل — يُقطع بإلغاء المستدعي
+        return {}
+
+    engine._skill_logic = long_skill
+
+    async def scenario():
+        task = asyncio.create_task(
+            engine.execute("cap", "skill", "prov", {}))
+        await entered.wait()                  # المهمة الداخلية بدأت فعلياً
+        exec_id = next(iter(engine._execution_tasks))
+        inner_refs["task"] = engine._execution_tasks[exec_id]
+        task.cancel()                          # إلغاء المستدعي — لا طلب المحرك
+        try:
+            await task
+            return "returned-normally", None, False
+        except asyncio.CancelledError:
+            # التحقق داخل الحلقة الجارية قبل أي خروج: انتهاء المهمة
+            # الداخلية فعلاً (حذف المرجع لا يثبت الانتهاء) ونظافة الفهارس
+            inner_done = inner_refs["task"].done()
+            clean = (engine._execution_tasks == {}
+                     and engine._cancel_requests == {}
+                     and engine.get_active_count() == 0)
+            return "propagated", inner_done, clean
+
+    outcome, inner_done, clean = asyncio.run(scenario())
+    assert outcome == "propagated"            # الانتشار كما هو — لا ابتلاع
+    assert inner_done is True                  # المهمة الداخلية انتهت فعلاً
+    assert clean is True                        # الفهارس نظيفة داخل الحلقة
+    # إلغاء المستدعي لا يسجل نتيجة عادية للمسار المقطوع
+    assert engine.get_completed_count() == 0
+
+
+def test_engine_cancel_race_engine_request_then_caller_cancel():
+    """سباق مصدري الإلغاء (تصحيح المراجعة — سجل العمل 0082): طلب المحرك
+    الإلغاء ثم إلغاء المستدعي مهمته قبل معالجة الطلب — العلامة وحدها لا
+    تكفي للتمييز فيبتلعها الفرع ويعيد نتيجة عادية. الفيصل: إلغاء مهمة
+    المستدعي نفسها يظل منتشراً حتى مع وجود طلب المحرك المعلق."""
+    engine = ExecutionEngine()
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def waiting_skill(context):
+        entered.set()
+        await release.wait()
+        return {"done": True}
+
+    engine._skill_logic = waiting_skill
+    started_ids = []
+    engine.on_event(ExecutionEvent.STARTED,
+                    lambda ctx, d: started_ids.append(ctx.execution_id))
+
+    async def scenario():
+        outer_task = asyncio.create_task(
+            engine.execute("cap", "skill", "prov", {}))
+        await entered.wait()
+        exec_id = started_ids[0]
+        inner_task = engine._execution_tasks[exec_id]   # قبل الطلبين
+        accepted = engine.cancel(exec_id)      # طلب المحرك — قُبل
+        outer_task.cancel()                    # ثم إلغاء المستدعي — قبل المعالجة
+        try:
+            await outer_task
+            return accepted, "returned-normally", None, False
+        except asyncio.CancelledError:
+            # التحقق داخل الحلقة الجارية: انتهاء المهمة الداخلية فعلاً —
+            # حذف المرجع من الفهرس لا يثبت انتهاء العمل — والفهارس نظيفة
+            inner_done = inner_task.done()
+            clean = (engine._execution_tasks == {}
+                     and engine._cancel_requests == {}
+                     and engine.get_active_count() == 0)
+            return accepted, "propagated", clean, inner_done
+
+    accepted, outcome, clean, inner_done = asyncio.run(scenario())
+    assert accepted is True                    # طلب المحرك قُبل قبل السباق
+    assert outcome == "propagated"             # إلغاء المستدعي انتشر — لا ابتلاع
+    assert clean is True                        # الفهارس نظيفة داخل الحلقة
+    assert inner_done is True                   # المهمة الداخلية انتهت فعلاً
+    # لا نتيجة عادية تُسجل للمسار المقطوع بالسباق
+    assert engine.get_completed_count() == 0
+
+
+def test_engine_cancel_rejects_unknown_finished_and_duplicate():
+    """رفض الطلبات غير القابلة للقبول: المجهول قبل بدء أي عمل، والمكرر
+    أثناء العمل، والمنتهي بعد نهايته — قبول الطلب لا اكتماله."""
+    engine = ExecutionEngine()
+    engine._skill_logic = lambda ctx: {"ok": True}
+
+    # مجهول: لا مسار عمل إطلاقاً
+    assert engine.cancel("nonexistent-id") is False
+
+    # مكرر أثناء العمل: الأول يقبل والثاني يرفض
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def waiting_skill(context):
+        entered.set()
+        await release.wait()
+        return {"done": True}
+
+    engine._skill_logic = waiting_skill
+    started_ids = []
+    engine.on_event(ExecutionEvent.STARTED,
+                    lambda ctx, d: started_ids.append(ctx.execution_id))
+
+    async def scenario():
+        task = asyncio.create_task(
+            engine.execute("cap", "skill", "prov", {}))
+        await entered.wait()
+        exec_id = started_ids[0]
+        first = engine.cancel(exec_id)
+        second = engine.cancel(exec_id)        # مكرر — يرفض
+        release.set()
+        result = await task
+        return exec_id, first, second, result
+
+    exec_id, first, second, result = asyncio.run(scenario())
+    assert first is True
+    assert second is False
+    assert result.status.value == "cancelled"
+    # المنتهي: بعد النهاية لا مسار قابل للإلغاء
+    assert engine.cancel(exec_id) is False
+
+
+def test_engine_cancel_rejected_for_finished_work_from_completed_handler():
+    """رفض إلغاء العمل المنتهي داخل نافذة ما قبل التنظيف: مستمع COMPLETED
+    يستدعي cancel والمهمة الداخلية انتهت فعلاً (التنظيف في finally لم
+    يجد بعد) — الطلب يرفض (task.done)، والعلامة لا تترك، ونتيجة النجاح
+    تبقى بلا حدث إلغاء (تصحيح المراجعة — سجل العمل 0082)."""
+    engine = ExecutionEngine()
+
+    async def quick_skill(context):
+        return {"ok": True}
+
+    engine._skill_logic = quick_skill
+    attempts, started_ids, cancelled_ids = [], [], []
+    flags_inside_completed = []                # حالة العلامة لحظة الرفض نفسها
+    engine.on_event(ExecutionEvent.STARTED,
+                    lambda ctx, d: started_ids.append(ctx.execution_id))
+    # المستمعان قبل التشغيل — فغياب حدث الإلغاء دليل، لا فراغ تسجيل متأخر
+    engine.on_event(ExecutionEvent.COMPLETED,
+                    lambda ctx, d: (
+                        attempts.append(engine.cancel(ctx.execution_id)),
+                        flags_inside_completed.append(
+                            dict(engine._cancel_requests))))
+    engine.on_event(ExecutionEvent.CANCELLED,
+                    lambda ctx, d: cancelled_ids.append(ctx.execution_id))
+
+    result = asyncio.run(engine.execute("cap", "skill", "prov", {}))
+    assert result.status.value == "completed"   # النجاح سليم
+    assert attempts == [False]                  # الطلب رفض — العمل منتهٍ فعلاً
+    # العلامة لم تترك لحظة الرفض (يلتقط داخل المستمع قبل أن يمحوها finally)
+    assert flags_inside_completed == [{}]
+    assert cancelled_ids == []                   # لا حدث إلغاء إطلاقاً
+    assert engine._cancel_requests == {}        # ولا بعد التنظيف
+    assert engine.completed_executions[started_ids[0]].status.value == "completed"
+
+
+# ===============================================================
 # 3) ParallelExecutor: التوصيف الدقيق للمزيف — func لا يُستدعى أبداً
 # ===============================================================
 def _counting_tasks():

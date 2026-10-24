@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102566,
+  "lines": 102627,
   "functions": 6180,
   "stub_functions": 781,
   "hardcoded_paths": 0,
@@ -453,7 +453,7 @@
   },
   "agos-kernel/execution": {
    "files": 5,
-   "lines": 1641,
+   "lines": 1702,
    "functions": 92,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -7650,7 +7650,7 @@
    "path": "agos/agos-kernel/execution/engine.py",
    "module": "execution.engine",
    "root": "kernel",
-   "lines": 488,
+   "lines": 549,
    "syntax_ok": true,
    "classes": 9,
    "functions": 29,
@@ -16966,6 +16966,7 @@
     "agos_kernel.governance.policy_evaluator",
     "agos_kernel.governance.runtime",
     "agos_kernel.knowledge.models",
+    "copy",
     "dataclasses"
    ],
    "scripts": [],
