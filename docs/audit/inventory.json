@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102627,
+  "lines": 102628,
   "functions": 6180,
   "stub_functions": 781,
   "hardcoded_paths": 0,
@@ -453,7 +453,7 @@
   },
   "agos-kernel/execution": {
    "files": 5,
-   "lines": 1702,
+   "lines": 1703,
    "functions": 92,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -7650,7 +7650,7 @@
    "path": "agos/agos-kernel/execution/engine.py",
    "module": "execution.engine",
    "root": "kernel",
-   "lines": 549,
+   "lines": 550,
    "syntax_ok": true,
    "classes": 9,
    "functions": 29,
