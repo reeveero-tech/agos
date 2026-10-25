@@ -20,6 +20,10 @@ from pathlib import Path
 current_dir = Path(__file__).parent
 repo_root = current_dir.parent.parent  # <AGOS_ROOT>
 sys.path.insert(0, str(repo_root))
+try:  # المادة 16 — مسار المخرجات يُرفض إن حل داخل شجرة النواة (رابط رمزي)
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+except ImportError:  # تشغيل مباشر من داخل الشجرة
+    from architecture.kernel_protection import resolve_output_dir
 
 
 def _load_module(name, path):
@@ -165,7 +169,7 @@ def run_foundation_test():
         print("SUCCESS: Foundation Civilization is OPERATIONAL")
         
         # Save results
-        output_dir = Path(str(_AGOS_ROOT / 'output'))  # مخرجات خارج شجرة النواة (المادة 16)
+        output_dir = resolve_output_dir(_AGOS_ROOT / 'output')  # مخرجات خارج شجرة النواة (المادة 16)
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'foundation_test_results.json', 'w') as f:

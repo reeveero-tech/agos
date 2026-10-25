@@ -379,3 +379,124 @@ def test_civilization_engine_output_dir_outside_tree():
         print(json.dumps({{"inside": kernel_root in out_dir.parents}}))
     """))
     assert out["inside"] is False
+
+
+# ---------- الشريحة 0093: الرابط الرمزي للمخرجات المحوّلة + تغطية main.py سلوكياً ----------
+
+OUTPUT_LINK = REPO / "agos" / "output"  # دليل المخرجات خارج الشجرة — اختبار الاختطاف بالرابط الرمزي
+
+
+def _hijack_output_with_symlink():
+    """يحول دليل المخرجات إلى رابط رمزي نحو داخل شجرة النواة (سيناريو الاختطاف).
+
+    يعيد أثر الاستعادة (اسم النسخة الاحتياطية إن كان الدليل موجوداً).
+    """
+    import os
+    backup = None
+    if OUTPUT_LINK.exists():
+        backup = OUTPUT_LINK.with_name("output_test_backup")
+        os.rename(OUTPUT_LINK, backup)
+    os.symlink(KERNEL / "architecture", OUTPUT_LINK)
+    return backup
+
+
+def _restore_output(backup):
+    import os
+    OUTPUT_LINK.unlink(missing_ok=True)
+    # تنظيف آثار الكتابة داخل الشجرة إن حدثت (مرحلة الأحمر)
+    (KERNEL / "architecture" / "brain_test_results.json").unlink(missing_ok=True)
+    for d in ("reports", "evidence"):
+        p = KERNEL / "architecture" / d
+        if p.exists() and p.is_dir():
+            for f in p.iterdir():
+                f.unlink(missing_ok=True)
+            p.rmdir()
+    if backup is not None:
+        os.rename(backup, OUTPUT_LINK)
+
+
+@pytest.fixture
+def hijacked_output():
+    """رابط رمزي للمخرجات نحو شجرة النواة — يُستعاد الدليل الأصلي دائماً."""
+    backup = _hijack_output_with_symlink()
+    try:
+        yield
+    finally:
+        _restore_output(backup)
+
+
+def test_run_script_refuses_symlinked_output_dir(hijacked_output):
+    """سيناريو اختطاف المخرجات: رابط رمزي من دليل المخرجات نحو داخل شجرة
+    النواة — السكربت التشغيلي (مثال المجموعة: run_brain) يجب أن يرفض الكتابة
+    (فشل صريح بسبب المادة 16) لا أن يكتب نتائجه داخل الشجرة."""
+    import subprocess
+    script = KERNEL / "civilization" / "engineering_brain" / "run_brain.py"
+    r = subprocess.run([sys.executable, str(script)], cwd=KERNEL,
+                       capture_output=True, text=True, timeout=180)
+    leaked = (KERNEL / "architecture" / "brain_test_results.json").exists()
+    combined = r.stdout + r.stderr
+    assert r.returncode != 0, "السكربت نجح وهو يكتب داخل شجرة النواة"
+    assert "المادة 16" in combined
+    assert leaked is False
+
+
+def test_finalizer_refuses_symlinked_output_dir(hijacked_output):
+    """المُنهي: مع اختطاف دليل المخرجات برابط رمزي نحو الشجرة، إنشاء مولد
+    التقارير يجب أن يرفض (PermissionError) لا أن ينشئ أدلة التقارير داخلها."""
+    out = json.loads(run(f"""
+        import json, os
+        result = {{"raised": False, "dirs_created": False}}
+        try:
+            import finalization.kernel_finalizer as kf
+            kf.ReportGenerator(None)
+        except PermissionError:
+            result["raised"] = True
+        arch = {str(KERNEL / 'architecture')!r}
+        result["dirs_created"] = os.path.isdir(arch + "/reports") or os.path.isdir(arch + "/evidence")
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True
+    assert out["dirs_created"] is False
+
+
+def test_civilization_engine_refuses_symlinked_output_dir(hijacked_output):
+    """محرك الحضارة: مع اختطاف دليل المخرجات، إنشاء المحرك يجب أن يرفض لا
+    أن يقبل مسار مخرجات يحل داخل شجرة النواة."""
+    out = json.loads(run(f"""
+        import json
+        result = {{"raised": False}}
+        try:
+            from civilization.core.civilization_engine import CivilizationEngine
+            CivilizationEngine()
+        except PermissionError:
+            result["raised"] = True
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True
+
+
+def test_main_save_dna_report_refuses_kernel_write(tmp_path):
+    """منفذ main.py سلوكياً (كان موصولاً بالحارس بلا تغطية سلوكية — حد معلن
+    في 0092): حفظ تقرير DNA داخل شجرة النواة يُرفض ولا يمس المحتوى، والوجهة
+    السليمة خارج الشجرة تُكتب فعلاً."""
+    out = json.loads(run(f"""
+        import json, os
+        from types import SimpleNamespace
+        from main import save_dna_report
+        probe = {str(PROBE)!r}
+        dna = SimpleNamespace(to_dict=lambda: {{"name": "x"}})
+        result = {{"raised": False, "message_ok": False, "exists": False}}
+        try:
+            save_dna_report(dna, probe)
+        except PermissionError as e:
+            result["raised"] = True
+            result["message_ok"] = "المادة 16" in str(e)
+        result["exists"] = os.path.exists(probe)
+        ok_target = {str(tmp_path / 'dna.json')!r}
+        save_dna_report(dna, ok_target)
+        result["written"] = json.load(open(ok_target))
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["message_ok"] is True
+    assert out["exists"] is False
+    assert out["written"] == {"name": "x"}

@@ -30,8 +30,12 @@ import re
 KERNEL_ROOT = Path(__file__).parent.parent
 FINALIZATION_DIR = KERNEL_ROOT / "finalization"
 # مخرجات التشغيل خارج شجرة النواة (المادة 16 — لا شيء يعدل النواة)
-REPORT_DIR = KERNEL_ROOT.parent / "output" / "reports"
-EVIDENCE_DIR = KERNEL_ROOT.parent / "output" / "evidence"
+try:  # المادة 16 — دليل التقارير يُرفض إن حل داخل شجرة النواة (رابط رمزي)
+    from architecture.kernel_protection import resolve_output_dir
+except ImportError:
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+REPORT_DIR = resolve_output_dir(KERNEL_ROOT.parent / "output" / "reports")
+EVIDENCE_DIR = resolve_output_dir(KERNEL_ROOT.parent / "output" / "evidence")
 
 
 # =============================================================================

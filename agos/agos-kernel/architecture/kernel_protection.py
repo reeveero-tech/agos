@@ -49,3 +49,14 @@ def guard_kernel_write(target: Any) -> None:
         raise PermissionError(
             "الكتابة إلى محتوى النواة ممنوعة (المادة 16 — لا شيء يعدّل "
             f"النواة. أبداً.): {target}")
+
+
+def resolve_output_dir(base: Any) -> Path:
+    """مسار مخرجات خارج شجرة النواة (المادة 16) — ويرفض اختطافه برابط رمزي.
+
+    المخرجات التشغيلية تُكتب خارج الشجرة، لكن الرابط الرمزي لدليل المخرجات
+    قد يحل داخل الشجرة — عندئذ الكتابة عبره كتابة فيها ويُرفض الحل نفسه.
+    """
+    path = Path(base)
+    guard_kernel_write(path)
+    return path

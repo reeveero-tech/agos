@@ -8,6 +8,7 @@ The main engine for the Foundation Civilization.
 import os as _agos_os
 from pathlib import Path as _AgosPath
 _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
+from agos_kernel.architecture.kernel_protection import resolve_output_dir  # المادة 16 — الرابط الرمزي للمخرجات نحو الشجرة يُرفض
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 from typing import Dict, List, Optional, Any
@@ -57,7 +58,7 @@ class CivilizationEngine:
         self.foundation = Foundation(self.config)
         self.stats = CivilizationEngineStats()
         self.started_at = datetime.now(timezone.utc)
-        self._output_dir = Path(str(_AGOS_ROOT / 'output'))  # مخرجات خارج شجرة النواة (المادة 16)
+        self._output_dir = resolve_output_dir(_AGOS_ROOT / 'output')  # مخرجات خارج شجرة النواة (المادة 16)
     
     def initialize(self) -> bool:
         """Initialize the civilization engine."""

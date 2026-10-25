@@ -14,6 +14,10 @@ import json
 from pathlib import Path
 
 sys.path.insert(0, str(_AGOS_ROOT))
+try:  # المادة 16 — مسار المخرجات يُرفض إن حل داخل شجرة النواة (رابط رمزي)
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+except ImportError:  # تشغيل مباشر من داخل الشجرة
+    from architecture.kernel_protection import resolve_output_dir
 
 
 def test_enterprise_core():
@@ -235,7 +239,7 @@ def main():
         print("="*60)
         
         # Save results
-        output_dir = Path(str(_AGOS_ROOT / 'output'))  # مخرجات خارج شجرة النواة (المادة 16)
+        output_dir = resolve_output_dir(_AGOS_ROOT / 'output')  # مخرجات خارج شجرة النواة (المادة 16)
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'enterprise_000001_000010_results.json', 'w') as f:

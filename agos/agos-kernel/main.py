@@ -22,6 +22,14 @@ import agos_runtime
 from capabilities import RepositoryAnalysisCapability  # noqa: F401 - public re-export kept (G2)
 
 
+def save_dna_report(dna, output_file: str) -> None:
+    """حفظ تقرير DNA — الحارس يرفض الوجهة داخل شجرة النواة (المادة 16)."""
+    from architecture.kernel_protection import guard_kernel_write
+    guard_kernel_write(output_file)  # cwd قد يكون داخل الشجرة
+    with open(output_file, "w") as f:
+        json.dump(dna.to_dict(), f, indent=2, default=str)
+
+
 def main():
     """Main entry point."""
     if len(sys.argv) < 2:
@@ -63,10 +71,7 @@ def main():
     print("[SUCCESS] Mission completed!")
 
     output_file = "RepositoryDNA.json"
-    from architecture.kernel_protection import guard_kernel_write
-    guard_kernel_write(output_file)  # المادة 16 — cwd قد يكون داخل الشجرة
-    with open(output_file, "w") as f:
-        json.dump(dna.to_dict(), f, indent=2, default=str)
+    save_dna_report(dna, output_file)
     print(f"[OUTPUT] Saved to {output_file}")
 
     print("\n[DNA SUMMARY]")

@@ -23,6 +23,10 @@ import hashlib
 
 # Add to path
 sys.path.insert(0, str(_AGOS_ROOT))
+try:  # المادة 16 — مسار المخرجات يُرفض إن حل داخل شجرة النواة (رابط رمزي)
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+except ImportError:  # تشغيل مباشر من داخل الشجرة
+    from architecture.kernel_protection import resolve_output_dir
 
 
 def test_knowledge_graph_runtime():
@@ -220,7 +224,7 @@ def run_graph_tests():
         print("SUCCESS: Engineering Knowledge Graph is OPERATIONAL")
         
         # Save results
-        output_dir = Path(str(_AGOS_ROOT / 'output'))  # مخرجات خارج شجرة النواة (المادة 16)
+        output_dir = resolve_output_dir(_AGOS_ROOT / 'output')  # مخرجات خارج شجرة النواة (المادة 16)
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'knowledge_graph_test_results.json', 'w') as f:
