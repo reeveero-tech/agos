@@ -1,13 +1,13 @@
 {
  "totals": {
-  "files": 537,
-  "lines": 102875,
-  "functions": 6187,
-  "stub_functions": 781,
+  "files": 538,
+  "lines": 103452,
+  "functions": 6218,
+  "stub_functions": 782,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
-  "not_imported_by_others": 251,
-  "import_ok": 535,
+  "not_imported_by_others": 250,
+  "import_ok": 536,
   "import_fail": 0
  },
  "packages": {
@@ -24,8 +24,8 @@
   },
   "agos-kernel": {
    "files": 23,
-   "lines": 5555,
-   "functions": 191,
+   "lines": 5562,
+   "functions": 192,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -68,8 +68,8 @@
   },
   "agos-kernel/agos_runtime": {
    "files": 1,
-   "lines": 139,
-   "functions": 16,
+   "lines": 166,
+   "functions": 17,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -100,14 +100,14 @@
    "import_fail": 0
   },
   "agos-kernel/architecture": {
-   "files": 1,
-   "lines": 490,
-   "functions": 17,
+   "files": 2,
+   "lines": 565,
+   "functions": 21,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 1,
-   "import_ok": 1,
+   "import_ok": 2,
    "import_fail": 0
   },
   "agos-kernel/audit": {
@@ -167,8 +167,8 @@
   },
   "agos-kernel/capabilities": {
    "files": 13,
-   "lines": 5411,
-   "functions": 278,
+   "lines": 5589,
+   "functions": 300,
    "stub_functions": 27,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -189,9 +189,9 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24633,
+   "lines": 24742,
    "functions": 1325,
-   "stub_functions": 120,
+   "stub_functions": 121,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
    "not_imported_by_others": 35,
@@ -288,12 +288,12 @@
   },
   "agos-kernel/core": {
    "files": 24,
-   "lines": 3695,
+   "lines": 3710,
    "functions": 181,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
-   "not_imported_by_others": 15,
+   "not_imported_by_others": 14,
    "import_ok": 24,
    "import_fail": 0
   },
@@ -387,7 +387,7 @@
   },
   "agos-kernel/ecosystem": {
    "files": 5,
-   "lines": 2258,
+   "lines": 2266,
    "functions": 211,
    "stub_functions": 102,
    "hardcoded_paths": 0,
@@ -398,7 +398,7 @@
   },
   "agos-kernel/enterprise": {
    "files": 5,
-   "lines": 2229,
+   "lines": 2237,
    "functions": 221,
    "stub_functions": 100,
    "hardcoded_paths": 0,
@@ -442,7 +442,7 @@
   },
   "agos-kernel/evolution": {
    "files": 4,
-   "lines": 1264,
+   "lines": 1268,
    "functions": 96,
    "stub_functions": 44,
    "hardcoded_paths": 0,
@@ -453,7 +453,7 @@
   },
   "agos-kernel/execution": {
    "files": 5,
-   "lines": 1703,
+   "lines": 1719,
    "functions": 92,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -519,7 +519,7 @@
   },
   "agos-kernel/federation": {
    "files": 5,
-   "lines": 2034,
+   "lines": 2042,
    "functions": 190,
    "stub_functions": 98,
    "hardcoded_paths": 0,
@@ -530,7 +530,7 @@
   },
   "agos-kernel/finalization": {
    "files": 1,
-   "lines": 1142,
+   "lines": 1147,
    "functions": 37,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -585,7 +585,7 @@
   },
   "agos-kernel/intelligence": {
    "files": 18,
-   "lines": 6757,
+   "lines": 6791,
    "functions": 204,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -794,7 +794,7 @@
   },
   "agos-kernel/pipeline": {
    "files": 1,
-   "lines": 192,
+   "lines": 202,
    "functions": 4,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -838,8 +838,8 @@
   },
   "agos-kernel/providers": {
    "files": 7,
-   "lines": 1542,
-   "functions": 146,
+   "lines": 1605,
+   "functions": 149,
    "stub_functions": 26,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -1025,7 +1025,7 @@
   },
   "agos-kernel/skills": {
    "files": 10,
-   "lines": 1651,
+   "lines": 1661,
    "functions": 243,
    "stub_functions": 48,
    "hardcoded_paths": 0,
@@ -1872,10 +1872,10 @@
    "path": "agos/agos-kernel/agos_runtime/__init__.py",
    "module": "agos_runtime",
    "root": "kernel",
-   "lines": 139,
+   "lines": 166,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 16,
+   "functions": 17,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -1885,6 +1885,7 @@
     "dataclasses",
     "typing",
     "bootstrapper",
+    "core.kernel",
     "registry"
    ],
    "hardcoded_paths": 0,
@@ -1892,6 +1893,7 @@
    "id": "K:agos_runtime",
    "resolved_imports": [
     "K:bootstrapper",
+    "K:core.kernel",
     "K:registry"
    ],
    "imported_by": [
@@ -1900,9 +1902,14 @@
     "K:main"
    ],
    "tested_by_external": [
+    "tests/test_article_15_12_boundary.py",
+    "tests/test_article_4_evidence.py",
+    "tests/test_article_9_10_evidence.py",
+    "tests/test_articles_1_2_evidence.py",
     "tests/test_bootstrap.py",
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
+    "tests/test_execution_boundary.py",
     "tests/test_kernel_facade.py",
     "tests/test_registry_manifest.py"
    ],
@@ -2052,6 +2059,67 @@
    "imported_by": [],
    "tested_by_external": [
     "tests/test_governance_unification.py"
+   ],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/architecture/kernel_protection.py",
+   "module": "architecture.kernel_protection",
+   "root": "kernel",
+   "lines": 75,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 4,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "pathlib",
+    "typing"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:architecture.kernel_protection",
+   "resolved_imports": [],
+   "imported_by": [
+    "K:civilization.artifact_system.artifact",
+    "K:civilization.artifact_system.run_artifact",
+    "K:civilization.autonomous_engineering.run_autonomous",
+    "K:civilization.autonomous_engineering.run_platform_batch",
+    "K:civilization.capabilities.engineering_report",
+    "K:civilization.capability_runtime.run_capability",
+    "K:civilization.core.civilization_engine",
+    "K:civilization.engineering_brain.run_advanced_brain",
+    "K:civilization.engineering_brain.run_brain",
+    "K:civilization.engineering_brain.run_brain_batch",
+    "K:civilization.engineering_learning.run_learning",
+    "K:civilization.engineering_learning.run_learning_batch_2",
+    "K:civilization.intelligence_pipeline.pipeline",
+    "K:civilization.intelligence_pipeline.run_pipeline",
+    "K:civilization.knowledge_graph.knowledge_graph",
+    "K:civilization.knowledge_graph.run_graph",
+    "K:civilization.knowledge_graph.versioning",
+    "K:civilization.mission_planner.run_planner",
+    "K:civilization.provider_runtime.run_provider",
+    "K:civilization.providers.filesystem_provider",
+    "K:civilization.reasoning_runtime.run_reasoning",
+    "K:civilization.run_batch",
+    "K:civilization.run_final_batch",
+    "K:civilization.run_foundation",
+    "K:core.invariants.benchmark",
+    "K:core.invariants.evidence",
+    "K:core.invariants.reporter",
+    "K:core.seal",
+    "K:ecosystem.run_ecosystem",
+    "K:ecosystem.run_ecosystem_batch_2",
+    "K:enterprise.run_enterprise",
+    "K:enterprise.run_enterprise_batch_2",
+    "K:evolution.run_evolution",
+    "K:federation.run_federation",
+    "K:federation.run_federation_batch_2",
+    "K:finalization.kernel_finalizer",
+    "K:main",
+    "K:providers.filesystem",
+    "K:skills.file.operations"
    ],
    "import_status": "OK"
   },
@@ -2307,10 +2375,10 @@
    "path": "agos/agos-kernel/capabilities/__init__.py",
    "module": "capabilities",
    "root": "kernel",
-   "lines": 355,
+   "lines": 388,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 16,
+   "functions": 19,
    "stub_functions": 3,
    "abstract_functions": 0,
    "imports": [
@@ -2351,7 +2419,6 @@
     "K:stack_detection"
    ],
    "imported_by": [
-    "K:capabilities.analysis_service",
     "K:main",
     "K:test_validation"
    ],
@@ -2462,7 +2529,7 @@
    "path": "agos/agos-kernel/capabilities/analysis_service.py",
    "module": "capabilities.analysis_service",
    "root": "kernel",
-   "lines": 711,
+   "lines": 718,
    "syntax_ok": true,
    "classes": 6,
    "functions": 26,
@@ -2480,17 +2547,16 @@
     "codecs",
     "stack_detection",
     "providers",
-    "capabilities",
     "stack_detection",
     "subprocess",
     "subprocess",
+    "providers",
     "warnings"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:capabilities.analysis_service",
    "resolved_imports": [
-    "K:capabilities",
     "K:providers",
     "K:stack_detection"
    ],
@@ -2543,10 +2609,10 @@
    "path": "agos/agos-kernel/capabilities/foundation_extra.py",
    "module": "capabilities.foundation_extra",
    "root": "kernel",
-   "lines": 1009,
+   "lines": 1123,
    "syntax_ok": true,
    "classes": 9,
-   "functions": 32,
+   "functions": 47,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -2561,8 +2627,9 @@
     "typing",
     "interfaces",
     "providers",
+    "providers",
+    "providers",
     "urllib.request",
-    "clone_safety",
     "stack_detection",
     "stack_detection",
     "stack_detection",
@@ -2573,7 +2640,6 @@
    "importable_package_path": true,
    "id": "K:capabilities.foundation_extra",
    "resolved_imports": [
-    "K:clone_safety",
     "K:interfaces",
     "K:providers",
     "K:stack_detection"
@@ -2582,6 +2648,7 @@
     "K:capabilities"
    ],
    "tested_by_external": [
+    "tests/test_article_4_provider_injection.py",
     "tests/test_seven_capabilities.py"
    ],
    "import_status": "OK"
@@ -2590,10 +2657,10 @@
    "path": "agos/agos-kernel/capabilities/genome.py",
    "module": "capabilities.genome",
    "root": "kernel",
-   "lines": 776,
+   "lines": 788,
    "syntax_ok": true,
    "classes": 2,
-   "functions": 20,
+   "functions": 22,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -2717,10 +2784,10 @@
    "path": "agos/agos-kernel/capabilities/rpp.py",
    "module": "capabilities.rpp",
    "root": "kernel",
-   "lines": 1159,
+   "lines": 1171,
    "syntax_ok": true,
    "classes": 24,
-   "functions": 69,
+   "functions": 71,
    "stub_functions": 1,
    "abstract_functions": 5,
    "imports": [
@@ -2920,7 +2987,7 @@
    "path": "agos/agos-kernel/civilization/artifact_system/artifact.py",
    "module": "civilization.artifact_system.artifact",
    "root": "kernel",
-   "lines": 547,
+   "lines": 549,
    "syntax_ok": true,
    "classes": 13,
    "functions": 29,
@@ -2935,15 +3002,21 @@
     "uuid",
     "os",
     "json",
+    "agos_kernel.architecture.kernel_protection",
     "os",
     "json"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.artifact_system.artifact",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [
     "K:civilization.artifact_system"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -2951,7 +3024,7 @@
    "path": "agos/agos-kernel/civilization/artifact_system/run_artifact.py",
    "module": "civilization.artifact_system.run_artifact",
    "root": "kernel",
-   "lines": 261,
+   "lines": 265,
    "syntax_ok": true,
    "classes": 0,
    "functions": 6,
@@ -2963,12 +3036,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.artifact_system.run_artifact",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -3043,7 +3120,7 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 1152,
+   "lines": 1163,
    "syntax_ok": true,
    "classes": 70,
    "functions": 121,
@@ -3068,6 +3145,8 @@
    ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_article_15_12_boundary.py",
+    "tests/test_fabricated_success.py",
     "tests/test_governance_unification.py"
    ],
    "import_status": "OK"
@@ -3076,11 +3155,11 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/platform_batch.py",
    "module": "civilization.autonomous_engineering.platform_batch",
    "root": "kernel",
-   "lines": 971,
+   "lines": 983,
    "syntax_ok": true,
    "classes": 83,
    "functions": 108,
-   "stub_functions": 28,
+   "stub_functions": 29,
    "abstract_functions": 0,
    "imports": [
     "dataclasses",
@@ -3094,36 +3173,14 @@
    "id": "K:civilization.autonomous_engineering.platform_batch",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_fabricated_success.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/autonomous_engineering/run_autonomous.py",
    "module": "civilization.autonomous_engineering.run_autonomous",
-   "root": "kernel",
-   "lines": 259,
-   "syntax_ok": true,
-   "classes": 0,
-   "functions": 11,
-   "stub_functions": 0,
-   "abstract_functions": 0,
-   "imports": [
-    "os",
-    "pathlib",
-    "sys",
-    "json",
-    "pathlib",
-    "traceback"
-   ],
-   "hardcoded_paths": 0,
-   "importable_package_path": true,
-   "id": "K:civilization.autonomous_engineering.run_autonomous",
-   "resolved_imports": [],
-   "imported_by": [],
-   "import_status": "OK"
-  },
-  {
-   "path": "agos/agos-kernel/civilization/autonomous_engineering/run_platform_batch.py",
-   "module": "civilization.autonomous_engineering.run_platform_batch",
    "root": "kernel",
    "lines": 263,
    "syntax_ok": true,
@@ -3137,12 +3194,45 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
+    "traceback"
+   ],
+   "hardcoded_paths": 0,
+   "importable_package_path": true,
+   "id": "K:civilization.autonomous_engineering.run_autonomous",
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
+   "imported_by": [],
+   "import_status": "OK"
+  },
+  {
+   "path": "agos/agos-kernel/civilization/autonomous_engineering/run_platform_batch.py",
+   "module": "civilization.autonomous_engineering.run_platform_batch",
+   "root": "kernel",
+   "lines": 267,
+   "syntax_ok": true,
+   "classes": 0,
+   "functions": 11,
+   "stub_functions": 0,
+   "abstract_functions": 0,
+   "imports": [
+    "os",
+    "pathlib",
+    "sys",
+    "json",
+    "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.autonomous_engineering.run_platform_batch",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -3352,7 +3442,7 @@
    "path": "agos/agos-kernel/civilization/capabilities/engineering_report.py",
    "module": "civilization.capabilities.engineering_report",
    "root": "kernel",
-   "lines": 195,
+   "lines": 197,
    "syntax_ok": true,
    "classes": 2,
    "functions": 11,
@@ -3363,15 +3453,21 @@
     "typing",
     "dataclasses",
     "datetime",
-    "json"
+    "json",
+    "agos_kernel.architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.capabilities.engineering_report",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [
     "K:civilization.capabilities",
     "K:civilization.core.foundation"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -3555,7 +3651,7 @@
    "path": "agos/agos-kernel/civilization/capability_runtime/run_capability.py",
    "module": "civilization.capability_runtime.run_capability",
    "root": "kernel",
-   "lines": 267,
+   "lines": 271,
    "syntax_ok": true,
    "classes": 0,
    "functions": 7,
@@ -3568,12 +3664,16 @@
     "json",
     "pathlib",
     "datetime",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.capability_runtime.run_capability",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -3609,6 +3709,7 @@
     "K:civilization.capability_runtime"
    ],
    "tested_by_external": [
+    "tests/test_execution_boundary.py",
     "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
@@ -3667,7 +3768,7 @@
    "path": "agos/agos-kernel/civilization/core/civilization_engine.py",
    "module": "civilization.core.civilization_engine",
    "root": "kernel",
-   "lines": 277,
+   "lines": 278,
    "syntax_ok": true,
    "classes": 2,
    "functions": 8,
@@ -3676,6 +3777,7 @@
    "imports": [
     "os",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
     "typing",
     "pathlib",
     "dataclasses",
@@ -3694,12 +3796,16 @@
    "importable_package_path": true,
    "id": "K:civilization.core.civilization_engine",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:civilization.core.foundation",
     "K:civilization.providers.filesystem_provider",
     "K:civilization.providers.git_provider",
     "K:civilization.providers.github_provider"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -3843,7 +3949,7 @@
    "path": "agos/agos-kernel/civilization/engineering_brain/run_advanced_brain.py",
    "module": "civilization.engineering_brain.run_advanced_brain",
    "root": "kernel",
-   "lines": 275,
+   "lines": 279,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -3855,12 +3961,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.engineering_brain.run_advanced_brain",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -3868,7 +3978,7 @@
    "path": "agos/agos-kernel/civilization/engineering_brain/run_brain.py",
    "module": "civilization.engineering_brain.run_brain",
    "root": "kernel",
-   "lines": 220,
+   "lines": 224,
    "syntax_ok": true,
    "classes": 0,
    "functions": 7,
@@ -3880,12 +3990,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.engineering_brain.run_brain",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -3893,7 +4007,7 @@
    "path": "agos/agos-kernel/civilization/engineering_brain/run_brain_batch.py",
    "module": "civilization.engineering_brain.run_brain_batch",
    "root": "kernel",
-   "lines": 242,
+   "lines": 246,
    "syntax_ok": true,
    "classes": 0,
    "functions": 10,
@@ -3905,12 +4019,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.engineering_brain.run_brain_batch",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -3984,7 +4102,7 @@
    "path": "agos/agos-kernel/civilization/engineering_learning/run_learning.py",
    "module": "civilization.engineering_learning.run_learning",
    "root": "kernel",
-   "lines": 254,
+   "lines": 258,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -3996,12 +4114,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.engineering_learning.run_learning",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -4009,7 +4131,7 @@
    "path": "agos/agos-kernel/civilization/engineering_learning/run_learning_batch_2.py",
    "module": "civilization.engineering_learning.run_learning_batch_2",
    "root": "kernel",
-   "lines": 253,
+   "lines": 257,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -4021,12 +4143,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.engineering_learning.run_learning_batch_2",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -4211,13 +4337,16 @@
     "K:civilization.intelligence_pipeline",
     "K:civilization.intelligence_pipeline.pipeline"
    ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/pipeline.py",
    "module": "civilization.intelligence_pipeline.pipeline",
    "root": "kernel",
-   "lines": 349,
+   "lines": 351,
    "syntax_ok": true,
    "classes": 2,
    "functions": 9,
@@ -4232,17 +4361,22 @@
     "agos_kernel.civilization.intelligence_pipeline.intelligence_package",
     "agos_kernel.civilization.intelligence_pipeline.stages",
     "time",
-    "hashlib"
+    "hashlib",
+    "agos_kernel.architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.intelligence_pipeline.pipeline",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:civilization.intelligence_pipeline.intelligence_package",
     "K:civilization.intelligence_pipeline.stages"
    ],
    "imported_by": [
     "K:civilization.intelligence_pipeline"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -4250,7 +4384,7 @@
    "path": "agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py",
    "module": "civilization.intelligence_pipeline.run_pipeline",
    "root": "kernel",
-   "lines": 260,
+   "lines": 264,
    "syntax_ok": true,
    "classes": 2,
    "functions": 8,
@@ -4263,15 +4397,19 @@
     "json",
     "pathlib",
     "datetime",
+    "agos_kernel.architecture.kernel_protection",
     "ast",
     "hashlib",
     "uuid",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.intelligence_pipeline.run_pipeline",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -4423,7 +4561,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/knowledge_graph.py",
    "module": "civilization.knowledge_graph.knowledge_graph",
    "root": "kernel",
-   "lines": 478,
+   "lines": 480,
    "syntax_ok": true,
    "classes": 3,
    "functions": 26,
@@ -4439,12 +4577,14 @@
     "agos_kernel.civilization.knowledge_graph.nodes.base",
     "uuid",
     "agos_kernel.civilization.knowledge_graph.relationships",
-    "hashlib"
+    "hashlib",
+    "agos_kernel.architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.knowledge_graph.knowledge_graph",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:civilization.knowledge_graph.nodes.base",
     "K:civilization.knowledge_graph.relationships"
    ],
@@ -4454,6 +4594,9 @@
     "K:civilization.knowledge_graph.builder",
     "K:civilization.knowledge_graph.query",
     "K:civilization.knowledge_graph.versioning"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -4638,7 +4781,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/run_graph.py",
    "module": "civilization.knowledge_graph.run_graph",
    "root": "kernel",
-   "lines": 249,
+   "lines": 253,
    "syntax_ok": true,
    "classes": 4,
    "functions": 11,
@@ -4656,14 +4799,18 @@
     "typing",
     "uuid",
     "hashlib",
+    "agos_kernel.architecture.kernel_protection",
     "hashlib",
     "json",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.knowledge_graph.run_graph",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -4671,7 +4818,7 @@
    "path": "agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py",
    "module": "civilization.knowledge_graph.versioning",
    "root": "kernel",
-   "lines": 285,
+   "lines": 287,
    "syntax_ok": true,
    "classes": 3,
    "functions": 12,
@@ -4684,15 +4831,20 @@
     "typing",
     "dataclasses",
     "pathlib",
-    "agos_kernel.civilization.knowledge_graph.knowledge_graph"
+    "agos_kernel.civilization.knowledge_graph.knowledge_graph",
+    "agos_kernel.architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.knowledge_graph.versioning",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:civilization.knowledge_graph.knowledge_graph"
    ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -4851,7 +5003,7 @@
    "path": "agos/agos-kernel/civilization/mission_planner/run_planner.py",
    "module": "civilization.mission_planner.run_planner",
    "root": "kernel",
-   "lines": 261,
+   "lines": 265,
    "syntax_ok": true,
    "classes": 0,
    "functions": 7,
@@ -4864,12 +5016,16 @@
     "json",
     "pathlib",
     "datetime",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.mission_planner.run_planner",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -5011,7 +5167,7 @@
    "path": "agos/agos-kernel/civilization/provider_runtime/run_provider.py",
    "module": "civilization.provider_runtime.run_provider",
    "root": "kernel",
-   "lines": 226,
+   "lines": 230,
    "syntax_ok": true,
    "classes": 0,
    "functions": 6,
@@ -5023,12 +5179,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.provider_runtime.run_provider",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -5089,7 +5249,7 @@
    "path": "agos/agos-kernel/civilization/providers/filesystem_provider.py",
    "module": "civilization.providers.filesystem_provider",
    "root": "kernel",
-   "lines": 174,
+   "lines": 181,
    "syntax_ok": true,
    "classes": 2,
    "functions": 13,
@@ -5101,15 +5261,22 @@
     "pathlib",
     "typing",
     "dataclasses",
-    "datetime"
+    "datetime",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.providers.filesystem_provider",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [
     "K:civilization.core.civilization_engine",
     "K:civilization.providers"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -5257,7 +5424,7 @@
    "path": "agos/agos-kernel/civilization/reasoning_runtime/run_reasoning.py",
    "module": "civilization.reasoning_runtime.run_reasoning",
    "root": "kernel",
-   "lines": 234,
+   "lines": 238,
    "syntax_ok": true,
    "classes": 2,
    "functions": 6,
@@ -5270,12 +5437,16 @@
     "json",
     "pathlib",
     "datetime",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.reasoning_runtime.run_reasoning",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -5314,7 +5485,7 @@
    "path": "agos/agos-kernel/civilization/run_batch.py",
    "module": "civilization.run_batch",
    "root": "kernel",
-   "lines": 203,
+   "lines": 207,
    "syntax_ok": true,
    "classes": 0,
    "functions": 5,
@@ -5326,12 +5497,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.run_batch",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -5339,7 +5514,7 @@
    "path": "agos/agos-kernel/civilization/run_final_batch.py",
    "module": "civilization.run_final_batch",
    "root": "kernel",
-   "lines": 201,
+   "lines": 205,
    "syntax_ok": true,
    "classes": 0,
    "functions": 9,
@@ -5351,12 +5526,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.run_final_batch",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -5364,7 +5543,7 @@
    "path": "agos/agos-kernel/civilization/run_foundation.py",
    "module": "civilization.run_foundation",
    "root": "kernel",
-   "lines": 187,
+   "lines": 191,
    "syntax_ok": true,
    "classes": 0,
    "functions": 7,
@@ -5377,12 +5556,16 @@
     "json",
     "importlib.util",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:civilization.run_foundation",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -5756,7 +5939,6 @@
    "id": "K:clone_safety",
    "resolved_imports": [],
    "imported_by": [
-    "K:capabilities.foundation_extra",
     "K:providers",
     "K:providers.filesystem",
     "K:vertical_slices.repo_discovery.slice"
@@ -6004,6 +6186,7 @@
     "K:providers"
    ],
    "tested_by_external": [
+    "tests/test_article_4_evidence.py",
     "tests/test_intelligence_unification.py",
     "tests/test_knowledge_graph_from_analysis.py"
    ],
@@ -6126,7 +6309,7 @@
    "path": "agos/agos-kernel/core/invariants/benchmark.py",
    "module": "core.invariants.benchmark",
    "root": "kernel",
-   "lines": 167,
+   "lines": 169,
    "syntax_ok": true,
    "classes": 3,
    "functions": 8,
@@ -6138,16 +6321,21 @@
     "dataclasses",
     "time",
     "json",
-    "agos_kernel.core.invariants.runtime"
+    "agos_kernel.core.invariants.runtime",
+    "architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.invariants.benchmark",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:core.invariants.runtime"
    ],
    "imported_by": [
     "K:core.invariants"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -6155,7 +6343,7 @@
    "path": "agos/agos-kernel/core/invariants/evidence.py",
    "module": "core.invariants.evidence",
    "root": "kernel",
-   "lines": 196,
+   "lines": 198,
    "syntax_ok": true,
    "classes": 3,
    "functions": 10,
@@ -6170,16 +6358,21 @@
     "hashlib",
     "json",
     "pathlib",
-    "agos_kernel.core.invariants.runtime"
+    "agos_kernel.core.invariants.runtime",
+    "architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.invariants.evidence",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:core.invariants.runtime"
    ],
    "imported_by": [
     "K:core.invariants"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -6214,7 +6407,7 @@
    "path": "agos/agos-kernel/core/invariants/reporter.py",
    "module": "core.invariants.reporter",
    "root": "kernel",
-   "lines": 184,
+   "lines": 186,
    "syntax_ok": true,
    "classes": 2,
    "functions": 7,
@@ -6226,17 +6419,22 @@
     "dataclasses",
     "json",
     "agos_kernel.core.invariants.runtime",
-    "agos_kernel.core.invariants.validator"
+    "agos_kernel.core.invariants.validator",
+    "architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.invariants.reporter",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:core.invariants.runtime",
     "K:core.invariants.validator"
    ],
    "imported_by": [
     "K:core.invariants"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -6310,7 +6508,7 @@
    "path": "agos/agos-kernel/core/kernel.py",
    "module": "core.kernel",
    "root": "kernel",
-   "lines": 166,
+   "lines": 173,
    "syntax_ok": true,
    "classes": 5,
    "functions": 15,
@@ -6336,14 +6534,19 @@
     "K:mission",
     "K:shared"
    ],
-   "imported_by": [],
+   "imported_by": [
+    "K:agos_runtime"
+   ],
+   "tested_by_external": [
+    "tests/test_article_8_11_evidence.py"
+   ],
    "import_status": "OK"
   },
   {
    "path": "agos/agos-kernel/core/seal.py",
    "module": "core.seal",
    "root": "kernel",
-   "lines": 335,
+   "lines": 337,
    "syntax_ok": true,
    "classes": 1,
    "functions": 10,
@@ -6356,14 +6559,18 @@
     "hashlib",
     "pathlib",
     "datetime",
-    "typing"
+    "typing",
+    "architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:core.seal",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "tested_by_external": [
+    "tests/test_kernel_protection.py",
     "tests/test_namespace_identity.py"
    ],
    "import_status": "OK"
@@ -7239,7 +7446,7 @@
    "path": "agos/agos-kernel/ecosystem/run_ecosystem.py",
    "module": "ecosystem.run_ecosystem",
    "root": "kernel",
-   "lines": 254,
+   "lines": 258,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -7251,12 +7458,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:ecosystem.run_ecosystem",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -7264,7 +7475,7 @@
    "path": "agos/agos-kernel/ecosystem/run_ecosystem_batch_2.py",
    "module": "ecosystem.run_ecosystem_batch_2",
    "root": "kernel",
-   "lines": 260,
+   "lines": 264,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -7276,12 +7487,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:ecosystem.run_ecosystem_batch_2",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -7360,7 +7575,7 @@
    "path": "agos/agos-kernel/enterprise/run_enterprise.py",
    "module": "enterprise.run_enterprise",
    "root": "kernel",
-   "lines": 256,
+   "lines": 260,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -7372,12 +7587,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:enterprise.run_enterprise",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -7385,7 +7604,7 @@
    "path": "agos/agos-kernel/enterprise/run_enterprise_batch_2.py",
    "module": "enterprise.run_enterprise_batch_2",
    "root": "kernel",
-   "lines": 253,
+   "lines": 257,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -7397,12 +7616,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:enterprise.run_enterprise_batch_2",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -7563,7 +7786,7 @@
    "path": "agos/agos-kernel/evolution/run_evolution.py",
    "module": "evolution.run_evolution",
    "root": "kernel",
-   "lines": 235,
+   "lines": 239,
    "syntax_ok": true,
    "classes": 0,
    "functions": 10,
@@ -7575,12 +7798,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:evolution.run_evolution",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -7652,7 +7879,7 @@
    "path": "agos/agos-kernel/execution/engine.py",
    "module": "execution.engine",
    "root": "kernel",
-   "lines": 550,
+   "lines": 566,
    "syntax_ok": true,
    "classes": 9,
    "functions": 29,
@@ -7661,6 +7888,7 @@
    "imports": [
     "asyncio",
     "inspect",
+    "logging",
     "uuid",
     "dataclasses",
     "datetime",
@@ -7679,6 +7907,9 @@
     "K:test_execution_implementation"
    ],
    "tested_by_external": [
+    "tests/test_articles_1_2_evidence.py",
+    "tests/test_event_listener_diagnosis.py",
+    "tests/test_execution_boundary.py",
     "tests/test_execution_unification.py",
     "tests/test_intelligence_unification.py"
    ],
@@ -7746,6 +7977,7 @@
     "K:test_civilization"
    ],
    "tested_by_external": [
+    "tests/test_execution_boundary.py",
     "tests/test_execution_unification.py"
    ],
    "import_status": "OK"
@@ -8025,7 +8257,7 @@
    "path": "agos/agos-kernel/federation/run_federation.py",
    "module": "federation.run_federation",
    "root": "kernel",
-   "lines": 255,
+   "lines": 259,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -8037,12 +8269,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:federation.run_federation",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -8050,7 +8286,7 @@
    "path": "agos/agos-kernel/federation/run_federation_batch_2.py",
    "module": "federation.run_federation_batch_2",
    "root": "kernel",
-   "lines": 254,
+   "lines": 258,
    "syntax_ok": true,
    "classes": 0,
    "functions": 11,
@@ -8062,12 +8298,16 @@
     "sys",
     "json",
     "pathlib",
+    "agos_kernel.architecture.kernel_protection",
+    "architecture.kernel_protection",
     "traceback"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:federation.run_federation_batch_2",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
    "import_status": "OK"
   },
@@ -8075,7 +8315,7 @@
    "path": "agos/agos-kernel/finalization/kernel_finalizer.py",
    "module": "finalization.kernel_finalizer",
    "root": "kernel",
-   "lines": 1142,
+   "lines": 1147,
    "syntax_ok": true,
    "classes": 11,
    "functions": 37,
@@ -8095,13 +8335,20 @@
     "enum",
     "pathlib",
     "typing",
-    "re"
+    "re",
+    "architecture.kernel_protection",
+    "agos_kernel.architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:finalization.kernel_finalizer",
-   "resolved_imports": [],
+   "resolved_imports": [
+    "K:architecture.kernel_protection"
+   ],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -8645,7 +8892,7 @@
    "path": "agos/agos-kernel/intelligence/interface.py",
    "module": "intelligence.interface",
    "root": "kernel",
-   "lines": 2034,
+   "lines": 2068,
    "syntax_ok": true,
    "classes": 11,
    "functions": 52,
@@ -8686,6 +8933,7 @@
     "intelligence",
     "agos_kernel.execution.engine",
     "agos_kernel.execution.engine",
+    "agos_kernel.execution.engine",
     "shutil"
    ],
    "hardcoded_paths": 0,
@@ -8705,6 +8953,7 @@
     "S:intelligence"
    ],
    "tested_by_external": [
+    "tests/test_article_8_11_evidence.py",
     "tests/test_intelligence_unification.py"
    ],
    "import_status": "OK"
@@ -9242,23 +9491,25 @@
    "path": "agos/agos-kernel/main.py",
    "module": "main",
    "root": "kernel",
-   "lines": 86,
+   "lines": 93,
    "syntax_ok": true,
    "classes": 0,
-   "functions": 1,
+   "functions": 2,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "json",
     "sys",
     "agos_runtime",
-    "capabilities"
+    "capabilities",
+    "architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:main",
    "resolved_imports": [
     "K:agos_runtime",
+    "K:architecture.kernel_protection",
     "K:capabilities"
    ],
    "imported_by": [],
@@ -9266,6 +9517,7 @@
     "tests/test_bootstrap.py",
     "tests/test_capability_genome.py",
     "tests/test_clone_safety.py",
+    "tests/test_kernel_protection.py",
     "tests/test_knowledge_graph_from_analysis.py",
     "tests/test_language_weights.py",
     "tests/test_repository_intelligence_unification.py",
@@ -9831,7 +10083,7 @@
    "path": "agos/agos-kernel/pipeline/__init__.py",
    "module": "pipeline",
    "root": "kernel",
-   "lines": 192,
+   "lines": 202,
    "syntax_ok": true,
    "classes": 4,
    "functions": 4,
@@ -9862,6 +10114,7 @@
     "K:bootstrapper"
    ],
    "tested_by_external": [
+    "tests/test_article_15_12_boundary.py",
     "tests/test_decision_explanation.py",
     "tests/test_decision_unification.py",
     "tests/test_execution_unification.py",
@@ -10048,10 +10301,10 @@
    "path": "agos/agos-kernel/providers/__init__.py",
    "module": "providers",
    "root": "kernel",
-   "lines": 179,
+   "lines": 227,
    "syntax_ok": true,
-   "classes": 5,
-   "functions": 16,
+   "classes": 7,
+   "functions": 19,
    "stub_functions": 1,
    "abstract_functions": 0,
    "imports": [
@@ -10063,7 +10316,8 @@
     "contracts",
     "interfaces",
     "clone_safety",
-    "stack_detection"
+    "stack_detection",
+    "shutil"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
@@ -10081,6 +10335,10 @@
     "K:test_validation"
    ],
    "tested_by_external": [
+    "tests/test_article_15_12_boundary.py",
+    "tests/test_article_4_evidence.py",
+    "tests/test_article_4_provider_injection.py",
+    "tests/test_article_8_11_evidence.py",
     "tests/test_bootstrap.py",
     "tests/test_capability_genome.py",
     "tests/test_clone_safety.py",
@@ -10151,7 +10409,7 @@
    "path": "agos/agos-kernel/providers/filesystem.py",
    "module": "providers.filesystem",
    "root": "kernel",
-   "lines": 284,
+   "lines": 299,
    "syntax_ok": true,
    "classes": 6,
    "functions": 26,
@@ -10160,6 +10418,7 @@
    "imports": [
     "os",
     "shutil",
+    "pathlib",
     "typing",
     "providers.base",
     "subprocess",
@@ -10180,17 +10439,24 @@
     "subprocess",
     "typing",
     "providers.base",
+    "architecture.kernel_protection",
+    "agos_kernel.architecture.kernel_protection",
     "clone_safety"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:providers.filesystem",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:clone_safety",
     "K:providers.base"
    ],
    "imported_by": [
     "K:test_capability_program"
+   ],
+   "tested_by_external": [
+    "tests/test_articles_1_2_evidence.py",
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -11846,7 +12112,7 @@
    "path": "agos/agos-kernel/skills/file/operations.py",
    "module": "skills.file.operations",
    "root": "kernel",
-   "lines": 190,
+   "lines": 200,
    "syntax_ok": true,
    "classes": 8,
    "functions": 17,
@@ -11856,16 +12122,22 @@
     "os",
     "shutil",
     "typing",
-    "skills.base"
+    "skills.base",
+    "architecture.kernel_protection",
+    "agos_kernel.architecture.kernel_protection"
    ],
    "hardcoded_paths": 0,
    "importable_package_path": true,
    "id": "K:skills.file.operations",
    "resolved_imports": [
+    "K:architecture.kernel_protection",
     "K:skills.base"
    ],
    "imported_by": [
     "K:test_capability_program"
+   ],
+   "tested_by_external": [
+    "tests/test_kernel_protection.py"
    ],
    "import_status": "OK"
   },
@@ -13988,6 +14260,7 @@
     "K:governance.policy_evaluator"
    ],
    "tested_by_external": [
+    "tests/test_articles_1_2_evidence.py",
     "tests/test_governance_unification.py"
    ],
    "import_status": "OK"
@@ -16565,6 +16838,153 @@
  ],
  "external_tests": [
   {
+   "path": "tests/test_article_15_12_boundary.py",
+   "imports": [
+    "agos_kernel.civilization.autonomous_engineering.autonomous_batch",
+    "agos_runtime",
+    "civilization.autonomous_engineering.autonomous_batch",
+    "copy",
+    "json",
+    "pathlib",
+    "pipeline",
+    "providers",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:civilization.autonomous_engineering.autonomous_batch",
+    "K:pipeline",
+    "K:providers"
+   ]
+  },
+  {
+   "path": "tests/test_article_4_evidence.py",
+   "imports": [
+    "agos_runtime",
+    "contracts",
+    "flask",
+    "json",
+    "pathlib",
+    "providers",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:contracts",
+    "K:providers"
+   ]
+  },
+  {
+   "path": "tests/test_article_4_provider_injection.py",
+   "imports": [
+    "agos.kernel.capabilities.foundation_extra",
+    "agos.kernel.providers",
+    "flask",
+    "glob",
+    "json",
+    "os",
+    "pathlib",
+    "pytest",
+    "shutil",
+    "subprocess",
+    "sys",
+    "tempfile",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:capabilities.foundation_extra",
+    "K:providers"
+   ]
+  },
+  {
+   "path": "tests/test_article_7_evidence.py",
+   "imports": [
+    "flask",
+    "json",
+    "pathlib",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": []
+  },
+  {
+   "path": "tests/test_article_8_11_evidence.py",
+   "imports": [
+    "core.kernel",
+    "flask",
+    "intelligence.interface",
+    "json",
+    "pathlib",
+    "providers",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:core.kernel",
+    "K:intelligence.interface",
+    "K:providers"
+   ]
+  },
+  {
+   "path": "tests/test_article_9_10_evidence.py",
+   "imports": [
+    "agos_runtime",
+    "ast",
+    "flask",
+    "json",
+    "pathlib",
+    "pytest",
+    "socket",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime"
+   ]
+  },
+  {
+   "path": "tests/test_articles_1_2_evidence.py",
+   "imports": [
+    "agos.constitution.constitution",
+    "agos_kernel.execution.engine",
+    "agos_runtime",
+    "flask",
+    "json",
+    "os",
+    "pathlib",
+    "providers.filesystem",
+    "pytest",
+    "subprocess",
+    "sys",
+    "tarfile",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:execution.engine",
+    "K:providers.filesystem",
+    "S:constitution.constitution"
+   ]
+  },
+  {
    "path": "tests/test_assert_audit.py",
    "imports": [
     "__future__",
@@ -16884,6 +17304,44 @@
    ]
   },
   {
+   "path": "tests/test_event_listener_diagnosis.py",
+   "imports": [
+    "agos_kernel.execution.engine",
+    "asyncio",
+    "logging",
+    "pathlib",
+    "pytest",
+    "sys"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:execution.engine"
+   ]
+  },
+  {
+   "path": "tests/test_execution_boundary.py",
+   "imports": [
+    "agos_kernel.civilization.capability_runtime.runtime",
+    "agos_kernel.execution.engine",
+    "agos_kernel.execution.parallel",
+    "agos_runtime",
+    "flask",
+    "json",
+    "pathlib",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:civilization.capability_runtime.runtime",
+    "K:execution.engine",
+    "K:execution.parallel"
+   ]
+  },
+  {
    "path": "tests/test_execution_unification.py",
    "imports": [
     "agos.cloud_execution",
@@ -16922,6 +17380,18 @@
     "S:cloud_execution",
     "S:execution.fabric",
     "S:fabric.execution"
+   ]
+  },
+  {
+   "path": "tests/test_fabricated_success.py",
+   "imports": [
+    "agos_kernel.civilization.autonomous_engineering.autonomous_batch",
+    "agos_kernel.civilization.autonomous_engineering.platform_batch"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:civilization.autonomous_engineering.autonomous_batch",
+    "K:civilization.autonomous_engineering.platform_batch"
    ]
   },
   {
@@ -17110,6 +17580,55 @@
     "K:registry.capability",
     "K:registry.provider",
     "K:test_validation"
+   ]
+  },
+  {
+   "path": "tests/test_kernel_protection.py",
+   "imports": [
+    "agos_kernel.civilization.providers.filesystem_provider",
+    "civilization.artifact_system.artifact",
+    "civilization.capabilities.engineering_report",
+    "civilization.core.civilization_engine",
+    "civilization.intelligence_pipeline.intelligence_package",
+    "civilization.intelligence_pipeline.pipeline",
+    "civilization.knowledge_graph.knowledge_graph",
+    "civilization.knowledge_graph.versioning",
+    "core.invariants.benchmark",
+    "core.invariants.evidence",
+    "core.invariants.reporter",
+    "core.seal",
+    "finalization.kernel_finalizer",
+    "json",
+    "main",
+    "os",
+    "pathlib",
+    "providers.filesystem",
+    "pytest",
+    "skills.file.operations",
+    "subprocess",
+    "sys",
+    "tarfile",
+    "textwrap",
+    "types"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:civilization.artifact_system.artifact",
+    "K:civilization.capabilities.engineering_report",
+    "K:civilization.core.civilization_engine",
+    "K:civilization.intelligence_pipeline.intelligence_package",
+    "K:civilization.intelligence_pipeline.pipeline",
+    "K:civilization.knowledge_graph.knowledge_graph",
+    "K:civilization.knowledge_graph.versioning",
+    "K:civilization.providers.filesystem_provider",
+    "K:core.invariants.benchmark",
+    "K:core.invariants.evidence",
+    "K:core.invariants.reporter",
+    "K:core.seal",
+    "K:finalization.kernel_finalizer",
+    "K:main",
+    "K:providers.filesystem",
+    "K:skills.file.operations"
    ]
   },
   {

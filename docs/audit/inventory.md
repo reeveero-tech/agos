@@ -4,14 +4,14 @@
 
 ## Totals
 
-- **files**: 537
-- **functions**: 6187
+- **files**: 538
+- **functions**: 6218
 - **hardcoded_paths**: 0
 - **import_fail**: 0
-- **import_ok**: 535
-- **lines**: 102875
-- **not_imported_by_others**: 251
-- **stub_functions**: 781
+- **import_ok**: 536
+- **lines**: 103452
+- **not_imported_by_others**: 250
+- **stub_functions**: 782
 - **syntax_errors**: 0
 
 ## Packages
@@ -19,22 +19,22 @@
 | package | files | lines | functions | stub fns | hardcoded paths | import ok | import fail | orphan files |
 |---|---|---|---|---|---|---|---|---|
 | `__init__.py` | 1 | 168 | 10 | 0 | 0 | 0 | 0 | 1 |
-| `agos-kernel` | 23 | 5555 | 191 | 0 | 0 | 22 | 0 | 22 |
+| `agos-kernel` | 23 | 5562 | 192 | 0 | 0 | 22 | 0 | 22 |
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/agos_runtime` | 1 | 139 | 16 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/agos_runtime` | 1 | 166 | 17 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/api` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/approval` | 2 | 196 | 11 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/architecture` | 1 | 490 | 17 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/architecture` | 2 | 565 | 21 | 0 | 0 | 2 | 0 | 1 |
 | `agos-kernel/audit` | 1 | 148 | 10 | 3 | 0 | 1 | 0 | 0 |
 | `agos-kernel/benchmark` | 3 | 347 | 17 | 1 | 0 | 3 | 0 | 0 |
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/bootstrapper` | 1 | 217 | 9 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/brain` | 2 | 258 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/capabilities` | 13 | 5411 | 278 | 27 | 0 | 13 | 0 | 0 |
+| `agos-kernel/capabilities` | 13 | 5589 | 300 | 27 | 0 | 13 | 0 | 0 |
 | `agos-kernel/certification` | 3 | 494 | 29 | 6 | 0 | 3 | 0 | 0 |
-| `agos-kernel/civilization` | 100 | 24633 | 1325 | 120 | 0 | 100 | 0 | 35 |
+| `agos-kernel/civilization` | 100 | 24742 | 1325 | 121 | 0 | 100 | 0 | 35 |
 | `agos-kernel/civilization_packs` | 1 | 217 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/cloud_packs` | 1 | 111 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/collaboration` | 2 | 238 | 11 | 0 | 0 | 2 | 0 | 0 |
@@ -43,7 +43,7 @@
 | `agos-kernel/context` | 1 | 61 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contract_engine` | 1 | 360 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/contracts` | 1 | 124 | 4 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/core` | 24 | 3695 | 181 | 0 | 0 | 24 | 0 | 15 |
+| `agos-kernel/core` | 24 | 3710 | 181 | 0 | 0 | 24 | 0 | 14 |
 | `agos-kernel/crossdomain` | 2 | 524 | 32 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/decision` | 1 | 119 | 2 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/decision-pipeline` | 2 | 1921 | 47 | 0 | 0 | 2 | 0 | 0 |
@@ -52,25 +52,25 @@
 | `agos-kernel/discovery` | 1 | 442 | 22 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/distributed` | 2 | 316 | 31 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/domains` | 3 | 565 | 37 | 0 | 0 | 3 | 0 | 0 |
-| `agos-kernel/ecosystem` | 5 | 2258 | 211 | 102 | 0 | 5 | 0 | 4 |
-| `agos-kernel/enterprise` | 5 | 2229 | 221 | 100 | 0 | 5 | 0 | 4 |
+| `agos-kernel/ecosystem` | 5 | 2266 | 211 | 102 | 0 | 5 | 0 | 4 |
+| `agos-kernel/enterprise` | 5 | 2237 | 221 | 100 | 0 | 5 | 0 | 4 |
 | `agos-kernel/event-engine` | 1 | 211 | 27 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/event_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/events` | 1 | 75 | 5 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/evolution` | 4 | 1264 | 96 | 44 | 0 | 4 | 0 | 4 |
-| `agos-kernel/execution` | 5 | 1703 | 92 | 0 | 0 | 5 | 0 | 0 |
+| `agos-kernel/evolution` | 4 | 1268 | 96 | 44 | 0 | 4 | 0 | 4 |
+| `agos-kernel/execution` | 5 | 1719 | 92 | 0 | 0 | 5 | 0 | 0 |
 | `agos-kernel/execution-context` | 1 | 248 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/execution_context` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/expansion` | 2 | 182 | 15 | 1 | 0 | 2 | 0 | 1 |
 | `agos-kernel/experience` | 2 | 156 | 8 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/extension` | 2 | 312 | 28 | 5 | 0 | 2 | 0 | 0 |
-| `agos-kernel/federation` | 5 | 2034 | 190 | 98 | 0 | 5 | 0 | 4 |
-| `agos-kernel/finalization` | 1 | 1142 | 37 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/federation` | 5 | 2042 | 190 | 98 | 0 | 5 | 0 | 4 |
+| `agos-kernel/finalization` | 1 | 1147 | 37 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/framework_packs` | 1 | 135 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/governance` | 3 | 1201 | 53 | 0 | 0 | 3 | 0 | 0 |
 | `agos-kernel/hardening` | 1 | 404 | 21 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/healing` | 2 | 195 | 10 | 4 | 0 | 2 | 0 | 0 |
-| `agos-kernel/intelligence` | 18 | 6757 | 204 | 0 | 0 | 18 | 0 | 5 |
+| `agos-kernel/intelligence` | 18 | 6791 | 204 | 0 | 0 | 18 | 0 | 5 |
 | `agos-kernel/interfaces` | 1 | 80 | 11 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/knowledge` | 6 | 1051 | 39 | 0 | 0 | 6 | 0 | 0 |
 | `agos-kernel/laboratory` | 2 | 353 | 19 | 4 | 0 | 2 | 0 | 0 |
@@ -89,11 +89,11 @@
 | `agos-kernel/optimization` | 2 | 221 | 10 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/orchestrator` | 2 | 362 | 26 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/organization` | 2 | 183 | 10 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/pipeline` | 1 | 192 | 4 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/pipeline` | 1 | 202 | 4 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/platform_runtime` | 2 | 263 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/policies` | 1 | 109 | 7 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/prediction` | 2 | 164 | 9 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/providers` | 7 | 1542 | 146 | 26 | 0 | 7 | 0 | 1 |
+| `agos-kernel/providers` | 7 | 1605 | 149 | 26 | 0 | 7 | 0 | 1 |
 | `agos-kernel/quality_gates` | 1 | 443 | 20 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/recommendation` | 2 | 175 | 7 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/registry` | 3 | 123 | 15 | 0 | 0 | 3 | 0 | 0 |
@@ -110,7 +110,7 @@
 | `agos-kernel/simulation` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/skill-engine` | 1 | 209 | 17 | 1 | 0 | 1 | 0 | 1 |
 | `agos-kernel/skill_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
-| `agos-kernel/skills` | 10 | 1651 | 243 | 48 | 0 | 10 | 0 | 3 |
+| `agos-kernel/skills` | 10 | 1661 | 243 | 48 | 0 | 10 | 0 | 3 |
 | `agos-kernel/stack_detection` | 1 | 1147 | 54 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/state-store` | 1 | 286 | 25 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/state_store` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 1 |
