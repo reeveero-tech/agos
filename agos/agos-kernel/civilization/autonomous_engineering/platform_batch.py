@@ -616,9 +616,12 @@ class RegressionValidator:
 
 class MergeExecutor:
     """Executes merges."""
-    
+
     def execute(self, merge_plan: Dict) -> Dict:
-        return {'merged': True, 'result': {}}
+        """عدم تنفيذ صريح (ADR-0008): لا عمل دمج قابل للتنفيذ هنا (لا
+        مُنفِّذ حقيقي موصول) — لا ادعاء دمج ولا نجاح وهمي؛ إفصاح بالسبب."""
+        return {'merged': False, 'status': 'not_executed',
+                'reason': 'لا عمل دمج قابل للتنفيذ هنا (ADR-0008) — لا مُنفِّذ حقيقي موصول'}
 
 
 class RollbackPreparer:
@@ -648,8 +651,17 @@ class IntegrationEngine:
         plan = self.merge_planner.plan(patches)
         rollback_id = self.rollback.prepare(str(uuid.uuid4()))
         merged = self.merge_executor.execute(plan)
+        if merged.get('status') == 'not_executed':
+            # لا ادعاء تكامل بلا دمج منفَّذ (ADR-0008) — إفصاح صادق
+            return {
+                'integrated': False,
+                'status': 'not_executed',
+                'reason': merged.get('reason'),
+                'merge_plan': plan,
+                'rollback_id': rollback_id
+            }
         reg = self.regression.validate(merged)
-        
+
         return {
             'integrated': reg.get('passed', False),
             'merge_plan': plan,

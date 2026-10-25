@@ -30,6 +30,7 @@ class AutonomousState(Enum):
     RECOVERING = "recovering"
     COMPLETED = "completed"
     FAILED = "failed"
+    NOT_EXECUTED = "not_executed"
 
 
 class AutonomousRuntime:
@@ -66,9 +67,16 @@ class AutonomousRuntime:
             return {'status': 'denied', 'reason': 'Governance check failed'}
         
         result = self.orchestrator.execute(plan)
-        
+
+        if result.get('status') == 'not_executed':
+            # لا اكتمال بلا تنفيذ (ADR-0008): الحالة لا تدّعي «مكتملة»
+            # والمخرج يرفع الإفصاح الصادق — لا نجاحاً وهمياً
+            self.state = AutonomousState.NOT_EXECUTED
+            return {'status': 'not_executed',
+                    'reason': result.get('reason')}
+
         self.state = AutonomousState.COMPLETED
-        
+
         return {'status': 'success', 'result': result}
 
 
@@ -79,7 +87,10 @@ class AutonomousOrchestrator:
         return {'phases': ['analysis', 'execution', 'validation'], 'plan_id': str(uuid.uuid4())}
     
     def execute(self, plan: Dict) -> Dict:
-        return {'executed': True, 'outcome': 'success'}
+        """عدم تنفيذ صريح (ADR-0008): لا عمل قابل للتنفيذ هنا (لا مُنفِّذ
+        حقيقي موصول) — لا ادعاء اكتمال ولا نجاح وهمي؛ إفصاح بالسبب."""
+        return {'executed': False, 'status': 'not_executed',
+                'reason': 'لا عمل قابل للتنفيذ هنا (ADR-0008) — لا مُنفِّذ حقيقي موصول'}
 
 
 class AutonomousSessionManager:
