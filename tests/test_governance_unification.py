@@ -10,6 +10,8 @@ from agos_kernel.governance.policy_evaluator import (
 from agos_kernel.governance.runtime import GovernanceRule
 from agos.governance.enforcement import VersionValidator
 from agos.constitution.constitution import VERSIONED_ENTITIES
+import json
+from pathlib import Path
 
 
 def _runtime_with_article5() -> GovernanceRuntime:
@@ -1582,6 +1584,132 @@ def test_freeze_judgment_follows_declaration_change():
         "Breaking Core Contracts", "kernel")
     assert ok_after is False
     assert manager.last_verdict.verdict == "violation"
+
+
+def _freeze_content_fixture(tmp_path):
+    """تثبيت نطاق تجميد مصغر: مكوّنان بمسارات وملفات حقيقية على القرص."""
+    (tmp_path / "core").mkdir()
+    (tmp_path / "core" / "a.py").write_text("value = 1\n", encoding="utf-8")
+    (tmp_path / "core" / "sub").mkdir()
+    (tmp_path / "core" / "sub" / "b.py").write_text("value = 2\n", encoding="utf-8")
+    (tmp_path / "policies").mkdir()
+    (tmp_path / "policies" / "p.py").write_text("rule = True\n", encoding="utf-8")
+    scope = {"core_runtime": ["core"], "policy_ontology": ["policies"]}
+    return scope
+
+
+def test_freeze_content_baseline_match_and_determinism(tmp_path):
+    """بناء خط أساس حتمي ثم التحقق يثبت التطابق الكامل (سجل العمل 0084):
+    بصمة الأسماء والمحتوى معاً، بلا طوابع زمنية فالتسلسل متطابق بايتاً
+    بايتاً، والتحقق من الشجرة نفسها يعطي verified=True بصفر نتائج غير
+    تطابق، وناتج التحقق من المدير هو ناتج القدرة المستقلة نفسها."""
+    from agos_kernel.architecture.freeze import (
+        build_freeze_content_baseline, get_freeze_manager,
+        verify_freeze_content, content_fingerprint)
+    scope = _freeze_content_fixture(tmp_path)
+    baseline = build_freeze_content_baseline(tmp_path, scope)
+    # حتمية: البناء مرتين يعطي القاموس نفسه (بلا طوابع زمنية)
+    assert build_freeze_content_baseline(tmp_path, scope) == baseline
+    # تسلسل JSON حتمي (فرز المفاتيح — نفس البايتات مرتين)
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text(
+        json.dumps(baseline, sort_keys=True, ensure_ascii=False),
+        encoding="utf-8")
+    assert baseline_path.read_text(encoding="utf-8") == baseline_path.read_text(
+        encoding="utf-8")
+    # التحقق: تطابق كامل — الأسماء والمحتوى معاً
+    report = verify_freeze_content(tmp_path, baseline_path)
+    assert report["verified"] is True
+    assert report["files_checked"] == 3
+    assert [f for f in report["findings"] if f["kind"] != "match"] == []
+    assert report["fingerprint"] == baseline["fingerprint"]
+    # بصمة حتمية للمدخل نفسه بالترتيبين
+    entries = [("a.py", "h1"), ("b.py", "h2")]
+    assert content_fingerprint(entries) == content_fingerprint(list(reversed(entries)))
+    # واجهة المدير تفوّض للقدرة المستقلة نفسها (نفس الناتج بالهوية القيمية)
+    manager = get_freeze_manager()
+    assert manager.verify_content(tmp_path, baseline_path) == report
+
+
+def test_freeze_content_detects_byte_change_and_missing_file(tmp_path):
+    """فحص المحتوى يرصد تغيير البايت والملف الغائب بأسمائهما (سجل العمل
+    0084): بصمة المحتوى تتغير فيرصد byte_change بالمسار، وحذف ملف من
+    التثبيت يرصد missing_file بالمسار، وverified=False بسبب مسمى لا
+    انهياراً."""
+    from agos_kernel.architecture.freeze import (
+        build_freeze_content_baseline, verify_freeze_content)
+    scope = _freeze_content_fixture(tmp_path)
+    baseline = build_freeze_content_baseline(tmp_path, scope)
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text(
+        json.dumps(baseline, sort_keys=True, ensure_ascii=False),
+        encoding="utf-8")
+    # تغيير بايت واحد في ملف — يرصد بالمسار
+    (tmp_path / "core" / "a.py").write_text("value = 11\n", encoding="utf-8")
+    report = verify_freeze_content(tmp_path, baseline_path)
+    assert report["verified"] is False
+    kinds = {(f["kind"], f["path"]) for f in report["findings"]}
+    assert ("byte_change", "core/a.py") in kinds
+    assert ("match", "core/sub/b.py") in kinds
+    # حذف ملف — يرصد بالمسار
+    (tmp_path / "core" / "a.py").write_text("value = 1\n", encoding="utf-8")
+    (tmp_path / "core" / "sub" / "b.py").unlink()
+    report2 = verify_freeze_content(tmp_path, baseline_path)
+    assert report2["verified"] is False
+    kinds2 = {(f["kind"], f["path"]) for f in report2["findings"]}
+    assert ("missing_file", "core/sub/b.py") in kinds2
+    assert ("match", "core/a.py") in kinds2
+
+
+def test_freeze_content_detects_extra_file_and_ignores_pycache(tmp_path):
+    """بصمة الأسماء والمحتوى معاً: ملف زائد على الشجرة يرصد extra_file
+    (سجل العمل 0084)، ونواتج التنفيذ (__pycache__/*.pyc) خارج الشمول في
+    البناء والتحقق معاً فلا يظهر كملف زائد كاذب."""
+    from agos_kernel.architecture.freeze import (
+        build_freeze_content_baseline, verify_freeze_content)
+    scope = _freeze_content_fixture(tmp_path)
+    baseline = build_freeze_content_baseline(tmp_path, scope)
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text(
+        json.dumps(baseline, sort_keys=True, ensure_ascii=False),
+        encoding="utf-8")
+    # ملف مصدر زائد داخل النطاق — بصمة الأسماء ترصده
+    (tmp_path / "core" / "extra.py").write_text("x = 1\n", encoding="utf-8")
+    report = verify_freeze_content(tmp_path, baseline_path)
+    assert report["verified"] is False
+    kinds = {(f["kind"], f["path"]) for f in report["findings"]}
+    assert ("extra_file", "core/extra.py") in kinds
+    # نواتج التنفيذ ليست محتوى مصدر — لا تظهر في الخط الأساس ولا كزيادة
+    (tmp_path / "core" / "__pycache__").mkdir()
+    (tmp_path / "core" / "__pycache__" / "a.cpython-312.pyc").write_bytes(b"junk")
+    baseline2 = build_freeze_content_baseline(tmp_path, scope)
+    assert not any("__pycache__" in k for k in baseline2["components"]["core_runtime"]["files"])
+    report2 = verify_freeze_content(tmp_path, baseline_path)
+    kinds2 = {(f["kind"], f["path"]) for f in report2["findings"]}
+    assert not any(p.startswith("core/__pycache__") for _, p in kinds2)
+
+
+def test_freeze_content_missing_baseline_is_named_inability(tmp_path):
+    """غياب خط الأساس عجز مسمى لا انهياراً ولا ادعاء امتثال (سجل العمل
+    0084): verified=False بسبب يذكر المسار المنتظر، وصفر فحوص — والتحقق
+    من المستودع الحقيقي بلا خط أساس معتمد يعطي العجز المسمى نفسه (الحد
+    معلن: اعتماد النطاق معلق على قرار الحوكمة)."""
+    from agos_kernel.architecture.freeze import verify_freeze_content
+    _freeze_content_fixture(tmp_path)  # شجرة موجودة — الخط وحده هو الغائب
+    missing = tmp_path / "no_such_baseline.json"
+    report = verify_freeze_content(tmp_path, missing)
+    assert report["verified"] is False
+    assert "غياب خط الأساس" in report["reason"]
+    assert str(missing) in report["reason"]
+    assert report["files_checked"] == 0
+    assert report["findings"] == []
+    assert report["fingerprint"] is None
+    # المسار الافتراضي داخل المستودع الحقيقي — العجز المسمى نفسه (لا ملف
+    # معتمد بعد — قرار الحوكمة معلق)
+    repo_root = Path(__file__).resolve().parent.parent
+    default_report = verify_freeze_content(repo_root)
+    assert default_report["verified"] is False
+    assert "غياب خط الأساس" in default_report["reason"]
 
 
 def test_spec_comes_from_constitution_text():

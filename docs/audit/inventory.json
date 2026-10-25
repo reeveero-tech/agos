@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102628,
-  "functions": 6180,
+  "lines": 102829,
+  "functions": 6186,
   "stub_functions": 781,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -101,8 +101,8 @@
   },
   "agos-kernel/architecture": {
    "files": 1,
-   "lines": 243,
-   "functions": 10,
+   "lines": 444,
+   "functions": 16,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -2028,16 +2028,18 @@
    "path": "agos/agos-kernel/architecture/freeze.py",
    "module": "architecture.freeze",
    "root": "kernel",
-   "lines": 243,
+   "lines": 444,
    "syntax_ok": true,
    "classes": 3,
-   "functions": 10,
+   "functions": 16,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
     "hashlib",
+    "json",
     "dataclasses",
     "datetime",
+    "pathlib",
     "typing",
     "agos_kernel.governance.policy_evaluator"
    ],
@@ -16967,7 +16969,9 @@
     "agos_kernel.governance.runtime",
     "agos_kernel.knowledge.models",
     "copy",
-    "dataclasses"
+    "dataclasses",
+    "json",
+    "pathlib"
    ],
    "scripts": [],
    "resolved": [

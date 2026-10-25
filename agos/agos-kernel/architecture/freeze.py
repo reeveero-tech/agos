@@ -1,8 +1,19 @@
-"""AGOS Architecture Freeze v1.0."""
+"""AGOS Architecture Freeze v1.0.
+
+فحص محتوى التجميد (إضافة لاحقة — سجل العمل 0084، ADR-0010): قدرة تحقق
+مستقلة عن التصنيف النصي — خط أساس متعقب (ملف معتمد لا يُولد وقت التحقق)
+يحمل النطاق ومنفستاً بصمة حتمية لأسماء الملفات ومحتواها؛ والتحقق يقارن
+الشجرة الفعلية بالخط المسجل فيرصد التطابق/تغيير بايت/غياب ملف/ملفا
+زائدا، وغياب خط الأساس عجز مسمى لا انهياراً ولا ادعاء امتثال. اعتماد
+خط أساس فعلي لنطاق معتمد معلق على قرار الحوكمة (ADR-0010) — القدرة
+مختبرة بالتثبيتات والحد معلن.
+"""
 import hashlib
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 @dataclass
@@ -112,6 +123,187 @@ FORBIDDEN_CHANGES = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# فحص محتوى التجميد (سجل العمل 0084 — ADR-0010): قدرة مستقلة عن التصنيف النصي
+# ---------------------------------------------------------------------------
+
+# موقع خط أساس محتوى التجميد المتعقب داخل المستودع (لا يُولد وقت التحقق)
+FREEZE_CONTENT_BASELINE_DIR = "docs/architecture"
+FREEZE_CONTENT_BASELINE_FILENAME = "freeze_content_baseline.json"
+
+
+def _file_digest(path: Path) -> str:
+    """بصمة محتوى الملف (sha256 سداسية) — حتمية للمحتوى نفسه."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _iter_baseline_candidate_files(root: Path, rel: str) -> List[str]:
+    """ملفات النطاق لمسار نسبي واحد — ترتيب حتمي (فرز المسارات).
+
+    القاعدة الحتمية للشمول: كل الملفات تحت المسار (تكرارياً) عدا أدلة
+    __pycache__ وملفات *.pyc (نواتج تنفيذ لا محتوى مصدر — استثناؤها في
+    البناء والتحقق معاً فلا يظهر ملف زائد كاذب).
+    المسار غير الموجود على الشجرة يُعاد فارغاً (صدق الغياب — يوثق لا يخفي).
+    """
+    target = root / rel
+    if not target.exists():
+        return []
+    if target.is_file():
+        return [rel]
+    files: List[str] = []
+    for p in target.rglob("*"):
+        if p.is_dir():
+            continue
+        if any(part == "__pycache__" for part in p.parts):
+            continue
+        if p.suffix == ".pyc":
+            continue
+        files.append(p.relative_to(root).as_posix())
+    return sorted(files)
+
+
+def content_fingerprint(entries: Sequence[Tuple[str, str]]) -> str:
+    """بصمة حتمية لمجموعة (مسار، بصمة محتوى) — على الفرز المرتب نفسه.
+
+    بصمة الأسماء والمحتوى معاً: تغيير بايت يغير بصمة الملف فتغير البصمة
+    الكلية، وملف زائد/ناقص يغير مجموعة الأسماء فتغيرها كذلك.
+    """
+    h = hashlib.sha256()
+    for rel, digest in sorted(entries):
+        h.update(rel.encode("utf-8"))
+        h.update(b"\0")
+        h.update(digest.encode("ascii"))
+        h.update(b"\n")
+    return h.hexdigest()
+
+
+def build_freeze_content_baseline(
+    root: Path, scope: Dict[str, List[str]]
+) -> Dict[str, Any]:
+    """بناء خط أساس لمحتوى نطاق التجميد — حتمي وقابل للتسلسل كما هو.
+
+    الناتج قاموس خالص (بلا طوابع زمنية — الحتمية شرط البصمة): لكل مكوّن
+    منفست مساراته وبصمات محتواها وأحجامها بالبايت، وبصمة كلية للمجموعة.
+    خط الأساس المعتَمد يُلتزم كملف متعقب (docs/architecture/) ولا يُولد وقت
+    التحقق — التوليد أداة إنشاء لا مسار تحقق.
+    """
+    components: Dict[str, Any] = {}
+    all_entries: List[Tuple[str, str]] = []
+    for component in sorted(scope):
+        manifest: Dict[str, Any] = {}
+        for rel in scope[component]:
+            for rel_file in _iter_baseline_candidate_files(root, rel):
+                digest = _file_digest(root / rel_file)
+                manifest[rel_file] = {
+                    "sha256": digest,
+                    "bytes": (root / rel_file).stat().st_size,
+                }
+                all_entries.append((rel_file, digest))
+        components[component] = {
+            "scope": sorted(scope[component]),
+            "files": manifest,
+            "fingerprint": content_fingerprint(
+                [(k, v["sha256"]) for k, v in sorted(manifest.items())]),
+        }
+    return {
+        "format": "agos-freeze-content-baseline",
+        "format_version": 1,
+        "components": components,
+        "fingerprint": content_fingerprint(all_entries),
+    }
+
+
+def verify_freeze_content(
+    root: Path, baseline_path: Optional[Path] = None
+) -> Dict[str, Any]:
+    """التحقق من محتوى نطاق التجميد مقابل خط أساس متعقب — لا توليد وقت التحقق.
+
+    العقد الصادق: النطاق يُقرأ من خط الأساس نفسه (لا يُشتق من الشجرة وقت
+    التحقق فلا يتبدل النطاق بصمت)، والملفات تُقارن اسماً ومحتوى؛ وغياب خط
+    الأساس عجز مسمى (verified=False بسبب مسمى) لا انهياراً ولا ادعاء
+    امتثال مثبت. النتائج المسماة في findings: byte_change (تغيير بايت)،
+    missing_file (ملف في الخط الأساس غائب عن الشجرة)، extra_file (ملف على
+    الشجرة خارج الخط الأساس — بصمة الأسماء والمحتوى معاً)، وmatch للملفات
+    المتطابقة. verified=True فقط بخط أساس موجود وصفر نتائج غير التطابق.
+    """
+    if baseline_path is None:
+        baseline_path = (
+            root / FREEZE_CONTENT_BASELINE_DIR / FREEZE_CONTENT_BASELINE_FILENAME)
+    report: Dict[str, Any] = {
+        "baseline_path": str(baseline_path),
+        "verified": False,
+        "reason": "",
+        "files_checked": 0,
+        "findings": [],
+        "fingerprint": None,
+    }
+    if not baseline_path.exists():
+        report["reason"] = (
+            "غياب خط الأساس المتعقب — لا تحقق ممكن ولا ادعاء امتثال مثبت "
+            f"(المسار المنتظر: {baseline_path})")
+        return report
+    try:
+        baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        report["reason"] = f"خط أساس غير قابل للقراءة: {type(exc).__name__}: {exc}"
+        return report
+    if not isinstance(baseline.get("components"), dict) or not baseline["components"]:
+        report["reason"] = "خط الأساس بلا مكوّنات معتمدة — لا نطاق للتحقق"
+        return report
+    findings: List[Dict[str, Any]] = []
+    files_checked = 0
+    current_entries: List[Tuple[str, str]] = []
+    for component, data in sorted(baseline["components"].items()):
+        baseline_files: Dict[str, Any] = data.get("files", {})
+        scope_paths: List[str] = data.get("scope", [])
+        current_files: Dict[str, str] = {}
+        for rel in scope_paths:
+            for rel_file in _iter_baseline_candidate_files(root, rel):
+                current_files[rel_file] = _file_digest(root / rel_file)
+        for rel_file, digest in sorted(current_files.items()):
+            current_entries.append((rel_file, digest))
+        for rel_file in sorted(set(baseline_files) | set(current_files)):
+            files_checked += 1
+            in_baseline = rel_file in baseline_files
+            on_disk = rel_file in current_files
+            if in_baseline and on_disk:
+                if baseline_files[rel_file]["sha256"] == current_files[rel_file]:
+                    findings.append({
+                        "component": component, "kind": "match",
+                        "path": rel_file, "detail": ""})
+                else:
+                    findings.append({
+                        "component": component, "kind": "byte_change",
+                        "path": rel_file,
+                        "detail": "بصمة المحتوى تغيرت عن خط الأساس"})
+            elif in_baseline and not on_disk:
+                findings.append({
+                    "component": component, "kind": "missing_file",
+                    "path": rel_file,
+                    "detail": "في خط الأساس وغائب عن الشجرة"})
+            else:
+                findings.append({
+                    "component": component, "kind": "extra_file",
+                    "path": rel_file,
+                    "detail": "على الشجرة وخارج خط الأساس (بصمة الأسماء)"})
+    non_match = [f for f in findings if f["kind"] != "match"]
+    report["files_checked"] = files_checked
+    report["findings"] = findings
+    report["fingerprint"] = content_fingerprint(current_entries)
+    if non_match:
+        report["reason"] = (
+            f"{len(non_match)} نتيجة غير تطابق (تغيير بايت/غياب ملف/ملف زائد) — "
+            "المحتوى لا يطابق خط الأساس")
+    else:
+        report["verified"] = True
+        report["reason"] = "تطابق كامل مع خط الأساس المتعقب (أسماء ومحتوى)"
+    return report
+
+
 class ArchitectureFreezeManager:
     """Manages architecture freeze."""
     
@@ -174,6 +366,15 @@ class ArchitectureFreezeManager:
         # السبب المُعاد يوضح حدود المثبت — لا عبارة سماح مطلقة
         return (self.last_verdict.verdict == VERDICT_COMPLIANT,
                 self.last_verdict.reason)
+
+    def verify_content(
+        self, root: Path, baseline_path: Optional[Path] = None
+    ) -> Dict[str, Any]:
+        """واجهة المدير لفحص محتوى التجميد — تفويض للقدرة المستقلة
+        (verify_freeze_content — سجل العمل 0084): خط أساس متعقب لا يُولد وقت
+        التحقق، وبصمة حتمية للأسماء والمحتوى، وغياب الخط عجز مسمى لا
+        ادعاء امتثال مثبت."""
+        return verify_freeze_content(root, baseline_path)
     
     def get_frozen_components(self) -> List[FrozenComponent]:
         """Get all frozen components."""

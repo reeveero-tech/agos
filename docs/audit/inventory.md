@@ -5,11 +5,11 @@
 ## Totals
 
 - **files**: 537
-- **functions**: 6180
+- **functions**: 6186
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 535
-- **lines**: 102628
+- **lines**: 102829
 - **not_imported_by_others**: 251
 - **stub_functions**: 781
 - **syntax_errors**: 0
@@ -26,7 +26,7 @@
 | `agos-kernel/agos_runtime` | 1 | 139 | 16 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/api` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/approval` | 2 | 196 | 11 | 0 | 0 | 2 | 0 | 0 |
-| `agos-kernel/architecture` | 1 | 243 | 10 | 0 | 0 | 1 | 0 | 1 |
+| `agos-kernel/architecture` | 1 | 444 | 16 | 0 | 0 | 1 | 0 | 1 |
 | `agos-kernel/audit` | 1 | 148 | 10 | 3 | 0 | 1 | 0 | 0 |
 | `agos-kernel/benchmark` | 3 | 347 | 17 | 1 | 0 | 3 | 0 | 0 |
 | `agos-kernel/bootstrap` | 1 | 277 | 22 | 0 | 0 | 1 | 0 | 1 |
