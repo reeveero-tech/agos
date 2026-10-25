@@ -167,7 +167,7 @@ class EvidenceGenerator:
         output_dir: Path
     ) -> None:
         """Export evidence package to files."""
-        from architecture.kernel_protection import guard_kernel_write
+        from architecture.kernel_protection import guard_kernel_write, guard_output_file
         guard_kernel_write(output_dir)  # المادة 16 — كل الملفات تحته
         output_dir.mkdir(parents=True, exist_ok=True)
         
@@ -180,17 +180,17 @@ class EvidenceGenerator:
             'manifest_hash': package.manifest_hash,
         }
         
-        with open(output_dir / 'evidence_manifest.json', 'w') as f:
+        with open(guard_output_file(output_dir / 'evidence_manifest.json'), 'w') as f:
             json.dump(manifest, f, indent=2)
         
         # Export individual evidence
         for evidence in package.evidence_items:
             filename = f"evidence_{evidence.invariant_id}.json"
-            with open(output_dir / filename, 'w') as f:
+            with open(guard_output_file(output_dir / filename), 'w') as f:
                 json.dump(evidence.to_dict(), f, indent=2)
         
         # Export complete package
-        with open(output_dir / 'evidence_package.json', 'w') as f:
+        with open(guard_output_file(output_dir / 'evidence_package.json'), 'w') as f:
             json.dump({
                 'manifest': manifest,
                 'evidence': [e.to_dict() for e in package.evidence_items],

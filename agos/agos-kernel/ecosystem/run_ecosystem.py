@@ -15,9 +15,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(_AGOS_ROOT))
 try:  # المادة 16 — مسار المخرجات يُرفض إن حل داخل شجرة النواة (رابط رمزي)
-    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir, guard_output_file
 except ImportError:  # تشغيل مباشر من داخل الشجرة
-    from architecture.kernel_protection import resolve_output_dir
+    from architecture.kernel_protection import resolve_output_dir, guard_output_file
 
 
 def test_ecosystem_core():
@@ -240,7 +240,7 @@ def main():
         output_dir = resolve_output_dir(_AGOS_ROOT / 'output')  # مخرجات خارج شجرة النواة (المادة 16)
         output_dir.mkdir(parents=True, exist_ok=True)
         
-        with open(output_dir / 'ecosystem_000001_000010_results.json', 'w') as f:
+        with open(guard_output_file(output_dir / 'ecosystem_000001_000010_results.json'), 'w') as f:
             json.dump(results, f, indent=2)
         
         print(f"\nResults saved to: {output_dir / 'ecosystem_000001_000010_results.json'}")

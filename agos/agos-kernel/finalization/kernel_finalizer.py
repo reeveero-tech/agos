@@ -31,9 +31,9 @@ KERNEL_ROOT = Path(__file__).parent.parent
 FINALIZATION_DIR = KERNEL_ROOT / "finalization"
 # مخرجات التشغيل خارج شجرة النواة (المادة 16 — لا شيء يعدل النواة)
 try:  # المادة 16 — دليل التقارير يُرفض إن حل داخل شجرة النواة (رابط رمزي)
-    from architecture.kernel_protection import resolve_output_dir
+    from architecture.kernel_protection import resolve_output_dir, guard_output_file
 except ImportError:
-    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir, guard_output_file
 REPORT_DIR = resolve_output_dir(KERNEL_ROOT.parent / "output" / "reports")
 EVIDENCE_DIR = resolve_output_dir(KERNEL_ROOT.parent / "output" / "evidence")
 
@@ -1025,7 +1025,7 @@ ARCHITECTURE FREEZE STATUS: {'ACTIVE' if all_gates_passed else 'NOT ACTIVE'}
 
 ================================================================================
 """
-        with open(REPORT_DIR / "executive_summary.txt", 'w') as f:
+        with open(guard_output_file(REPORT_DIR / "executive_summary.txt"), 'w') as f:
             f.write(summary)
         
         return summary
@@ -1056,7 +1056,7 @@ ARCHITECTURE FREEZE STATUS: {'ACTIVE' if all_gates_passed else 'NOT ACTIVE'}
     
     def _save_json(self, filename: str, data: Dict[str, Any]) -> None:
         """Save JSON data to file."""
-        filepath = REPORT_DIR / filename
+        filepath = guard_output_file(REPORT_DIR / filename)
         with open(filepath, 'w') as f:
             json.dump(data, f, indent=2, default=str)
 

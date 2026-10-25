@@ -475,6 +475,64 @@ def test_civilization_engine_refuses_symlinked_output_dir(hijacked_output):
     assert out["raised"] is True
 
 
+def test_run_script_refuses_file_symlink_inside_output_dir():
+    """اختصاق على مستوى الملف لا الدليل: دليل المخرجات عادي خارج الشجرة، لكن
+    ملف النتائج داخله رابط رمزي نحو ملف محمي داخل شجرة النواة — السكربت
+    يجب أن يرفض قبل الفتح لا أن يكتب عبر الرابط داخل الشجرة (الحراسة عند
+    تعيين الدليل لا تكفي؛ الوجهة النهائية تُفحص عند الفتح)."""
+    import subprocess
+    OUTPUT_LINK.mkdir(parents=True, exist_ok=True)
+    target = KERNEL / "_kernel_protection_probe_target2.py"
+    link = OUTPUT_LINK / "brain_test_results.json"
+    original = "original-bytes"  # محتوى معلوم — لا يجوز تغييره
+    try:
+        target.write_text(original, encoding="utf-8")
+        link.unlink(missing_ok=True)
+        link.symlink_to(target)
+        script = KERNEL / "civilization" / "engineering_brain" / "run_brain.py"
+        r = subprocess.run([sys.executable, str(script)], cwd=KERNEL,
+                           capture_output=True, text=True, timeout=180)
+        after = target.read_text(encoding="utf-8")
+        combined = r.stdout + r.stderr
+    finally:
+        link.unlink(missing_ok=True)
+        target.unlink(missing_ok=True)
+    assert r.returncode != 0, "السكربت نجح وهو يكتب عبر رابط رمزي داخل شجرة النواة"
+    assert "المادة 16" in combined
+    assert after == original, "محتوى محمي داخل الشجرة عُدّل عبر الرابط الرمزي"
+
+
+def test_finalizer_save_json_refuses_file_symlink_inside_output_dir():
+    """تغطية الفئة نفسها في المُنهي: _save_json يفحص الوجهة النهائية قبل الفتح
+    (رابط رمزي على مستوى الملف داخل دليل تقارير عادي لا يمر)."""
+    OUTPUT_LINK.mkdir(parents=True, exist_ok=True)
+    reports = OUTPUT_LINK / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    target = KERNEL / "_kernel_protection_probe_target2.py"
+    link = reports / "x.json"
+    original = "original-bytes"
+    try:
+        target.write_text(original, encoding="utf-8")
+        link.unlink(missing_ok=True)
+        link.symlink_to(target)
+        out = json.loads(run(f"""
+            import json
+            result = {{"raised": False}}
+            try:
+                import finalization.kernel_finalizer as kf
+                kf.ReportGenerator(None)._save_json("x.json", {{}})
+            except PermissionError:
+                result["raised"] = True
+            print(json.dumps(result))
+        """))
+        after = target.read_text(encoding="utf-8")
+    finally:
+        link.unlink(missing_ok=True)
+        target.unlink(missing_ok=True)
+    assert out["raised"] is True
+    assert after == original
+
+
 def test_main_save_dna_report_refuses_kernel_write(tmp_path):
     """منفذ main.py سلوكياً (كان موصولاً بالحارس بلا تغطية سلوكية — حد معلن
     في 0092): حفظ تقرير DNA داخل شجرة النواة يُرفض ولا يمس المحتوى، والوجهة

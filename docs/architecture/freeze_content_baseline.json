@@ -31,8 +31,8 @@
           "sha256": "15e472c399b5321587f0c7411ee6de7c54a8dd6935cc4ce184d53f581c374dfc"
         },
         "agos/agos-kernel/core/invariants/evidence.py": {
-          "bytes": 6721,
-          "sha256": "5e8b19088b7ec5760e3c4466cf81a680bcaf2296b5725e28481ba5035177a685"
+          "bytes": 6797,
+          "sha256": "31e09ed6801574c25c6382cc1f58d6c74a503dc380362a5f7d1d33047e83b080"
         },
         "agos/agos-kernel/core/invariants/registry.py": {
           "bytes": 5319,
@@ -227,7 +227,7 @@
           "sha256": "f7cb13de291390cb72e19c4017d311359f61b6b738f958bbf1d278c9c38be8fb"
         }
       },
-      "fingerprint": "96da537572c4daa12cdf056a90977f14c292ad3d4b074e965163e2e72c2f9a78",
+      "fingerprint": "bd1cfa229c80e2496ce25ad154e8d0e22561e0c9410d588b028db247b380b282",
       "scope": [
         "agos/agos-kernel/core/",
         "agos/agos-kernel/runtime/"
@@ -359,8 +359,8 @@
           "sha256": "c068548f1dc3bf72f180c6dd825d98ad9d3117263a8946e5ca64c8c7380fd353"
         },
         "agos/agos-kernel/architecture/kernel_protection.py": {
-          "bytes": 3335,
-          "sha256": "4ef4a6dad9960d12fd1c3e997e729fd66ad7493f6553388dc7c0316a7fa1d5d9"
+          "bytes": 3897,
+          "sha256": "8728037da6e49d532730b4a88e0575b8f6470a7bf4b91c3fac1d4042ebea5fdd"
         },
         "agos/agos-kernel/audit/library.py": {
           "bytes": 5196,
@@ -471,8 +471,8 @@
           "sha256": "85a0bf39f1b115da9db934944db8b8cf79e95282034040a2797ad46d9a700848"
         },
         "agos/agos-kernel/civilization/artifact_system/run_artifact.py": {
-          "bytes": 7930,
-          "sha256": "8335cb4408e254c0d95526c3b0d68af2bd9139639bea12fd556e4478e9dafbf9"
+          "bytes": 7987,
+          "sha256": "efa0a87c09491f7d49d7e658c38abc3357e8a5fc9a535afe84e5a02dd1cd3963"
         },
         "agos/agos-kernel/civilization/audit_runtime/__init__.py": {
           "bytes": 233,
@@ -495,12 +495,12 @@
           "sha256": "8f61458e0dad713fcedc38d7fb70fc41794c6e9ad05dd156c9c35aa8831429c2"
         },
         "agos/agos-kernel/civilization/autonomous_engineering/run_autonomous.py": {
-          "bytes": 8644,
-          "sha256": "3aad4c7585ccc821f9c6cc91a1671c98c9181e14126ffc42fb68c04d68f22cba"
+          "bytes": 8701,
+          "sha256": "d5661294d734d476925412ca9b5311e2932e55b3a1e9092e9195bdd97a4bdac2"
         },
         "agos/agos-kernel/civilization/autonomous_engineering/run_platform_batch.py": {
-          "bytes": 8837,
-          "sha256": "097f93524a1c926218f6f0ed291bd2f51c6013865d01c82d904b5cf35d2f86f7"
+          "bytes": 8894,
+          "sha256": "7673b1b36a7ea697711b7b2e3204263fe2bec72ea196ff80e641da27402d71b8"
         },
         "agos/agos-kernel/civilization/benchmark_runtime/__init__.py": {
           "bytes": 303,
@@ -559,8 +559,8 @@
           "sha256": "658ef956d5841b8ce92d136bc5aba5a49e2b1ad0de142b939cf799700f593ff4"
         },
         "agos/agos-kernel/civilization/capability_runtime/run_capability.py": {
-          "bytes": 8183,
-          "sha256": "c68450fcf12cc4cefbd9feae3a5c55685e04264957c47680149fbc5719892ba3"
+          "bytes": 8240,
+          "sha256": "48830937dd60864e615a9c4f135240d21015fc4fd2ecdcba4eb1980857e2741f"
         },
         "agos/agos-kernel/civilization/capability_runtime/runtime.py": {
           "bytes": 16747,
@@ -575,8 +575,8 @@
           "sha256": "400771263cb4f9114d9dc4ef06036e9a346173bc81d93a0aae94f0acaca966f0"
         },
         "agos/agos-kernel/civilization/core/civilization_engine.py": {
-          "bytes": 9493,
-          "sha256": "8818ea79c8380309ace8646b7a21104fd8b1b0de9b5cb742bfc4f7b508c56e70"
+          "bytes": 9531,
+          "sha256": "d4a8be65dc5a2c4303e242ccf6f684dc45ada043d9de3751b016a22e33c3cfb6"
         },
         "agos/agos-kernel/civilization/core/foundation.py": {
           "bytes": 9989,
@@ -599,16 +599,16 @@
           "sha256": "ea63d01669337d36319e19c1c0a4bf97aff51dbf45af972d8d87ca771afd5eaa"
         },
         "agos/agos-kernel/civilization/engineering_brain/run_advanced_brain.py": {
-          "bytes": 9176,
-          "sha256": "24f9c79c73ef2eba363c68206b80fac48d868686fa0b92a42e34b8619ddcec2f"
+          "bytes": 9233,
+          "sha256": "1dec818b4a9646c06423503b82ebd36c2cf6dab139125973c6d53de1aee15b4d"
         },
         "agos/agos-kernel/civilization/engineering_brain/run_brain.py": {
-          "bytes": 6706,
-          "sha256": "b1708d5d3483e7db2a0139d5c921b62ea3bc9aeef7b124725c53986f1b549468"
+          "bytes": 6763,
+          "sha256": "a714b2d9b9b620dad8bf0bdd9abb10bff2f5b48d65fa1c0a7a8c023c51d015c4"
         },
         "agos/agos-kernel/civilization/engineering_brain/run_brain_batch.py": {
-          "bytes": 7999,
-          "sha256": "8d549a52e33f351b5e58d5aacbaa73f048a44c4f047069fede92c8e3fb646f2a"
+          "bytes": 8056,
+          "sha256": "8600024fbc6407745e84c4e0197c71ebe2cffe9fcc907f826d0c7943e97bc4e6"
         },
         "agos/agos-kernel/civilization/engineering_learning/__init__.py": {
           "bytes": 175,
@@ -623,12 +623,12 @@
           "sha256": "026cfac6492ecf8ccc9e3d95241843a3f2916d9174c32a85005af6d4a81c0412"
         },
         "agos/agos-kernel/civilization/engineering_learning/run_learning.py": {
-          "bytes": 8365,
-          "sha256": "cc2d06a51c2ecbedf0cff78565518af72b85cd345c6a628585f33a751e5944fc"
+          "bytes": 8422,
+          "sha256": "c3d5f5080fdd1365fb9c3d82ba67cffa54c024adea30dda6e83b90891edd9412"
         },
         "agos/agos-kernel/civilization/engineering_learning/run_learning_batch_2.py": {
-          "bytes": 8665,
-          "sha256": "6fd5d4d78fba42f8cfcb7b0974aa3b2bb9b239b909d54da90ab7754fe363d2ee"
+          "bytes": 8722,
+          "sha256": "7ba4b4fcf331942b884fe88027aa5eaa0bf38dbea9d82bae4111f4042754cc2b"
         },
         "agos/agos-kernel/civilization/evidence_system/__init__.py": {
           "bytes": 449,
@@ -659,8 +659,8 @@
           "sha256": "2abb5b1bf5a4812233de2ba0e6c01df02b935e3c875477edfbda7ab0c959fda0"
         },
         "agos/agos-kernel/civilization/intelligence_pipeline/run_pipeline.py": {
-          "bytes": 8513,
-          "sha256": "ca7d73820ead84350ede43686615f21bfa0c9e6463c1959fc71bd3868456b222"
+          "bytes": 8570,
+          "sha256": "044f0a5906ca9ef70c2297da43483c95ae5f00dabe49d8765d72308e9c72744c"
         },
         "agos/agos-kernel/civilization/intelligence_pipeline/stages.py": {
           "bytes": 18239,
@@ -707,8 +707,8 @@
           "sha256": "8c706b24aee7040b199713c123ac449cbe4c0a800434e4b31a9b5e43e80b654f"
         },
         "agos/agos-kernel/civilization/knowledge_graph/run_graph.py": {
-          "bytes": 8071,
-          "sha256": "41b206744e7cbc48889659f67bf53875914186fee96626a8d9aaecf45aedd7da"
+          "bytes": 8128,
+          "sha256": "5a0a99124ad72cdfbe7f3cd587b60741dc5f8ab78b455e7db4848d7bbc17d291"
         },
         "agos/agos-kernel/civilization/knowledge_graph/versioning/__init__.py": {
           "bytes": 9393,
@@ -735,8 +735,8 @@
           "sha256": "d0d122c66e0f030e9f4183c4ff22ac865ad785cf6acdeade39fe694f494e26ea"
         },
         "agos/agos-kernel/civilization/mission_planner/run_planner.py": {
-          "bytes": 7682,
-          "sha256": "d6889d2fe9670ef2c69ac3acc2469b7e08174a3056714e50034cd92c237020c6"
+          "bytes": 7739,
+          "sha256": "1a11125eef71f72dd52c2333fc5b4d98181ce3326c80f5061c0925ace962087c"
         },
         "agos/agos-kernel/civilization/mission_planner/task.py": {
           "bytes": 5461,
@@ -855,8 +855,8 @@
           "sha256": "f4df175e563bf2f7aa19c19d1d1a8bd06de657315dc823a346e57bcd0f6a200c"
         },
         "agos/agos-kernel/civilization/provider_runtime/run_provider.py": {
-          "bytes": 6873,
-          "sha256": "0e3b1d6341f8587f9e98b53e04e1d38512156f5ca507c9f831e8cf611f8c1f63"
+          "bytes": 6930,
+          "sha256": "8ab36ef33939f480487897147cd06a6380e44a201ff5cc898f75be06c5769f13"
         },
         "agos/agos-kernel/civilization/provider_runtime/runtime.py": {
           "bytes": 15108,
@@ -891,24 +891,24 @@
           "sha256": "5d259c67e14f51e62ac728fa91829dfe3c245e08d1007f381537c1656711c49b"
         },
         "agos/agos-kernel/civilization/reasoning_runtime/run_reasoning.py": {
-          "bytes": 7175,
-          "sha256": "b4647d9b87544472eb1fff8e8d11b2612c96c33a292d7d65471a6313114c2133"
+          "bytes": 7232,
+          "sha256": "81f2508040abf01b63b1eb51060ae6dfb83c6b087001759b55e51cf44d33f825"
         },
         "agos/agos-kernel/civilization/reasoning_runtime/runtime.py": {
           "bytes": 16504,
           "sha256": "cb2a101e3ddeb00a96d1121c5c49bcc8c0ca44de00f63ec3bc1b1fc01da16af6"
         },
         "agos/agos-kernel/civilization/run_batch.py": {
-          "bytes": 6881,
-          "sha256": "9b0fc6b7ebc7fc58e13491077d12aa4a8bfa0ac0b09ddaaa269756cc43344bee"
+          "bytes": 6938,
+          "sha256": "7502c050167f1720099f37154a651eb504ddd1ed82c66e8acc2da350235cff02"
         },
         "agos/agos-kernel/civilization/run_final_batch.py": {
-          "bytes": 7150,
-          "sha256": "87d9ccea97aa00ab5d6ca66952758493aa88849d54e3d6b6808380342930b509"
+          "bytes": 7207,
+          "sha256": "c00240504501c5504d025dda18138e2b61378527ccb94d33f847c9be4900ed75"
         },
         "agos/agos-kernel/civilization/run_foundation.py": {
-          "bytes": 6512,
-          "sha256": "e6b8266db438974a4ed337b795f9c125f486d5832b7a82482660f03ecba329b0"
+          "bytes": 6569,
+          "sha256": "e0ec996bb3477f4310e423c6421dde90be69cea6c8b582bf0b38bc192e09764f"
         },
         "agos/agos-kernel/civilization/runtime.py": {
           "bytes": 12545,
@@ -1015,8 +1015,8 @@
           "sha256": "15e472c399b5321587f0c7411ee6de7c54a8dd6935cc4ce184d53f581c374dfc"
         },
         "agos/agos-kernel/core/invariants/evidence.py": {
-          "bytes": 6721,
-          "sha256": "5e8b19088b7ec5760e3c4466cf81a680bcaf2296b5725e28481ba5035177a685"
+          "bytes": 6797,
+          "sha256": "31e09ed6801574c25c6382cc1f58d6c74a503dc380362a5f7d1d33047e83b080"
         },
         "agos/agos-kernel/core/invariants/registry.py": {
           "bytes": 5319,
@@ -1167,12 +1167,12 @@
           "sha256": "7233ea91b2526a2672f4526f433ef6e9bffd664b2d5a25273a48a81bd1e2d4f3"
         },
         "agos/agos-kernel/ecosystem/run_ecosystem.py": {
-          "bytes": 8200,
-          "sha256": "deafaab4ec59e4a92c7a233f8efe7d5d5890490bbc79b36e3c9669ac48c82fc3"
+          "bytes": 8257,
+          "sha256": "0630f7f8cfae1da4aab17dbd2500700e648db4c673a73bd2f4f58e95933e6946"
         },
         "agos/agos-kernel/ecosystem/run_ecosystem_batch_2.py": {
-          "bytes": 8351,
-          "sha256": "7dc02ff25d4783a1712a3d36f99f1d661c84fced25e620d14b7687917fab701a"
+          "bytes": 8408,
+          "sha256": "b013a035131983cdf007f2f919f536d8a19f05b8abc1d829b162329e771bf2e7"
         },
         "agos/agos-kernel/enterprise/__init__.py": {
           "bytes": 22,
@@ -1187,12 +1187,12 @@
           "sha256": "dbb47f1ad316849013392a65733eaa43d987828027d05f3ff08b6d6f1326488a"
         },
         "agos/agos-kernel/enterprise/run_enterprise.py": {
-          "bytes": 8441,
-          "sha256": "a3c6abc7337557ab1e22ea6460781d4e2e952b5a0c28143d765b9c18a4a08d40"
+          "bytes": 8498,
+          "sha256": "0c0503b5ce372a3aa7a16ef3bde596cfe5b19094634647a01f013bcf07cdecef"
         },
         "agos/agos-kernel/enterprise/run_enterprise_batch_2.py": {
-          "bytes": 8731,
-          "sha256": "0f56816e05a11373d6545a17de918dbd2d85e127f0122f5042c459f9a1f780e0"
+          "bytes": 8788,
+          "sha256": "4b39c864ed5f5573f9cd9a20f4c3ca00ae81dbec1f0220af0151c082f9c496b0"
         },
         "agos/agos-kernel/event-engine/__init__.py": {
           "bytes": 6467,
@@ -1219,8 +1219,8 @@
           "sha256": "2bd98c6772d4e15849a70f499553e4c42c87870bc2a5a64a5c9507ee73c1576c"
         },
         "agos/agos-kernel/evolution/run_evolution.py": {
-          "bytes": 7661,
-          "sha256": "7cd87bdeebd0591b845e76a3a34aab20b9fac559ea2d63cec85438d1b454da4b"
+          "bytes": 7718,
+          "sha256": "7176b3c7cfa0907b781afc0b162ddce3847bab31872c0bd3794b710b858e476a"
         },
         "agos/agos-kernel/execution-context/__init__.py": {
           "bytes": 8338,
@@ -1287,12 +1287,12 @@
           "sha256": "4f36c365249e330efa6cda9d687afbd5befb14c710f9e8afb7b9f1420eef6798"
         },
         "agos/agos-kernel/federation/run_federation.py": {
-          "bytes": 8435,
-          "sha256": "97d6602a8d943a7c89f95d66c1c8e9df9594b9db916edbb0d49ab90c5d3d98cf"
+          "bytes": 8492,
+          "sha256": "a0f3cd1b19cc08cb5704878eaeb2d2404da1eb2294399e61371a97d012de540b"
         },
         "agos/agos-kernel/federation/run_federation_batch_2.py": {
-          "bytes": 8699,
-          "sha256": "e3496fbcfb3adfe112cbab2ac05d6a77e00d3937e42272409a7a03cd0a1e307f"
+          "bytes": 8756,
+          "sha256": "1b414445dd244d7293e9b05031ebc5bb423a42e6922feca2208ea53d1a801d67"
         },
         "agos/agos-kernel/finalization/ARCHITECTURE_FINGERPRINT.json": {
           "bytes": 294,
@@ -1319,8 +1319,8 @@
           "sha256": "6e267d935bfdce05b86dfe4f61ea98667b823076456c8769b5c20372f88a27dd"
         },
         "agos/agos-kernel/finalization/kernel_finalizer.py": {
-          "bytes": 44024,
-          "sha256": "5982ff3cf97b926910babe209e3e3751741191f76f3e32ca5b49e210ef1e0f22"
+          "bytes": 44100,
+          "sha256": "1f7df8de2e656d7daa5d744318888d8976bc0bee9542d08d2d1b4b85510acdd9"
         },
         "agos/agos-kernel/finalization/reports/benchmark_report.json": {
           "bytes": 368,
@@ -2043,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "7665e5dcdc410e86fd2e56a38c604cce158982962a38b31b3fd6c6896b16a108",
+      "fingerprint": "1924855db348aa30d0fdbfe151f268f9fc71aa3d1bc3918f9b8c00fef2b2afcf",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2123,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "4774a6541446a66dca2a53749a02a7a72c2be3fe64b8b3d449e210843c32eff1",
+  "fingerprint": "cfd2a2a3e932f7ca9168e550a3c7f63a60a8de53f644c8d9f88a7a62b2d0fb5b",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

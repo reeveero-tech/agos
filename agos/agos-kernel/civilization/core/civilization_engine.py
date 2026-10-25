@@ -8,7 +8,7 @@ The main engine for the Foundation Civilization.
 import os as _agos_os
 from pathlib import Path as _AgosPath
 _AGOS_ROOT = _AgosPath(_agos_os.environ.get('AGOS_ROOT') or _AgosPath(__file__).resolve().parents[3])
-from agos_kernel.architecture.kernel_protection import resolve_output_dir  # المادة 16 — الرابط الرمزي للمخرجات نحو الشجرة يُرفض
+from agos_kernel.architecture.kernel_protection import resolve_output_dir, guard_output_file  # المادة 16 — الرابط الرمزي للمخرجات نحو الشجرة يُرفض
 _AGOS_KERNEL = _AGOS_ROOT / 'agos-kernel'
 
 from typing import Dict, List, Optional, Any
@@ -214,7 +214,7 @@ class CivilizationEngine:
     def _save_results(self, results: Dict) -> None:
         """Save processing results."""
         repo_name = Path(results['repository']).name if 'repository' in results else 'unknown'
-        output_file = self._output_dir / f"{repo_name}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+        output_file = guard_output_file(self._output_dir / f"{repo_name}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json")
         
         self._output_dir.mkdir(parents=True, exist_ok=True)
         

@@ -60,3 +60,15 @@ def resolve_output_dir(base: Any) -> Path:
     path = Path(base)
     guard_kernel_write(path)
     return path
+
+
+def guard_output_file(target: Any) -> Path:
+    """وجهة مخرجات تُفحص عند الفتح — لا يكفي فحص الدليل عند تعيينه.
+
+    رابط رمزي على مستوى الملف داخل دليل المخرجات يحل إلى محتوى النواة:
+    حل المسار الحقيقي للوجهة النهائية يكشفه قبل الفتح فلا تُكتب البايتات
+    عبر الرابط داخل الشجرة (المادة 16).
+    """
+    path = Path(target)
+    guard_kernel_write(path)
+    return path

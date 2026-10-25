@@ -19,9 +19,9 @@ from datetime import datetime, timezone
 # Add to path
 sys.path.insert(0, str(_AGOS_ROOT))
 try:  # المادة 16 — مسار المخرجات يُرفض إن حل داخل شجرة النواة (رابط رمزي)
-    from agos_kernel.architecture.kernel_protection import resolve_output_dir
+    from agos_kernel.architecture.kernel_protection import resolve_output_dir, guard_output_file
 except ImportError:  # تشغيل مباشر من داخل الشجرة
-    from architecture.kernel_protection import resolve_output_dir
+    from architecture.kernel_protection import resolve_output_dir, guard_output_file
 
 
 def test_intelligence_package():
@@ -245,7 +245,7 @@ def run_pipeline_tests():
             'evidence_artifacts': len(results.get('evidence', {}).get('artifacts', [])),
         }
         
-        with open(output_dir / 'pipeline_test_results.json', 'w') as f:
+        with open(guard_output_file(output_dir / 'pipeline_test_results.json'), 'w') as f:
             json.dump(output, f, indent=2)
         
         print(f"\nResults saved to: {output_dir / 'pipeline_test_results.json'}")
