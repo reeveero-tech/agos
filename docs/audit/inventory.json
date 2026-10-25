@@ -1,8 +1,8 @@
 {
  "totals": {
   "files": 537,
-  "lines": 102829,
-  "functions": 6186,
+  "lines": 102875,
+  "functions": 6187,
   "stub_functions": 781,
   "hardcoded_paths": 0,
   "syntax_errors": 0,
@@ -101,8 +101,8 @@
   },
   "agos-kernel/architecture": {
    "files": 1,
-   "lines": 444,
-   "functions": 16,
+   "lines": 490,
+   "functions": 17,
    "stub_functions": 0,
    "hardcoded_paths": 0,
    "syntax_errors": 0,
@@ -2028,10 +2028,10 @@
    "path": "agos/agos-kernel/architecture/freeze.py",
    "module": "architecture.freeze",
    "root": "kernel",
-   "lines": 444,
+   "lines": 490,
    "syntax_ok": true,
    "classes": 3,
-   "functions": 16,
+   "functions": 17,
    "stub_functions": 0,
    "abstract_functions": 0,
    "imports": [
@@ -16970,6 +16970,7 @@
     "agos_kernel.knowledge.models",
     "copy",
     "dataclasses",
+    "importlib.util",
     "json",
     "pathlib"
    ],

@@ -355,8 +355,8 @@
           "sha256": "1a1b523db127c989c92c19a64742f118aecd8077e87537829a09b61382135d54"
         },
         "agos/agos-kernel/architecture/freeze.py": {
-          "bytes": 18901,
-          "sha256": "7df01eaafe6e36b31cebc51f874473a060307962269dd63c25fa094e027c1c2d"
+          "bytes": 22328,
+          "sha256": "c068548f1dc3bf72f180c6dd825d98ad9d3117263a8946e5ca64c8c7380fd353"
         },
         "agos/agos-kernel/audit/library.py": {
           "bytes": 5196,
@@ -2039,7 +2039,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "b88cfde099412d06ef2fbca638ee7697c592dd2ca75f8f660e7f01b6c7b536b2",
+      "fingerprint": "df655e79e6e32f3bb936d62126935d321f29afd8374fc05934f5d619dc0dbcab",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2119,7 +2119,7 @@
       ]
     }
   },
-  "fingerprint": "dd9cc9368b58a4af2178fbb8f67eb55340f78346f2a20bc85504f36057657b46",
+  "fingerprint": "9b19b368f623a69830fceef53daac61f45da7af054ed9bcf05453eeea636f7ef",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

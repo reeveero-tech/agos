@@ -28,7 +28,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | `__init__.py` | namespace | 1 | 168 | 0 | yes | no | yes | L1 | R-F-005 |
 | L1 | `agos-kernel/agos_kernel` | namespace | 1 | 14 | 0 | yes | no | yes | L1 | R-F-003, R-F-005 |
-| L1 | `agos-kernel/architecture` | governance | 1 | 444 | 0 | yes | no | yes | L1 | R-W1-001 |
+| L1 | `agos-kernel/architecture` | governance | 1 | 490 | 0 | yes | no | yes | L1 | R-W1-001 |
 | L1 | `agos-kernel/bootstrap` | boot | 1 | 277 | 0 | yes | no | no | L1 | R-W3-001 |
 | L1 | `agos-kernel/bootstrapper` | boot | 1 | 217 | 0 | yes | yes | yes | L4 | R-F-004, R-W3-001 |
 | L1 | `agos-kernel/container` | boot | 1 | 165 | 0 | yes | yes | no | L2 | R-W3-001 |

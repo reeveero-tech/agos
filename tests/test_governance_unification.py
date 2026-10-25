@@ -1708,18 +1708,75 @@ def test_freeze_content_missing_baseline_is_named_inability(tmp_path):
 
 def test_freeze_content_baseline_committed_and_matching():
     """خط الأساس المعتمد (سجل العمل 0085 — قرار المالك: اعتماد النطاق مع
-    تصحيح مسار النواة): خط أساس متعقب موجود ويطابق الشجرة الفعلية —
-    التحقق يعطي verified=True بصفر نتائج غير تطابق؛ وهذا هو الإنفاذ: أي
-    تغيير لاحق في ملفات النطاق المجمد يكسر هذا الاختبار حتى يُعاد توليد
-    الخط في الالتزام نفسه (عملية حوكمة موثقة لا تعديل صامت)."""
-    from agos_kernel.architecture.freeze import verify_freeze_content
+    تصحيح مسار النواة): التزام مثبت على محورين معاً (سجل العمل 0086):
+    (1) الالتزام بالنطاق — أسماء المكونات ومساراتها في الخط تطابق حرفياً
+    ADOPTED_SCOPE (المرجع المعلن في أداة التوليد — مطابقة حرفية لجدول
+    ADR-0010): خط أساس صالح الشكل بنطاق مختزل يُرفض هنا قبل فحص المحتوى؛
+    (2) التطابق مع الشجرة — verified=True بصفر نتائج غير تطابق. وهذا هو
+    الإنفاذ: أي تغيير لاحق في ملفات النطاق المجمد يكسر هذا الاختبار حتى
+    يُعاد توليد الخط في الالتزام نفسه (عملية حوكمة موثقة لا تعديل صامت)."""
+    from agos_kernel.architecture.freeze import (
+        verify_freeze_baseline_scope, verify_freeze_content)
     repo_root = Path(__file__).resolve().parent.parent
+    # المحور الأول: الالتزام بالنطاق المعتمد المستقل لا بما يحمله ملف الخط
+    adopted = _adopted_freeze_scope()
+    baseline_path = (repo_root / "docs" / "architecture"
+                     / "freeze_content_baseline.json")
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    scope_findings = verify_freeze_baseline_scope(baseline, adopted)
+    assert scope_findings == [], scope_findings
+    # المحور الثاني: التطابق مع الشجرة
     report = verify_freeze_content(repo_root)
     assert report["verified"] is True, report["reason"]
     non_match = [f for f in report["findings"] if f["kind"] != "match"]
     assert non_match == []
     assert report["files_checked"] > 0
     assert report["fingerprint"] is not None
+
+
+def _adopted_freeze_scope():
+    """تحميل النطاق المعتمد من مرجعه المعلن (أداة التوليد) — مصدر واحد لا
+    نسخة ثانية في الاختبار: مطابقة حرفية لجدول ADR-0010."""
+    import importlib.util
+    tool = (Path(__file__).resolve().parent.parent / "tools"
+           / "governance" / "generate_freeze_baseline.py")
+    spec = importlib.util.spec_from_file_location("generate_freeze_baseline", tool)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.ADOPTED_SCOPE
+
+
+def test_freeze_baseline_scope_rejects_reduced_scope(tmp_path):
+    """الاختبار الحاسم لثغرة إنفاذ النطاق (سجل العمل 0086): خط أساس صالح
+    الشكل بنطاق مختزل (بلا مكوّن النواة) كان يُقبل من فحص المحتوى وحده —
+    فحص المستودع الحقيقي بالخط المختزل كان ينجح (أثبت عملياً قبل الإصلاح:
+    54 فحصاً بلا النواة وverified=True). الآن مطابقة النطاق ترفضه مسمى:
+    missing_component للنواة، وscope_mismatch لمسار مخالف، وextra_component
+    لمكوّن غير معتمد — والقائمة الفارغة وحدها إثبات التزام."""
+    from agos_kernel.architecture.freeze import (
+        build_freeze_content_baseline, verify_freeze_baseline_scope)
+    _freeze_content_fixture(tmp_path)
+    adopted = {"core_runtime": ["core"], "policy_ontology": ["policies"]}
+    # خط مختزل: مكوّن السياسة محذوف ومسار core مخالف ومكوّن زائد
+    reduced = {"core_runtime": ["policies"], "extra": ["core"]}
+    baseline = build_freeze_content_baseline(tmp_path, reduced)
+    findings = verify_freeze_baseline_scope(baseline, adopted)
+    kinds = {f["kind"] for f in findings}
+    assert "missing_component" in kinds
+    missing = [f for f in findings
+               if f["kind"] == "missing_component"
+               and f["component"] == "policy_ontology"]
+    assert missing and missing[0]["expected"] == ["policies"]
+    assert "scope_mismatch" in kinds
+    mismatch = [f for f in findings if f["kind"] == "scope_mismatch"]
+    assert mismatch and mismatch[0]["expected"] == ["core"]
+    assert mismatch[0]["actual"] == ["policies"]
+    assert "extra_component" in kinds
+    extra = [f for f in findings if f["kind"] == "extra_component"]
+    assert extra and extra[0]["component"] == "extra"
+    # والمطابقة الكاملة تعطي القائمة الفارغة — إثبات التزام لا ادعاء
+    full = build_freeze_content_baseline(tmp_path, adopted)
+    assert verify_freeze_baseline_scope(full, adopted) == []
 
 
 def test_spec_comes_from_constitution_text():

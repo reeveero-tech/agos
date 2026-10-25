@@ -304,6 +304,52 @@ def verify_freeze_content(
     return report
 
 
+def verify_freeze_baseline_scope(
+    baseline: Dict[str, Any], adopted_scope: Dict[str, Sequence[str]]
+) -> List[Dict[str, Any]]:
+    """مطابقة نطاق خط الأساس مع النطاق المعتمد المستقل — قبل فحص المحتوى.
+
+    التحقق من المحتوى وحده يقرأ النطاق من ملف الخط نفسه، فخط أساس صالح
+    الشكل بنطاق مختزل (كحذف مكوّن النواة) يطابق شجرته ويَعبر — الفحص يثبت
+    التطابق مع نطاق الملف لا الالتزام بالنطاق المعتمد (سجل العمل 0086:
+    الثغرة أثبتت بخط مختزل مقبول من فحص المحتوى قبل الإصلاح). هذه الدالة
+    تجعل الالتزام قابلاً للإثبات: مطابقة أسماء المكونات ومجموعة مسارات نطاق كل
+    مكوّن (الترتيب داخل المكوّن ليس دلالياً — دالة البناء تخزنها مرتبة
+    حتمياً) مع مرجع معلن مستقل عن ملف الخط (كADOPTED_SCOPE في أداة التوليد —
+    المطابقة الحرفية لجدول ADR مسؤولية توثيق المرجع). النتائج المسماة:
+    missing_component (مكوّن معتمد غائب عن الخط)، extra_component (مكوّن في
+    الخط خارج المعتمد)، scope_mismatch (مكوّن موجود بمسارات مخالفة —
+    المعتمد والفعلي معروضان معاً). قائمة فارغة = التزام مثبت بالنطاق؛
+    والدالة مقارنة خالصة لا تلمس الشجرة ولا الملفات.
+    """
+    findings: List[Dict[str, Any]] = []
+    for component in sorted(set(adopted_scope) | set(baseline.get("components", {}))):
+        adopted_paths = list(adopted_scope.get(component, []))
+        baseline_component = baseline.get("components", {}).get(component)
+        if baseline_component is None and component in adopted_scope:
+            findings.append({
+                "kind": "missing_component", "component": component,
+                "detail": "مكوّن معتمد غائب عن خط الأساس",
+                "expected": adopted_paths, "actual": None})
+        elif component not in adopted_scope:
+            findings.append({
+                "kind": "extra_component", "component": component,
+                "detail": "مكوّن في خط الأساس خارج النطاق المعتمد",
+                "expected": None,
+                "actual": list(baseline_component.get("scope", []))})
+        else:
+            actual_paths = list(baseline_component.get("scope", []))
+            # ترتيب المسارات داخل المكوّن ليس دلالياً — مجموعة المسارات هي
+            # الالتزام؛ ودالة البناء تخزنها مرتبة حتمياً فالمقارنة على
+            # المجموعة (مرتبة الطرفين) لا على الترتيب الحرفي
+            if sorted(adopted_paths) != sorted(actual_paths):
+                findings.append({
+                    "kind": "scope_mismatch", "component": component,
+                    "detail": "مسارات نطاق المكوّن تخالف المعتمد",
+                    "expected": adopted_paths, "actual": actual_paths})
+    return findings
+
+
 class ArchitectureFreezeManager:
     """Manages architecture freeze."""
     
