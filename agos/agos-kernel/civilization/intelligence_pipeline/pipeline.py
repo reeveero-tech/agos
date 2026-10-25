@@ -329,6 +329,8 @@ class EngineeringIntelligencePipeline:
     def save_package(self, package: EngineeringIntelligencePackage, output_path: str) -> None:
         """Save package to file."""
         path = Path(output_path)
+        from agos_kernel.architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(path)  # المادة 16
         path.parent.mkdir(parents=True, exist_ok=True)
         
         with open(path, 'w') as f:

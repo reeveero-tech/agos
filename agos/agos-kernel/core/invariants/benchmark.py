@@ -162,5 +162,7 @@ class InvariantBenchmark:
             'performance_summary': self.get_performance_summary(),
         }
         
+        from architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(output_path)  # المادة 16
         with open(output_path, 'w') as f:
             json.dump(data, f, indent=2)

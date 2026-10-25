@@ -221,6 +221,8 @@ class KernelSealCertificate:
     
     def save(self, output_path: Path) -> None:
         """Save certificate to file."""
+        from architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(output_path)  # المادة 16 — قبل أي توليد
         certificate = self.generate()
         
         output_path.parent.mkdir(parents=True, exist_ok=True)

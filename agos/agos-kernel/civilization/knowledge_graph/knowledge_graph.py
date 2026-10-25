@@ -424,6 +424,8 @@ class KnowledgeGraph:
         }
     
     def save(self, path: str) -> None:
+        from agos_kernel.architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(path)  # المادة 16
         """Save graph to file."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)

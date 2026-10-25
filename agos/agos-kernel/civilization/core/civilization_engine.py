@@ -57,7 +57,7 @@ class CivilizationEngine:
         self.foundation = Foundation(self.config)
         self.stats = CivilizationEngineStats()
         self.started_at = datetime.now(timezone.utc)
-        self._output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
+        self._output_dir = Path(str(_AGOS_ROOT / 'output'))  # مخرجات خارج شجرة النواة (المادة 16)
     
     def initialize(self) -> bool:
         """Initialize the civilization engine."""

@@ -14,3 +14,6 @@ RepositoryDNA.json
 .DS_Store
 .vscode/
 .idea/
+
+# Runtime outputs (Article 16 — outputs live outside the kernel tree)
+agos/output/

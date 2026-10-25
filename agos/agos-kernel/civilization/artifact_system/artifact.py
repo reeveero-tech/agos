@@ -228,6 +228,8 @@ class ArtifactStore:
         
         # Save artifact
         path = os.path.join(type_dir, f"{artifact.artifact_id}.json")
+        from agos_kernel.architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(path)  # المادة 16 — المسار النهائي المحلول
         with open(path, 'w') as f:
             json.dump(artifact.to_dict(), f, indent=2, default=str)
         

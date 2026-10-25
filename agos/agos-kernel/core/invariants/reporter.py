@@ -179,5 +179,7 @@ class InvariantReporter:
         else:
             content = self.generate_summary()
         
+        from architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(path)  # المادة 16
         with open(path, 'w') as f:
             f.write(content)

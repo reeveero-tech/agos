@@ -180,7 +180,7 @@ def main():
         print("="*60)
         
         # Save results
-        output_dir = Path(str(_AGOS_KERNEL / 'civilization/output'))
+        output_dir = Path(str(_AGOS_ROOT / 'output'))  # مخرجات خارج شجرة النواة (المادة 16)
         output_dir.mkdir(parents=True, exist_ok=True)
         
         with open(output_dir / 'final_batch_000013_000020_results.json', 'w') as f:

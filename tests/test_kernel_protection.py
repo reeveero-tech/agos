@@ -155,3 +155,227 @@ def test_archive_extract_refuses_kernel_escape(tmp_path):
     # الرفض صريح، والاستخراج لم يكتب داخل الشجرة
     assert out["raised"] is True
     assert out["exists_after"] is False
+
+
+# ---------- الشريحة 0092: حراسة بقية منافذ الكتابة ----------
+
+def test_write_skill_refuses_kernel_write():
+    """منفذ مهارة كتابة الملف (skills/file) — كتابة إلى شجرة النواة ترفض
+    (فشل صريح بسبب واضح في المخرج، لا نجاح وهمي) ولا يُنشئ الملف."""
+    out = json.loads(run(f"""
+        import json, os
+        from skills.file.operations import WriteFileSkill
+        probe = {str(PROBE)!r}
+        result = WriteFileSkill().execute({{"path": probe, "content": "x"}})
+        print(json.dumps({{"result": result, "exists": os.path.exists(probe)}}))
+    """))
+    assert out["result"]["success"] is False
+    assert "المادة 16" in out["result"]["error"]
+    assert out["exists"] is False
+
+
+def test_delete_skill_refuses_kernel_deletion():
+    """منفذ مهارة حذف الملف — الحذف تعديل أيضاً (المادة 16): حذف ملف داخل
+    شجرة النواة يُرفض صراحة."""
+    out = json.loads(run(f"""
+        import json, os
+        from skills.file.operations import DeleteFileSkill
+        probe = {str(PROBE)!r}
+        open(probe, "w").write("x")  # موجود مسبقاً — الحذف هو المطلوب رفضه
+        result = DeleteFileSkill().execute({{"path": probe}})
+        still = os.path.exists(probe)
+        os.remove(probe)  # تنظيف
+        print(json.dumps({{"result": result, "still_exists": still}}))
+    """))
+    assert out["result"]["success"] is False
+    assert "المادة 16" in out["result"]["error"]
+    assert out["still_exists"] is True
+
+
+def test_invariants_reporter_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from core.invariants.reporter import InvariantReporter
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            InvariantReporter().save_report(probe)
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_invariants_benchmark_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from core.invariants.benchmark import InvariantBenchmark
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            InvariantBenchmark().export_benchmark(probe)
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_evidence_generator_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from pathlib import Path
+        from core.invariants.evidence import EvidenceGenerator, EvidencePackage
+        probe_dir = {str(KERNEL)!r}
+        result = {{"raised": False}}
+        try:
+            EvidenceGenerator().export_evidence_package(EvidencePackage(), Path(probe_dir))
+        except PermissionError:
+            result["raised"] = True
+        result["probe"] = os.path.exists(probe_dir + "/_kernel_protection_probe.py")
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["probe"] is False
+
+
+def test_knowledge_graph_save_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from civilization.knowledge_graph.knowledge_graph import KnowledgeGraph
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            KnowledgeGraph().save(probe)
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_graph_versioning_save_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from civilization.knowledge_graph.knowledge_graph import KnowledgeGraph
+        from civilization.knowledge_graph.versioning import GraphVersioning
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            GraphVersioning(KnowledgeGraph()).save_versions(probe)
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_artifact_store_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from civilization.artifact_system.artifact import ArtifactStore, Artifact
+        probe_root = {str(KERNEL)!r}
+        result = {{"raised": False}}
+        try:
+            ArtifactStore(storage_path=probe_root).save(Artifact())
+        except PermissionError:
+            result["raised"] = True
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True
+
+
+def test_intelligence_pipeline_save_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from civilization.intelligence_pipeline.pipeline import EngineeringIntelligencePipeline
+        from civilization.intelligence_pipeline.intelligence_package import EngineeringIntelligencePackage
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            EngineeringIntelligencePipeline().save_package(EngineeringIntelligencePackage(), probe)
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_engineering_report_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from pathlib import Path
+        from civilization.capabilities.engineering_report import EngineeringReporter
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            EngineeringReporter().export_report({{"title": "x"}}, Path(probe))
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_seal_certificate_save_refuses_kernel_write():
+    out = json.loads(run(f"""
+        import json, os
+        from pathlib import Path
+        from core.seal import KernelSealCertificate
+        probe = {str(PROBE)!r}
+        result = {{"raised": False}}
+        try:
+            KernelSealCertificate(kernel_root=Path({str(KERNEL)!r})).save(Path(probe))
+        except PermissionError:
+            result["raised"] = True
+        result["exists"] = os.path.exists(probe)
+        print(json.dumps(result))
+    """))
+    assert out["raised"] is True and out["exists"] is False
+
+
+def test_no_script_writes_runtime_output_into_kernel_tree():
+    """رتشيت المصدر: لا ملف بايثون تحت شجرة النواة يستهدف دليل إخراج داخل
+    الشجرة (civilization/output) — المخرجات التشغيلية تُكتب خارجها."""
+    offenders = []
+    for p in KERNEL.rglob("*.py"):
+        if "__pycache__" in p.parts:
+            continue
+        try:
+            if "civilization/output" in p.read_text(encoding="utf-8"):
+                offenders.append(p.relative_to(REPO).as_posix())
+        except (OSError, UnicodeDecodeError):
+            continue
+    assert offenders == []
+
+
+def test_kernel_finalizer_report_dir_outside_tree():
+    """دليل تقارير المُنهي غير داخل شجرة النواة — المخرجات خارج الشجرة."""
+    out = json.loads(run(f"""
+        import json
+        from pathlib import Path
+        from finalization.kernel_finalizer import REPORT_DIR
+        kernel_root = Path({str(KERNEL)!r}).resolve()
+        print(json.dumps({{"inside": str(REPORT_DIR.resolve()).startswith(str(kernel_root))}}))
+    """))
+    assert out["inside"] is False
+
+
+def test_civilization_engine_output_dir_outside_tree():
+    """محرك الحضارة يكتب مخرجاته خارج شجرة النواة."""
+    out = json.loads(run(f"""
+        import json
+        from pathlib import Path
+        from civilization.core.civilization_engine import CivilizationEngine
+        engine = CivilizationEngine()
+        kernel_root = Path({str(KERNEL)!r}).resolve()
+        out_dir = Path(str(engine._output_dir)).resolve()
+        print(json.dumps({{"inside": kernel_root in out_dir.parents}}))
+    """))
+    assert out["inside"] is False

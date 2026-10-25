@@ -185,6 +185,8 @@ class EngineeringReporter:
         }
     
     def export_report(self, report: Dict, output_path: Path) -> None:
+        from agos_kernel.architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(output_path)  # المادة 16
         """Export report to file."""
         output_path.parent.mkdir(parents=True, exist_ok=True)
         

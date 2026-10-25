@@ -63,6 +63,8 @@ def main():
     print("[SUCCESS] Mission completed!")
 
     output_file = "RepositoryDNA.json"
+    from architecture.kernel_protection import guard_kernel_write
+    guard_kernel_write(output_file)  # المادة 16 — cwd قد يكون داخل الشجرة
     with open(output_file, "w") as f:
         json.dump(dna.to_dict(), f, indent=2, default=str)
     print(f"[OUTPUT] Saved to {output_file}")

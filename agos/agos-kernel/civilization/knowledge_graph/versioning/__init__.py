@@ -170,6 +170,8 @@ class GraphVersioning:
         return hashlib.sha256(content.encode()).hexdigest()
     
     def save_versions(self, path: str) -> None:
+        from agos_kernel.architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(path)  # المادة 16
         """
         Save all versions to disk.
         """

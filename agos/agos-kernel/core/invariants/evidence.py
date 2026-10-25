@@ -167,6 +167,8 @@ class EvidenceGenerator:
         output_dir: Path
     ) -> None:
         """Export evidence package to files."""
+        from architecture.kernel_protection import guard_kernel_write
+        guard_kernel_write(output_dir)  # المادة 16 — كل الملفات تحته
         output_dir.mkdir(parents=True, exist_ok=True)
         
         # Export manifest

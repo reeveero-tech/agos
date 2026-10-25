@@ -4,6 +4,11 @@ import shutil
 from typing import Any, Dict, List, Optional
 from ..base import Skill
 
+try:  # مسارا الاستيراد للنواة (المادة 16)
+    from ...architecture.kernel_protection import guard_kernel_write
+except ImportError:  # pragma: no cover
+    from agos_kernel.architecture.kernel_protection import guard_kernel_write
+
 
 class ReadFileSkill(Skill):
     """Read a file."""
@@ -39,6 +44,7 @@ class WriteFileSkill(Skill):
         content = input_data.get("content", "")
         
         try:
+            guard_kernel_write(path)  # المادة 16
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "w") as f:
                 f.write(content)
@@ -59,6 +65,7 @@ class DeleteFileSkill(Skill):
         path = input_data.get("path", "")
         
         try:
+            guard_kernel_write(path)  # الحذف تعديل أيضاً (المادة 16)
             if os.path.isdir(path):
                 shutil.rmtree(path)
             else:
@@ -81,6 +88,8 @@ class MoveFileSkill(Skill):
         dst = input_data.get("dst", "")
         
         try:
+            guard_kernel_write(src)  # النقل تعديل للمصدر والهدف (المادة 16)
+            guard_kernel_write(dst)
             shutil.move(src, dst)
             return {"success": True, "src": src, "dst": dst}
         except Exception as e:
@@ -100,6 +109,7 @@ class CopyFileSkill(Skill):
         dst = input_data.get("dst", "")
         
         try:
+            guard_kernel_write(dst)  # النسخ إلى النواة تعديل (المادة 16)
             if os.path.isdir(src):
                 shutil.copytree(src, dst)
             else:
