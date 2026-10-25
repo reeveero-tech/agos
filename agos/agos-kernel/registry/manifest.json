@@ -18,7 +18,7 @@
       "class": "capabilities.foundation_extra.ConfigurationAnalysisCapability",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "WalkRepository"
       ]
     },
     {
@@ -27,7 +27,7 @@
       "class": "capabilities.foundation_extra.DocumentationAnalysisCapability",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "WalkRepository"
       ]
     },
     {
@@ -44,7 +44,7 @@
       "class": "capabilities.foundation_extra.InfrastructureAnalysisCapability",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "WalkRepository"
       ]
     },
     {
@@ -53,7 +53,7 @@
       "class": "capabilities.foundation_extra.LicenseAnalysisCapability",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "WalkRepository"
       ]
     },
     {
@@ -72,7 +72,7 @@
       "class": "capabilities.foundation_extra.RepositoryDNAGenerationCapability",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "WalkRepository"
       ]
     },
     {
@@ -90,7 +90,7 @@
       "class": "capabilities.foundation_extra.SecurityScanCapability",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "WalkRepository"
       ]
     }
   ],
@@ -101,7 +101,8 @@
       "class": "providers.LocalRepositoryProvider",
       "skills": [
         "CloneRepository",
-        "ReadRepository"
+        "ReadRepository",
+        "WalkRepository"
       ]
     }
   ]

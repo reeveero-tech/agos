@@ -3,17 +3,26 @@ import os
 import subprocess
 import tempfile
 from pathlib import PurePosixPath
-from typing import Generator
+from typing import Generator, Optional
 
 from contracts import FileNode, RepositoryMetadata, RepositorySnapshot
 from interfaces import IProvider, SkillInput, SkillOutput
 
 
 class CloneRepositoryInput(SkillInput):
-    """Input for CloneRepository skill."""
-    def __init__(self, url: str, branch: str = "main"):
+    """Input for CloneRepository skill.
+
+    ``branch=None``: لا يُمرر ``--branch`` فيختار git الفرع الافتراضي بنفسه
+    (مقبول تصريحاً — التنفيذ يدعمه؛ الشريحة 0100). ``require_metadata=False``:
+    استنساخ بلا ميتاداتا — ي preserved المدخلات المقبولة للمستهلكين الذين لا
+    يقرؤون الميتاداتا أصلاً (مستودع فارغ بلا commits له origin لكن بلا HEAD
+    فقراءة الميتاداتا ترفضه — الاستنساخ وحده لا يرفضه).
+    """
+    def __init__(self, url: str, branch: Optional[str] = "main",
+                 require_metadata: bool = True):
         self.url = url
         self.branch = branch
+        self.require_metadata = require_metadata
 
 
 class CloneRepositoryOutput(SkillOutput):
@@ -35,6 +44,20 @@ class ReadRepositoryOutput(SkillOutput):
         self.snapshot = snapshot
 
 
+class WalkRepositoryInput(SkillInput):
+    """Input for WalkRepository skill (المادة 4 — الشريحة 0100): مسح ملفات
+    جذر مستودع بلا ميتاداتا — يحفظ المدخلات المقبولة للمسارات المحلية
+    (مستودع بلا origin يبقى مقروءاً — قراءة ReadRepository تشترطها)."""
+    def __init__(self, path: str):
+        self.path = path
+
+
+class WalkRepositoryOutput(SkillOutput):
+    """Output from WalkRepository skill: عقد ملفات المستودع كما هي (لا ميتاداتا)."""
+    def __init__(self, files: list):
+        self.files = files
+
+
 class LocalRepositoryProvider(IProvider):
     """
     Provider for local filesystem repository operations.
@@ -46,13 +69,16 @@ class LocalRepositoryProvider(IProvider):
         return "LocalRepositoryProvider"
     
     def supports_skill(self, skill_name: str) -> bool:
-        return skill_name in ["CloneRepository", "ReadRepository"]
+        return skill_name in ["CloneRepository", "ReadRepository",
+                              "WalkRepository"]
     
     def execute(self, skill_name: str, input_data: SkillInput) -> SkillOutput:
         if skill_name == "CloneRepository":
             return self._clone(input_data)
         elif skill_name == "ReadRepository":
             return self._read(input_data)
+        elif skill_name == "WalkRepository":
+            return self._walk(input_data)
         else:
             raise ValueError(f"Unknown skill: {skill_name}")
     
@@ -125,12 +151,34 @@ class LocalRepositoryProvider(IProvider):
     
     def _clone(self, input_data: CloneRepositoryInput) -> CloneRepositoryOutput:
         path = self.Clone(input_data.url, input_data.branch)
-        metadata = self.Metadata(path)
+        metadata = None
+        if getattr(input_data, "require_metadata", True):
+            try:
+                metadata = self.Metadata(path)
+            except BaseException:
+                # فشل الميتاداتا بعد نجاح الاستنساخ وقبل التسليم: النسخة ملكنا
+                # بعد (منتجها نحن ولم تُسلَّم) — تنظيفها مسؤوليتنا (لا تسرب)
+                # ثم إعادة رفع السبب كما هو. الحذف يشمل الجذر وحده؛ والوالد
+                # الفارغ يُزال فقط إن كان فارغاً (بنية temp التي أنشأها
+                # المنتج نفسه — dest=None دائماً في هذا العقد).
+                import shutil
+                shutil.rmtree(path, ignore_errors=True)
+                try:
+                    os.rmdir(os.path.dirname(path))
+                except OSError:
+                    pass
+                raise
         return CloneRepositoryOutput(path=path, metadata=metadata)
     
     def _read(self, input_data: ReadRepositoryInput) -> ReadRepositoryOutput:
         snapshot = self.Read(input_data.path)
         return ReadRepositoryOutput(snapshot=snapshot)
+    
+    def _walk(self, input_data: WalkRepositoryInput) -> WalkRepositoryOutput:
+        # المادة 4 (الشريحة 0100): المسح بعقد مهارة معلن — لا استدعاء مباشر
+        # لطريقة الصنف من المستهلكين؛ يحفظ المدخلات المقبولة (بلا ميتاداتا
+        # فلا اشتراط origin — المستودع المحلي بلا remote يبقى مقروءاً)
+        return WalkRepositoryOutput(files=list(self.Walk(input_data.path)))
     
     def _walk_files(self, root: str) -> Generator[FileNode, None, None]:
         """Walk through files in a directory."""

@@ -81,10 +81,11 @@ class _Repo:
         return {f.path: f.content for f in self.files if not f.is_dir}
 
     def cleanup(self) -> None:
+        # ملكية معلنة (المادة 4 — الشريحة 0100): حذف الجذر المملوك وحده —
+        # عقد الاستنساخ يسلم ملكية المسار لا أصله، فالوالد (أياً كان اسمه أو
+        # فراغه) لا يُمس من جانب المستهلك: لا استنتاج ملكية من اسم أو فراغ
         if self.owns_root and self.root and os.path.isdir(self.root):
-            parent = os.path.dirname(self.root)
-            shutil.rmtree(parent if os.path.basename(self.root) == "repo"
-                          else self.root, ignore_errors=True)
+            shutil.rmtree(self.root, ignore_errors=True)
 
 
 def _files_from_nodes(nodes: Iterable[Any]) -> List[_FileView]:
@@ -103,7 +104,7 @@ def _files_from_nodes(nodes: Iterable[Any]) -> List[_FileView]:
     return out
 
 
-def _acquire(input_data: Any) -> _Repo:
+def _acquire(input_data: Any, provider=None) -> _Repo:
     """توحيد المدخلات الأربعة إلى _Repo — استنساخ مُنظَّف عند الفشل دائماً."""
     if not isinstance(input_data, dict):
         # عقد قديم: قائمة ملات مباشرة، أو RepositorySnapshot نفسه
@@ -138,16 +139,20 @@ def _acquire(input_data: Any) -> _Repo:
     url = input_data.get("url")
     repo_path = input_data.get("repo_path") or input_data.get("path")
     if url:
-        from clone_safety import clone
-        branch = input_data.get("branch")
-        root = clone(url, branch=branch)
+        # المادة 4 (الشريحة 0100): الاستنساخ والقراءة بعقدي المهارة بالمزوّد
+        # المختار — لا استدعاء مباشر لclone_safety ولا لطريقة صنف المزوّد
+        root = _clone_via_contract(url, input_data.get("branch"), provider)
         try:
-            return _Repo(root, _walk_for_capabilities(root), owns_root=True)
+            return _Repo(root,
+                         _walk_for_capabilities(root, provider=provider),
+                         owns_root=True)
         except BaseException:
-            shutil.rmtree(os.path.dirname(root), ignore_errors=True)
+            _safe_cleanup(root)
             raise
     if repo_path:
-        return _Repo(repo_path, _walk_for_capabilities(repo_path), owns_root=False)
+        return _Repo(repo_path,
+                     _walk_for_capabilities(repo_path, provider=provider),
+                     owns_root=False)
     raise ValueError("input needs one of: url, repo_path, snapshot, files")
 
 
@@ -159,14 +164,45 @@ def _files_from_snapshot_dict(snap: Dict[str, Any]) -> List[_FileView]:
     return _files_from_nodes(raw)
 
 
-def _walk_for_capabilities(root: str, max_bytes: int = 1_000_000) -> List[_FileView]:
-    """قراءة ملفات المستودع للقدرات — بلا استنساخ، عبر مزوّد النواة (مساره الموحد).
+def _fallback_provider():
+    """الاحتياط المعلن عند غياب المزوّد المختار (مدخل execute العام) — إنشاء
+    الصنف الخرساني تبعية معلنة لا خفية (حد معلن في صف المادة 4 — لا يغلق الصف)."""
+    from providers import LocalRepositoryProvider
+    return LocalRepositoryProvider()
+
+
+def _clone_via_contract(url: str, branch, provider) -> str:
+    """الاستنساخ عبر عقد المهارة المعلن بالمزوّد المختار — لا استدعاء مباشر
+    لـ``clone_safety`` من المستهلك. دلالة ``branch=None`` محفوظة كما هي
+    (git يختار الفرع الافتراضي — لا استبدال بـ``"main"``)."""
+    from providers import CloneRepositoryInput
+    prov = provider if provider is not None else _fallback_provider()
+    return prov.execute("CloneRepository",
+                        CloneRepositoryInput(url, branch,
+                                             require_metadata=False)).path
+
+
+def _safe_cleanup(root: str) -> None:
+    """حذف الجذر المملوك وحده — لا حذف لأب كامل قد يضم جاراً غير مملوك
+    (عقد الاستنساخ يسلم ملكية المسار لا أصله)."""
+    shutil.rmtree(root, ignore_errors=True)
+
+
+def _walk_for_capabilities(root: str, max_bytes: int = 1_000_000,
+                           provider=None) -> List[_FileView]:
+    """قراءة ملفات المستودع للقدرات — بلا استنساخ، عبر عقد مهارة المسح
+    بالمزوّد المختار (لا استدعاء مباشر لطريقة الصنف — المادة 4).
 
     يشمل الملفات المخفية ذات الصلة (R-W2-004) ويستثني `.git` والروابط الرمزية
     (R-W2-005). محتوى ``None`` = لم يُقرأ (حجم/ثنائي) — لا يساوي الفارغ أبداً.
+    عقد المسح لا يشترط ميتاداتا (ولا origin) — المدخلات المقبولة محفوظة
+    (مستودع محلي بلا remote يبقى مقروءاً).
     """
-    from providers import LocalRepositoryProvider
-    return _files_from_nodes(LocalRepositoryProvider().Walk(root))
+    from providers import WalkRepositoryInput
+    prov = provider if provider is not None else _fallback_provider()
+    nodes = prov.execute(
+        "WalkRepository", WalkRepositoryInput(root)).files
+    return _files_from_nodes(nodes)
 
 
 # ---------------------------------------------------------------------------
@@ -331,7 +367,20 @@ class SecurityScanCapability(ICapability):
     """Scan a repository for security issues — for real (R-W2-007)."""
 
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        repo = _acquire(input_data)
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Dict[str, Any],
+                             provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        الاكتساب المشترك — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (الاحتياط المعلن يبقى لمدخل execute العام وحده)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Dict[str, Any], provider: Any) -> Dict[str, Any]:
+        repo = _acquire(input_data, provider)
         try:
             from stack_detection import dependency_records, detect_stack
 
@@ -423,7 +472,7 @@ class SecurityScanCapability(ICapability):
     name = "SecurityScan"
     version = "1.0.0"
     description = "Scans for potential secrets and known vulnerabilities (OSV)"
-    skills = ["CloneRepository", "ReadRepository"]
+    skills = ["CloneRepository", "WalkRepository"]
     def __init__(self):
         """القيم معلنة كسمات صف (R-W2-007)؛ الباني محفوظ للتوافق (G2 — لا حذف لرموز عام)."""
 
@@ -482,7 +531,20 @@ class LicenseAnalysisCapability(ICapability):
     """Analyze repository licensing — declared vs detected, separately (R-W2-007)."""
 
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        repo = _acquire(input_data)
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Dict[str, Any],
+                             provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        الاكتساب المشترك — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (الاحتياط المعلن يبقى لمدخل execute العام وحده)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Dict[str, Any], provider: Any) -> Dict[str, Any]:
+        repo = _acquire(input_data, provider)
         try:
             contents = repo.contents()
             # 1) الترخيص من نص الملف — كل المرشحين يُفحصون، والمعروف منهم مفضلًا
@@ -568,7 +630,7 @@ class LicenseAnalysisCapability(ICapability):
     name = "LicenseAnalysis"
     version = "1.0.0"
     description = "Detects the project license (SPDX) from text and declarations"
-    skills = ["CloneRepository", "ReadRepository"]
+    skills = ["CloneRepository", "WalkRepository"]
     def __init__(self):
         """القيم معلنة كسمات صف (R-W2-007)؛ الباني محفوظ للتوافق (G2 — لا حذف لرموز عام)."""
 
@@ -613,7 +675,20 @@ class DocumentationAnalysisCapability(ICapability):
     """Analyze documentation coverage — measured, not asserted (R-W2-007)."""
 
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        repo = _acquire(input_data)
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Dict[str, Any],
+                             provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        الاكتساب المشترك — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (الاحتياط المعلن يبقى لمدخل execute العام وحده)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Dict[str, Any], provider: Any) -> Dict[str, Any]:
+        repo = _acquire(input_data, provider)
         try:
             contents = repo.contents()
             paths = [p for p in contents if not os.path.basename(p).startswith(".git/")]
@@ -666,7 +741,7 @@ class DocumentationAnalysisCapability(ICapability):
     name = "DocumentationAnalysis"
     version = "1.0.0"
     description = "Measures documentation coverage (docstrings) and expected-document gaps"
-    skills = ["CloneRepository", "ReadRepository"]
+    skills = ["CloneRepository", "WalkRepository"]
     def __init__(self):
         """القيم معلنة كسمات صف (R-W2-007)؛ الباني محفوظ للتوافق (G2 — لا حذف لرموز عام)."""
 
@@ -683,7 +758,20 @@ class ConfigurationAnalysisCapability(ICapability):
     """Analyze configuration files — content-based, errors reported (R-W2-007)."""
 
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        repo = _acquire(input_data)
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Dict[str, Any],
+                             provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        الاكتساب المشترك — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (الاحتياط المعلن يبقى لمدخل execute العام وحده)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Dict[str, Any], provider: Any) -> Dict[str, Any]:
+        repo = _acquire(input_data, provider)
         try:
             from stack_detection import detect_config_files
 
@@ -737,7 +825,7 @@ class ConfigurationAnalysisCapability(ICapability):
     name = "ConfigurationAnalysis"
     version = "1.0.0"
     description = "Analyzes configuration files and their actual content"
-    skills = ["CloneRepository", "ReadRepository"]
+    skills = ["CloneRepository", "WalkRepository"]
     def __init__(self):
         """القيم معلنة كسمات صف (R-W2-007)؛ الباني محفوظ للتوافق (G2 — لا حذف لرموز عام)."""
 
@@ -762,7 +850,20 @@ class InfrastructureAnalysisCapability(ICapability):
     """
 
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        repo = _acquire(input_data)
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Dict[str, Any],
+                             provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        الاكتساب المشترك — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (الاحتياط المعلن يبقى لمدخل execute العام وحده)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Dict[str, Any], provider: Any) -> Dict[str, Any]:
+        repo = _acquire(input_data, provider)
         try:
             contents = repo.contents()
             docker: List[str] = []
@@ -812,7 +913,7 @@ class InfrastructureAnalysisCapability(ICapability):
     name = "InfrastructureAnalysis"
     version = "1.0.0"
     description = "Detects Docker/Kubernetes/Terraform evidence and cloud SDK dependencies"
-    skills = ["CloneRepository", "ReadRepository"]
+    skills = ["CloneRepository", "WalkRepository"]
     def __init__(self):
         """القيم معلنة كسمات صف (R-W2-007)؛ الباني محفوظ للتوافق (G2 — لا حذف لرموز عام)."""
 
@@ -829,7 +930,20 @@ class RepositoryDNAGenerationCapability(ICapability):
     """
 
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        repo = _acquire(input_data)
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Dict[str, Any],
+                             provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        الاكتساب المشترك — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (الاحتياط المعلن يبقى لمدخل execute العام وحده)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Dict[str, Any], provider: Any) -> Dict[str, Any]:
+        repo = _acquire(input_data, provider)
         try:
             from stack_detection import (detect_package_managers, detect_stack,
                                         language_weights, primary_language)
@@ -871,7 +985,7 @@ class RepositoryDNAGenerationCapability(ICapability):
     name = "RepositoryDNAGeneration"
     version = "1.0.0"
     description = "Generates the repository DNA from the kernel's stack detection"
-    skills = ["CloneRepository", "ReadRepository"]
+    skills = ["CloneRepository", "WalkRepository"]
     def __init__(self):
         """القيم معلنة كسمات صف (R-W2-007)؛ الباني محفوظ للتوافق (G2 — لا حذف لرموز عام)."""
 

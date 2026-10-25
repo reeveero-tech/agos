@@ -1138,6 +1138,18 @@ class RepositoryProcessingPipelineCapability(ICapability):
     version = "1.0.0"
 
     def execute(self, input_data: Any) -> Dict[str, Any]:
+        return self._run(input_data, None)
+
+    def execute_with_provider(self, input_data: Any, provider: Any) -> Dict[str, Any]:
+        """المادة 7/4 (نمط 0097): المزوّد المختار يصل عبر عقد صريح إلى
+        ``analyze_url`` — عند غيابه رفض لا رجوع للإنشاء المحلي في مسار
+        المهمة (فرع repo_path بلا مزوّد أصلاً — analyze_path محلي)."""
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run(input_data, provider)
+
+    def _run(self, input_data: Any, provider: Any) -> Dict[str, Any]:
         if not isinstance(input_data, dict):
             raise ValueError("input must be a dict with url or repo_path")
         url = input_data.get("url")
@@ -1148,7 +1160,7 @@ class RepositoryProcessingPipelineCapability(ICapability):
             raise ValueError("input needs one of: url, repo_path")
         from capabilities.analysis_service import get_analysis_service
         shared = (get_analysis_service().analyze_url(
-            url, input_data.get("branch", "main")) if url
+            url, input_data.get("branch", "main"), provider=provider) if url
             else get_analysis_service().analyze_path(repo_path))
         pipeline = RPPPipeline(knowledge_base=get_knowledge_base())
         return pipeline.process(

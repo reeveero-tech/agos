@@ -419,12 +419,12 @@
           "sha256": "10298592ba868a3eeb5ba2ae19475cc31259b4fa2cef8f98b46856ce31381134"
         },
         "agos/agos-kernel/capabilities/foundation_extra.py": {
-          "bytes": 52940,
-          "sha256": "0907152278a34ec4ea6b882d87abc6bc103904c4ea05efd084251a79079fcbe9"
+          "bytes": 60243,
+          "sha256": "28075c8b0d6c0299308cc4451144be71b49fc0191947ebc5f9344111f1b02676"
         },
         "agos/agos-kernel/capabilities/genome.py": {
-          "bytes": 37271,
-          "sha256": "025522746ed842ec7b3d3ed7217f92ac495ebdf157aed1153a16dfe7033e4e44"
+          "bytes": 38032,
+          "sha256": "fd87fc79240c6387f2ff87c582ae1ba044bb9b15237d790f9329206effa1e92d"
         },
         "agos/agos-kernel/capabilities/repository/clone.py": {
           "bytes": 1736,
@@ -439,8 +439,8 @@
           "sha256": "5399da4686cf122688b5066b08dc19a8b6ad609c1374cc66cda6523bd37784c1"
         },
         "agos/agos-kernel/capabilities/rpp.py": {
-          "bytes": 58414,
-          "sha256": "ab0416d22b7e9954398f8404985c4cae71927e00a9ffee8eb6c943adc25b4ad5"
+          "bytes": 59175,
+          "sha256": "ee5ef4004bd70dcdea6718941c1eff53723932c66559812f560004caecc0b2a2"
         },
         "agos/agos-kernel/capabilities/technology/detection.py": {
           "bytes": 6549,
@@ -1635,8 +1635,8 @@
           "sha256": "aeb74315153ddb518cc83145d8977508231bf56021df6589985a8919f03d8fd5"
         },
         "agos/agos-kernel/providers/__init__.py": {
-          "bytes": 7259,
-          "sha256": "7c3491a4f167099ad3013f95291873985796c8329237251656cb42766a11e675"
+          "bytes": 10220,
+          "sha256": "79173042f08d01c8a3891d20e3a704f1fefe7638b236aa2bc8d86c430c952777"
         },
         "agos/agos-kernel/providers/ai.py": {
           "bytes": 6236,
@@ -1683,8 +1683,8 @@
           "sha256": "51c718cdbc076566c03bae7151541d3ad680668fede2604a1710bf996598003e"
         },
         "agos/agos-kernel/registry/manifest.json": {
-          "bytes": 2657,
-          "sha256": "dcdc3a8644ad472b93cee58c18b0f669e8c130fd15a3f7cf4261bd96727ab240"
+          "bytes": 2683,
+          "sha256": "1721ce14f9c760396337686193deb3a4ee9ab68279203061935ea8a05f9289d0"
         },
         "agos/agos-kernel/registry/provider/__init__.py": {
           "bytes": 1277,
@@ -2043,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "d83fc254ebe169680d8dfc2ad3015197235f7913e27835ba96ec8394095fcaa5",
+      "fingerprint": "fa09da126f22b16037b05f96c81b8712fbc78b39e3c9c7edce7b41f897c861b0",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2123,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "f128567e7e644ae78946acac4f1bb26c70b57a57d0eeeb4d965ba03fff8ce109",
+  "fingerprint": "aaa0e25d5feba1b901b8e1d595c1ca2adebb606a250f416b92980d5b7d60fdec",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }
