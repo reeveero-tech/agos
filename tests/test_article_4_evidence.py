@@ -102,8 +102,9 @@ recording_factory = lambda: RecordingProvider(REAL_PROVIDER())  # noqa: E731
 
 
 def _run_mission(local_git_repo: Path, refuse_clone: bool = False) -> dict:
-    """يشغل المهمة الحقيقية عبر المدخل العام مع تثبيت الوسيط مكان المصنع
-    (بعد الإقلاع — قبلَه يفشل تحقق عقود الإقلاع)."""
+    """يشغل المهمة الحقيقية عبر المدخل العام مع تثبيت الوسيط في السجل العام
+    (بعد الإقلاع — قبلَه يفشل تحقق عقود الإقلاع؛ الشريحة 0097 نقلت الحقن من
+    رمز الصنف إلى عقده المدعوم)."""
     refuse = """
 class RefusingProvider:
     def __init__(self, inner):
@@ -135,7 +136,11 @@ def refusing_factory():
     code = PROXY_CODE + refuse + f"""
 import agos_runtime
 k = agos_runtime.boot()
-providers.LocalRepositoryProvider = {("refusing_factory" if refuse_clone else "recording_factory")}
+# الشريحة 0097 (المادة 7): حد الحقن الفعلي هو السجل العام — الوسيط يثبت
+# مكانه عبر عقده (unregister/register) لا باستبدال رمز الصنف.
+reg = k.provider_registry
+reg.unregister("LocalRepositoryProvider")
+reg.register({("refusing_factory" if refuse_clone else "recording_factory")}())
 outcome = k.analyze({str(local_git_repo)!r}, branch="main")
 from contracts import RepositoryDNA
 dna = getattr(outcome, "result", None)

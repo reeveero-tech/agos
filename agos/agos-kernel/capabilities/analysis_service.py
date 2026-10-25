@@ -554,17 +554,23 @@ def scan_tree(root: Path, policy: ScanPolicy) -> tuple:
 class RepositoryAnalysisService:
     """الخط الواحد لتحليل المستودعات (ADR-0005) — تفوّض إليه كل الواجهات القديمة."""
 
-    def analyze_url(self, url: str, branch: str = "main") -> SharedAnalysis:
+    def analyze_url(self, url: str, branch: str = "main",
+                    provider=None) -> SharedAnalysis:
         """التحليل من URL: استنساخ وقراءة عبر المزوّد القائم (سياسة R-W2-004/005
         نفسها — بما فيها البيانات الوصفية) ثم المراحل المشتركة.
 
         الحقائق تكتمل في ``SharedAnalysis`` قبل تنظيف المستودع المستنسخ
         (المحتوى محفوظ في الذاكرة — لا يحتاج الإسقاط المسار بعدها).
-        """
-        from providers import (LocalRepositoryProvider, CloneRepositoryInput,
-                                ReadRepositoryInput)
 
-        provider = LocalRepositoryProvider()
+        ``provider`` (المادة 7 — الشريحة 0097): المزوّد المختار من خط المهمة
+        يُستعمل كما هو — عند تمريره لا إنشاء محلي ولا رجوع عند رفضه؛ عدم
+        تمريره (بقية المستدعين) يحتفظ بالسلوك القائم بالإنشاء المحلي.
+        """
+        from providers import (CloneRepositoryInput, ReadRepositoryInput)
+
+        if provider is None:
+            from providers import LocalRepositoryProvider
+            provider = LocalRepositoryProvider()
         print(f"[CAPABILITY] Cloning {url}")
         # العبور عبر واجهة المهارات العامة (المادة 4) — لا اختصار لميثود خاصة
         clone_result = provider.execute("CloneRepository", CloneRepositoryInput(url, branch))

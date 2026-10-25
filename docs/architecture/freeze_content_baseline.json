@@ -395,8 +395,8 @@
           "sha256": "7ffdaf3599f54deabe68f58e1a0083edd6efb880f0534b4d636bf824708594c9"
         },
         "agos/agos-kernel/capabilities/__init__.py": {
-          "bytes": 16269,
-          "sha256": "3d0a7feea80b4f3e3ba145b3814f56873b8f383241a2fb4407bbe53c759c652d"
+          "bytes": 19025,
+          "sha256": "7624f000e907d0ab56190a0af245f11a9de89aaeb891fd41adaa8a66d17d74cc"
         },
         "agos/agos-kernel/capabilities/analysis/complexity.py": {
           "bytes": 9640,
@@ -411,8 +411,8 @@
           "sha256": "4c45eeca282cb890f0acf9ec0245d9389a3f2397c58b43ffdbdf6976d8849280"
         },
         "agos/agos-kernel/capabilities/analysis_service.py": {
-          "bytes": 36975,
-          "sha256": "ef58e97328929fcc3d9963489077d5459f2ac4030616719ea046cb73c5bb8ce5"
+          "bytes": 37407,
+          "sha256": "14506041ace25f371701150f950ec253a73df8be4e74ce69f1c779bba4dda885"
         },
         "agos/agos-kernel/capabilities/base.py": {
           "bytes": 2052,
@@ -1447,8 +1447,8 @@
           "sha256": "0b1f4b47e59a87b76d53a9f2b4c94a377b38ea8997f73f1b7c0afbc09ceb9981"
         },
         "agos/agos-kernel/intelligence/interface.py": {
-          "bytes": 126555,
-          "sha256": "5bceeb39e21cb40ec561603c95c5ae7701ddcfeb107e979067f16ccd30af89f9"
+          "bytes": 129561,
+          "sha256": "cde44405a69de58cc216b32c306f5f84f6484091d32946ec83eeba1284e5c832"
         },
         "agos/agos-kernel/intelligence/knowledge.py": {
           "bytes": 11883,
@@ -1611,8 +1611,8 @@
           "sha256": "e10f432bbe2c6dd2be7c742df61561123c77fe07a23ad0581f92857e1df7dba9"
         },
         "agos/agos-kernel/pipeline/__init__.py": {
-          "bytes": 8489,
-          "sha256": "a5bd0710d8d704cfabdef75f16e233b4f50c5493d73bbe2ab065b3c43d46fb62"
+          "bytes": 9302,
+          "sha256": "6581eeab28c93a75b4d8875bea21baaa3be63d6ae135c05f42cf3bf8038b8655"
         },
         "agos/agos-kernel/platform_runtime/__init__.py": {
           "bytes": 143,
@@ -2043,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "22409ba25d693e1ef5f7440bb864df7effe91f550ceb9f92bd352fa6fa0a988e",
+      "fingerprint": "49fd4ae29a5c0f6ea78718892442e8515d48d03a748186285f6db96b96c033bf",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2123,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "b74857fc37e888d34de547e2c2de2809edefa406b9f08a24baab62ca616ee94d",
+  "fingerprint": "24866d4e90d5f12f6a80543e641619a1a523c3e731838057610b748612cb40a3",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

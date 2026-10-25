@@ -142,8 +142,18 @@ class ExecutionPipeline:
             # ADR-0008 (R-W1-003): استدعاء القدرة عبر النواة المشتركة — سياسة
             # الاستدعاء الواحد محفوظة؛ الفشل يعود إلى مسار الاستثناء نفسه
             # (الرسالة والسلوك وأدلة القرار محفوظة حرفياً).
-            outcome = self.execution_engine.invoke_sync(
-                capability.execute, mission.parameters)
+            # المادة 7 (الشريحة 0097): الكائن المختار في resolve_provider يوصل
+            # إلى التنفيذ عبر العقد الإضافي الاختياري إن أعلنته القدرة —
+            # نتيجة الاختيار لا تُهدر؛ القدرات بلا العقد تحتفظ بمدخلها كما هو.
+            execute_with_provider = getattr(capability, "execute_with_provider", None)
+            selected_provider = getattr(provider_selection, "provider", None)
+            if execute_with_provider is not None and selected_provider is not None:
+                outcome = self.execution_engine.invoke_sync(
+                    execute_with_provider, mission.parameters,
+                    provider=selected_provider)
+            else:
+                outcome = self.execution_engine.invoke_sync(
+                    capability.execute, mission.parameters)
             if outcome.error is not None:
                 raise outcome.error
             execution_result = outcome.value

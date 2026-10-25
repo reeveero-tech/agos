@@ -124,7 +124,8 @@ def test_kernel_capability_and_rie_project_from_the_url_service(monkeypatch):
     shared.stack = stack_detection.detect_stack(shared.manifests)
     shared.code_languages = stack_detection.language_weights(dict(shared.contents))
 
-    def fake_analyze_url(self, url, branch="main"):
+    def fake_analyze_url(self, url, branch="main", provider=None):
+        # الشريحة 0097 (المادة 7): الخط الواحد يستقبل المزوّد المختار كمعامل
         return shared
     monkeypatch.setattr(RepositoryAnalysisService, "analyze_url", fake_analyze_url)
 

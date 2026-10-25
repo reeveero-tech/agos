@@ -65,33 +65,53 @@ class RepositoryAnalysisCapability(ICapability):
         DNA's ``directory_tree``. It is part of the cache key — the same commit analyzed
         at two depths produces two different DNAs, never a stale reuse.
         """
-        if isinstance(input_data, dict):
-            url = input_data.get("url", "")
-            branch = input_data.get("branch", "main")
-            tree_depth = input_data.get("tree_depth", 3)
-        elif hasattr(input_data, "url"):
-            url = input_data.url
-            branch = input_data.branch
-            tree_depth = getattr(input_data, "tree_depth", 3)
-        else:
-            raise ValueError("Invalid input type")
-        
+        return self._run_analysis(input_data, provider=None)
+
+    def execute_with_provider(self, input_data: Any, provider: Any) -> RepositoryDNA:
+        """تنفيذ مع المزوّد المختار من خط المهمة (المادة 7 — الشريحة 0097).
+
+        عقد إضافي اختياري فوق ``execute`` (المحفوظ كما هو لبقية المستدعين):
+        الكائن المختار عبر السجل العام يمرر كما هو إلى الخط الواحد للتحليل
+        فلا إنشاء محلي في هذا المسار — وعند رفضه لا رجوع إلى الإنشاء المحلي.
+        ``provider=None`` يرفض صراحةً: لا معنى لتنفيذ «مع مزوّد» بلا مزوّد.
+        """
+        if provider is None:
+            raise ValueError(
+                "execute_with_provider يطلب مزوّداً مختاراً — لا يعمل بلا مزوّد")
+        return self._run_analysis(input_data, provider=provider)
+
+    def _run_analysis(self, input_data: Any, provider=None) -> RepositoryDNA:
+        """جسم التحليل المشترك بين المدخلين — التفكيك والكاش والخط الواحد.
+
+        ``provider`` يصل كما هو إلى ``analyze_url`` (المادة 7)؛ ``None`` يحتفظ
+        بالسلوك القائم (الإنشاء المحلي داخل الخدمة لبقية المستدعين).
+        """
+        url, branch, tree_depth, use_cache, input_data = self._parse_analysis_input(
+            input_data)
         # R-F-008: analysis is a pure function of (url, branch, commit) — Constitution
         # Art. 14 (idempotent). Resolve the branch head cheaply (git ls-remote) and reuse a
         # DNA already produced for that exact commit; a new commit is a new key, so the
         # cache can never serve stale results. Opt out with {"cache": False}.
-        use_cache = input_data.get("cache", True) if isinstance(input_data, dict) else True
         revision = self._remote_revision(url, branch) if use_cache else None
+        # المادة 7 (الشريحة 0097): إعادة الاستخدام مقيدة بالمنفّذ — الاستبدال
+        # عبر السجل يغيّر المفتاح فلا يُعلن اكتمال بناتج تنفيذ سابق (البديل
+        # الرافض لا يمر عبر كاش دافئ). الفصل بين المنفّذين بالهوية (``is``)
+        # لا بالمساواة/التجزئة: عقد السجل لا يشترط هوية ``__eq__``/``__hash__``
+        # فمزوّد «متساوٍ بالقيمة» (dataclass-like) يصيب مفتاح الأصل في
+        # القواميس؛ القيمة المخزنة تحمل الكائن نفسه (مرجع قوي يُبقيه حياً —
+        # فلا ``id()`` يعاد استخدامه بعد التحرير) وتُقارن به. المسار الافتراضي
+        # بلا مزوّد ممرر (None) يحتفظ بسلوكه فلا يتغير على بقية المستدعين.
         cache_key = (url, branch, revision, tree_depth)
         cache = self.__dict__.setdefault("_dna_cache", {})
-        if revision and cache_key in cache:
+        cached = cache.get(cache_key) if revision else None
+        if cached is not None and cached[0] is provider:
             print(f"[CAPABILITY] Reusing DNA of {url}@{revision[:12]} (same commit)")
-            return self._with_optional_graph(copy.deepcopy(cache[cache_key]), input_data)
+            return self._with_optional_graph(copy.deepcopy(cached[1]), input_data)
         
         # R-W2-006 (ADR-0005): الخط الواحد — التحليل عبر الخدمة المشتركة،
         # و``execute`` إسقاط فوق حقائقها. الحقائق تكتمل في الخدمة قبل تنظيف المستنسخ.
         from capabilities.analysis_service import get_analysis_service
-        shared = get_analysis_service().analyze_url(url, branch)
+        shared = get_analysis_service().analyze_url(url, branch, provider=provider)
         print(f"[CAPABILITY] Generating DNA")
         dna = self._build_dna(
             meta=shared.meta,
@@ -106,9 +126,22 @@ class RepositoryAnalysisCapability(ICapability):
         dna.framework_evidence = [e.to_dict() for e in shared.stack.evidence]
         dna.runtimes = list(shared.stack.runtimes)
         if revision:
-            cache[cache_key] = copy.deepcopy(dna)
+            cache[cache_key] = (provider, copy.deepcopy(dna))
         
         return self._with_optional_graph(dna, input_data)
+
+    @staticmethod
+    def _parse_analysis_input(input_data: Any):
+        """تفكيك مدخل التحليل المشترك بين ``execute`` و``execute_with_provider``."""
+        if isinstance(input_data, dict):
+            return (input_data.get("url", ""), input_data.get("branch", "main"),
+                    input_data.get("tree_depth", 3),
+                    input_data.get("cache", True), input_data)
+        if hasattr(input_data, "url"):
+            return (input_data.url, input_data.branch,
+                    getattr(input_data, "tree_depth", 3), True, input_data)
+        raise ValueError("Invalid input type")
+    
     
     @staticmethod
     def _with_optional_graph(dna: RepositoryDNA, input_data: Any) -> RepositoryDNA:

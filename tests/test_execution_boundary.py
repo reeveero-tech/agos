@@ -82,11 +82,13 @@ def test_real_mission_work_executes_only_through_mission_runtime(git_repo):
         r = k.analyze({str(git_repo)!r}, branch="main")
 
         # مقارنة الهوية كاملة داخل العملية: المستدعى هو تنفيذ القدرة
-        # الحقيقية المسجلة نفسها (الكائن من السجل) بمعاملات المهمة كما هي
+        # الحقيقية المسجلة نفسها (الكائن من السجل) بمعاملات المهمة كما هي —
+        # الشريحة 0097 (المادة 7): مدخل العمل هو العقد الحامل للمزوّد المختار
+        identity_entry = "execute_with_provider"
         registered = [c for c in k.capability_registry.list_all()
                       if type(c).__name__ == "RepositoryAnalysisCapability"]
         identity_ok = (len(calls) - boot_calls == 1
-                       and calls[-1]["func"].__name__ == "execute"
+                       and calls[-1]["func"].__name__ == identity_entry
                        and registered and calls[-1]["func"].__self__ is registered[0]
                        and calls[-1]["args"] == ({{"url": {str(git_repo)!r},
                                                   "branch": "main"}},))

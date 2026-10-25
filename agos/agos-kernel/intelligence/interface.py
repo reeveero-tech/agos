@@ -288,7 +288,9 @@ class _VerifyingCore:
 
     def __init__(self, inner: Any):
         self._inner = inner
-        # العمل الموافق عليه: (صاحب الدالة، الدالة نفسها، المعاملات)
+        # العمل الموافق عليه: (صاحب الدالة، الدالة نفسها، المعاملات، المزوّد)
+        # — المزوّد بُعد رابع منذ الشريحة 0097 (المادة 7): وسيط التنفيذ
+        # الممرر من الأنبوب جزء من العمل لا يمر بلا تحقق هوية
         self.expected: Any = None
         #: عدّاد الاستدعاءات التي عبرت إلى النواة الإنتاجية فعلاً (سجل
         #: العمل 0050) — يُثبت صفر تنفيذ قبل الإجازة وواحدية التنفيذ
@@ -301,7 +303,7 @@ class _VerifyingCore:
     def invoke_sync(self, func, *args, **kwargs):
         expected = self.expected
         if expected is not None:
-            owner, function, parameters = expected
+            owner, function, parameters, provider = expected
             bound = getattr(func, "__self__", None)
             if (bound is not owner
                     or self._work_identity(func) is not function):
@@ -314,6 +316,14 @@ class _VerifyingCore:
                 return InvocationOutcome(error=RuntimeError(
                     "المعاملات المارّة إلى النواة ليست المعاملات الموافق "
                     "عليها (ADR-0009): رُفض تنفيذ بمعاملات لم تُعتمد"))
+            # الشريحة 0097 (المادة 7): وسيط المزوّد المار من الأنبوب جزء من
+            # العمل الموافق عليه — هوية الكائن نفسها تُقارن (لا الاسم ولا
+            # النوع): المزوّد المبدَّل بعد الاعتماد يُرفض هنا قبل أي عمل
+            if kwargs.get("provider", None) is not provider:
+                from agos_kernel.execution.engine import InvocationOutcome
+                return InvocationOutcome(error=RuntimeError(
+                    "المزوّد المار إلى النواة ليس المزوّد الموافق عليه "
+                    "(ADR-0009): رُفض تنفيذ بمزوّد لم يُعتمد"))
         self.invocations += 1          # استدعاء عبر إلى النواة الإنتاجية فعلاً
         return self._inner.invoke_sync(func, *args, **kwargs)
 
@@ -1212,8 +1222,31 @@ class IntelligenceInterface:
         self._bound_plans[approval_request.id] = plan
         self._bound_missions[approval_request.id] = bound_content
         import copy as _copy
-        approved_function = getattr(getattr(selection, "capability", None),
-                                     "execute", None)
+        # الشريحة 0097 (المادة 7): هوية العمل المعتمدة هي مدخل التنفيذ الفعلي —
+        # خط المهمة يوصل المزوّد المختار عبر العقد الإضافي ``execute_with_provider``
+        # إن أعلنته القدرة (واختيار المزوّد ناجح في أي مهمة تبلغ حد الاستدعاء —
+        # فشله يُسقط الخطوة قبل العمل)؛ وإلا فالمدخل العام ``execute`` كما هو.
+        # الدالة المعتمدة والدالة المستدعاة واحدة أو يُرفض الاستدعاء (ADR-0009).
+        bound_capability = getattr(selection, "capability", None)
+        has_provider_entry = getattr(bound_capability, "execute_with_provider",
+                                     None) is not None
+        if has_provider_entry:
+            approved_function = bound_capability.execute_with_provider
+        else:
+            approved_function = getattr(bound_capability, "execute", None)
+        # المزوّد المعتمد: يُحل عند الربط كما سيحله الأنبوب عند التنفيذ (المحلّل
+        # نفسه على القدرة نفسها) — فالاستبدال في السجل بين الاعتماد والتنفيذ
+        # يُكشف عند الحد قبل أي عمل. القدرة بلا عقد المزوّد لا يمرر وسطاء
+        # فلا يُعتمد لها مزوّد (None) — مطابقة توجيه الأنبوب حرفياً.
+        bound_provider = None
+        executor = getattr(self._mission_engine, "executor", None)
+        pipeline = getattr(executor, "pipeline", None)
+        provider_resolver = getattr(pipeline, "provider_resolver", None)
+        if (has_provider_entry and provider_resolver is not None
+                and bound_capability is not None):
+            bound_provider = getattr(
+                provider_resolver.resolve(bound_capability, mission),
+                "provider", None)
         self._bound_work[approval_request.id] = (
             getattr(selection, "capability", None),       # صاحب الدالة
             getattr(approved_function, "__func__",
@@ -1221,6 +1254,7 @@ class IntelligenceInterface:
             # المعاملات الموافق عليها: **نسخة عميقة مستقلة** — لا تشارك
             # المحلل القاموسَ فيصيب تعديله طرفي المقارنة معاً
             _copy.deepcopy(getattr(mission, "parameters", None) or {}),
+            bound_provider,                              # المزوّد المعتمد (0097)
         )
         previous = self._approval_by_mission.get(mission.id)
         if previous and previous != approval_request.id:

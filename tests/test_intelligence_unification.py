@@ -290,9 +290,16 @@ class _MutableCapResolver:
 
 
 class _FakeProvResolver:
+    """محلل مزوّد زائف — مثيل ثابت واحد كما السجل الحقيقي (الشريحة 0097:
+    حلّان على الهوية نفسها عند الربط وعند التنفيذ — object() جديد لكل حل
+    كان يجعل الهوية غير مستقرة خلافاً لسبب الحل المعلن «deterministic-fake»)."""
+
+    def __init__(self):
+        self._provider = object()
+
     def resolve(self, capability, mission):
         return ProviderSelection(
-            provider=object(), provider_name="FakeProvider",
+            provider=self._provider, provider_name="FakeProvider",
             status=ResolutionStatus.SUCCESS, score=SelectionScore(),
             reason="deterministic-fake", record="prov-record")
 
