@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 595,
+  "files_scanned": 596,
   "external_imports": [
     {
       "import": "a",
@@ -74,6 +74,7 @@
           "tests/test_article_15_12_boundary.py",
           "tests/test_article_4_evidence.py",
           "tests/test_article_4_provider_injection.py",
+          "tests/test_article_6_action_events.py",
           "tests/test_article_7_evidence.py",
           "tests/test_article_8_11_evidence.py",
           "tests/test_article_9_10_evidence.py",
