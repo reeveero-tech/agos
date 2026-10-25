@@ -2,7 +2,7 @@
 
 > مُولَّد بـ`tools/audit/dependencies.py`، فلا يُحرَّر يدوياً. `--check` يُفشل CI إن تقادم التقرير أو ظهرت مشكلة.
 
-الملفات المفحوصة: **586** (`agos/` و`tests/` و`tools/`) · المشاكل: **0**
+الملفات المفحوصة: **587** (`agos/` و`tests/` و`tools/`) · المشاكل: **0**
 
 ## الاستيرادات الخارجية الفعلية
 
@@ -12,7 +12,7 @@
 | `c` | `c` | generated (1) | — | — |
 | `memory_profiler` | `memory-profiler` | runtime (1) | runtime | 0.61.0 |
 | `psutil` | `psutil` | runtime (1) | runtime | 7.2.2 |
-| `pytest` | `pytest` | dev (34) | dev | 9.1.1 |
+| `pytest` | `pytest` | dev (35) | dev | 9.1.1 |
 | `requests` | `requests` | generated (3) | runtime | 2.34.2 |
 | `yaml` | `pyyaml` | optional (1)، runtime (1) | runtime | 6.0.3 |
 
@@ -33,7 +33,7 @@
 |---|---|
 | `docker` | 3: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/providers/filesystem.py`, `agos/agos-kernel/providers/network.py` |
 | `find` | 2: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/skills/implementation.py` |
-| `git` | 22: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/capabilities/__init__.py`, `agos/agos-kernel/capabilities/analysis_service.py`, `agos/agos-kernel/civilization/core/civilization_engine.py` … |
+| `git` | 23: `agos/agos-kernel/adapters/implementation.py`, `agos/agos-kernel/capabilities/__init__.py`, `agos/agos-kernel/capabilities/analysis_service.py`, `agos/agos-kernel/civilization/core/civilization_engine.py` … |
 | `kubectl` | 1: `agos/agos-kernel/adapters/implementation.py` |
 | `npm` | 1: `agos/agos-kernel/adapters/implementation.py` |
 | `podman` | 1: `agos/agos-kernel/providers/network.py` |

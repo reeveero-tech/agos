@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 586,
+  "files_scanned": 587,
   "external_imports": [
     {
       "import": "a",
@@ -71,6 +71,7 @@
           "agos/agos-kernel/core/tests/test_golden_runtime.py",
           "agos/agos-kernel/core/tests/test_golden_security.py",
           "agos/agos-kernel/core/tests/test_golden_serialization.py",
+          "tests/test_articles_1_2_evidence.py",
           "tests/test_bootstrap.py",
           "tests/test_capability_genome.py",
           "tests/test_civilization_unification.py",
@@ -200,6 +201,7 @@
       "agos/agos-kernel/providers/filesystem.py",
       "agos/rie/infrastructure/__init__.py",
       "agos/seos/workspace/__init__.py",
+      "tests/test_articles_1_2_evidence.py",
       "tests/test_capability_genome.py",
       "tests/test_clone_safety.py",
       "tests/test_dependency_extraction.py",
