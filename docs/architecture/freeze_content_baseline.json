@@ -1235,8 +1235,8 @@
           "sha256": "91cf701273e2469bb47045a93bb2d26af0b9b8d1324c0f544a468ec04459af3f"
         },
         "agos/agos-kernel/execution/engine.py": {
-          "bytes": 22701,
-          "sha256": "a7970046177e85100bf1bc5585bef97ab29c74610bab6170fc5d53471cf4c0b6"
+          "bytes": 23682,
+          "sha256": "161507f687f5feb50de8c0e2bef04eaea1d4591c6d17922596172fcd53fbb5b4"
         },
         "agos/agos-kernel/execution/graph.py": {
           "bytes": 9809,
@@ -2043,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "fa09da126f22b16037b05f96c81b8712fbc78b39e3c9c7edce7b41f897c861b0",
+      "fingerprint": "967112165ec91340c6a6ee56c715ab9aabcc7968988ff0e3def6928b784b6e3d",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2123,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "aaa0e25d5feba1b901b8e1d595c1ca2adebb606a250f416b92980d5b7d60fdec",
+  "fingerprint": "f3369027ce35577c876f9e4204d424713fde6937a3029f52de24609c06890b07",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

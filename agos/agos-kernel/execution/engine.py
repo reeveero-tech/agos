@@ -1,11 +1,14 @@
 """AGOS Execution Engine - Production Implementation."""
 import asyncio
 import inspect
+import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+logger = logging.getLogger(__name__)
 
 
 class ExecutionStatus(Enum):
@@ -219,8 +222,21 @@ class ExecutionEngine:
         for handler in handlers:
             try:
                 handler(context, data or {})
-            except Exception:
-                pass  # Don't let handler errors break execution
+            except Exception as exc:
+                # العزل مقصود وسليم (المستمع الفاشل لا يكسر التنفيذ) —
+                # الصمت هو المخالفة (المادة 6: تشخيص لكل فشل): أثر مسمى
+                # في قناة التشخيص القياسية يحمل التنفيذ والحدث وهوية
+                # المستمع (اسماً مستقراً) ونوع الاستثناء وسببه بتتبعه. لا
+                # يُصدر عبر _emit_event نفسه (لا عودية) ولا يغير دلالات
+                # الإلغاء.
+                logger.error(
+                    "event-listener-failed execution_id=%s event=%s "
+                    "listener=%s error=%s: %s",
+                    context.execution_id, event.name,
+                    getattr(handler, "__qualname__", None)
+                    or type(handler).__qualname__,
+                    type(exc).__name__, exc,
+                    exc_info=True)
     
     async def execute(
         self,
