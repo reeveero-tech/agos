@@ -1692,8 +1692,8 @@ def test_freeze_content_detects_extra_file_and_ignores_pycache(tmp_path):
 def test_freeze_content_missing_baseline_is_named_inability(tmp_path):
     """غياب خط الأساس عجز مسمى لا انهياراً ولا ادعاء امتثال (سجل العمل
     0084): verified=False بسبب يذكر المسار المنتظر، وصفر فحوص — والتحقق
-    من المستودع الحقيقي بلا خط أساس معتمد يعطي العجز المسمى نفسه (الحد
-    معلن: اعتماد النطاق معلق على قرار الحوكمة)."""
+    من مسار غير موجود يعطي العجز المسمى نفسه (حد مسمى مستقل عن حالة
+    المستودع الحقيقي — الذي صار له خط معتمد بسجل العمل 0085)."""
     from agos_kernel.architecture.freeze import verify_freeze_content
     _freeze_content_fixture(tmp_path)  # شجرة موجودة — الخط وحده هو الغائب
     missing = tmp_path / "no_such_baseline.json"
@@ -1704,12 +1704,22 @@ def test_freeze_content_missing_baseline_is_named_inability(tmp_path):
     assert report["files_checked"] == 0
     assert report["findings"] == []
     assert report["fingerprint"] is None
-    # المسار الافتراضي داخل المستودع الحقيقي — العجز المسمى نفسه (لا ملف
-    # معتمد بعد — قرار الحوكمة معلق)
+
+
+def test_freeze_content_baseline_committed_and_matching():
+    """خط الأساس المعتمد (سجل العمل 0085 — قرار المالك: اعتماد النطاق مع
+    تصحيح مسار النواة): خط أساس متعقب موجود ويطابق الشجرة الفعلية —
+    التحقق يعطي verified=True بصفر نتائج غير تطابق؛ وهذا هو الإنفاذ: أي
+    تغيير لاحق في ملفات النطاق المجمد يكسر هذا الاختبار حتى يُعاد توليد
+    الخط في الالتزام نفسه (عملية حوكمة موثقة لا تعديل صامت)."""
+    from agos_kernel.architecture.freeze import verify_freeze_content
     repo_root = Path(__file__).resolve().parent.parent
-    default_report = verify_freeze_content(repo_root)
-    assert default_report["verified"] is False
-    assert "غياب خط الأساس" in default_report["reason"]
+    report = verify_freeze_content(repo_root)
+    assert report["verified"] is True, report["reason"]
+    non_match = [f for f in report["findings"] if f["kind"] != "match"]
+    assert non_match == []
+    assert report["files_checked"] > 0
+    assert report["fingerprint"] is not None
 
 
 def test_spec_comes_from_constitution_text():
