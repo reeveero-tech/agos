@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 538,
-  "lines": 103483,
+  "lines": 103528,
   "functions": 6218,
   "stub_functions": 782,
   "hardcoded_paths": 0,
@@ -453,7 +453,7 @@
   },
   "agos-kernel/execution": {
    "files": 5,
-   "lines": 1719,
+   "lines": 1764,
    "functions": 92,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -1904,6 +1904,7 @@
    "tested_by_external": [
     "tests/test_article_15_12_boundary.py",
     "tests/test_article_4_evidence.py",
+    "tests/test_article_6_action_events.py",
     "tests/test_article_9_10_evidence.py",
     "tests/test_articles_1_2_evidence.py",
     "tests/test_bootstrap.py",
@@ -7881,7 +7882,7 @@
    "path": "agos/agos-kernel/execution/engine.py",
    "module": "execution.engine",
    "root": "kernel",
-   "lines": 566,
+   "lines": 611,
    "syntax_ok": true,
    "classes": 9,
    "functions": 29,
@@ -7889,6 +7890,7 @@
    "abstract_functions": 0,
    "imports": [
     "asyncio",
+    "copy",
     "inspect",
     "logging",
     "uuid",
@@ -7909,7 +7911,9 @@
     "K:test_execution_implementation"
    ],
    "tested_by_external": [
+    "tests/test_article_6_action_events.py",
     "tests/test_articles_1_2_evidence.py",
+    "tests/test_engine_replay_execution.py",
     "tests/test_event_listener_diagnosis.py",
     "tests/test_execution_boundary.py",
     "tests/test_execution_unification.py",
@@ -16908,6 +16912,25 @@
    ]
   },
   {
+   "path": "tests/test_article_6_action_events.py",
+   "imports": [
+    "agos_kernel.execution.engine",
+    "agos_runtime",
+    "flask",
+    "json",
+    "pathlib",
+    "pytest",
+    "subprocess",
+    "sys",
+    "textwrap"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:agos_runtime",
+    "K:execution.engine"
+   ]
+  },
+  {
    "path": "tests/test_article_7_evidence.py",
    "imports": [
     "flask",
@@ -17314,6 +17337,19 @@
     "K:intelligence.repository.analyzer",
     "K:vertical_slices.repo_discovery.slice",
     "S:rie.application"
+   ]
+  },
+  {
+   "path": "tests/test_engine_replay_execution.py",
+   "imports": [
+    "agos_kernel.execution.engine",
+    "asyncio",
+    "inspect",
+    "pytest"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:execution.engine"
    ]
   },
   {

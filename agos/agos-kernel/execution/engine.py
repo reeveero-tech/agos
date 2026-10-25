@@ -1,5 +1,6 @@
 """AGOS Execution Engine - Production Implementation."""
 import asyncio
+import copy
 import inspect
 import logging
 import uuid
@@ -165,6 +166,11 @@ class ExecutionEngine:
         # حتى انتهاء المسار فعلياً في finally
         self._execution_tasks: Dict[str, Any] = {}
         self._cancel_requests: Dict[str, bool] = {}
+        # معاملات إعادة التنفيذ (المادة 14 — Replayable، سجل العمل 0106):
+        # تُخزَّن مع النتيجة في النافذة نفسها — لقطة عميقة (نمط سجل
+        # العمل 0081) تحمي الإعادة من تعديل المعاملات لاحقاً؛ الإعادة
+        # الفعلية عبر execute نفسها لا نتيجة مخزنة
+        self._replay_parameters: Dict[str, tuple] = {}
     
     def invoke_sync(self, func, *args, **kwargs) -> InvocationOutcome:
         """الواجهة المتزامنة للنواة المشتركة (ADR-0008): استدعاء واحد بلا مهلة
@@ -260,11 +266,24 @@ class ExecutionEngine:
         policy = self.get_policy(policy_name)
         self.active_executions[execution_id] = context
 
+        # لقطة معاملات الإعادة (المادة 14 — سجل العمل 0106): تُلتقط قبل
+        # العمل — المدخل كما ورد لا الحالة النهائية بعد تعديل العمل؛
+        # وفشلها العادي لا يغيّر نتيجة التنفيذ ولا يمنع تنظيفه — الإعادة
+        # عندئذ خطأ صريح عند الطلب. موضعها داخل نطاق الحماية عمداً:
+        # استثناء التحكم (CancelledError) من النسخ ينتشر كما هو ولا
+        # يستدعي العمل، لكنه لا يتجاوز التنظيف — الفهرس لا يُسرَّب أبداً
+        _replay_params: Optional[Any] = None
+
         start_time = datetime.now()
         execution_result = None
         inner_task = None
 
         try:
+            try:
+                _replay_params = copy.deepcopy(parameters)
+            except Exception:  # noqa: BLE001 — فشل اللقطة شأن إعادة لا شأن التنفيذ
+                _replay_params = None
+
             # مهمة داخلية يملكها المحرك (سجل العمل 0082): تُسجَّل قبل إصدار
             # STARTED — فمستمع البدء يستطيع طلب الإلغاء فوراً قبل أي أثر
             # للمهارة؛ ولا يُستخدم current_task لإلغاء مهمة المستدعي قط
@@ -345,6 +364,14 @@ class ExecutionEngine:
             # نتيجة نصف مكتملة ولا خطأ متغير غير مهيأ
             if execution_result is not None:
                 self.completed_executions[execution_id] = execution_result
+                # معاملات الإعادة: اللقطة الملتقطة قبل العمل (المدخل كما
+                # ورد) — لا نسخ هنا في finally كي لا يحوّل فشل النسخ نجاحاً
+                # إلى استثناء ولا يمنع التنظيف؛ وغياب اللقطة يعني لا إعادة
+                # (خطأ صريح عند طلبها)
+                if _replay_params is not None:
+                    self._replay_parameters[execution_id] = (
+                        capability_id, skill_id, provider_id,
+                        _replay_params, policy_name)
             if execution_id in self.active_executions:
                 del self.active_executions[execution_id]
             self._execution_tasks.pop(execution_id, None)
@@ -513,14 +540,32 @@ class ExecutionEngine:
         context.checkpoints.append(checkpoint)
         return checkpoint
     
-    def replay(self, execution_id: str) -> ExecutionResult:
-        """Replay a completed execution."""
-        result = self.completed_executions.get(execution_id)
-        if not result:
+    async def replay(self, execution_id: str) -> ExecutionResult:
+        """إعادة تنفيذ اكتمل فعلاً بنفس معاملاته (المادة 14 — Replayable).
+
+        عقد الطريقة القائم في وثيقتها: «إعادة تشغيل بنفس المعاملات»
+        («Re-run with same parameters») — والتنفيذ الفعلي عبر ``execute``
+        نفسها بتنفيذ جديد ومعرّف جديد ونتيجة جديدة. المعاملات من لقطة
+        ملتقطة قبل العمل الأصلي (المدخل كما ورد — نمط سجل العمل 0081)،
+        وكل إعادة تنال نسخة مستقلة منها فلا تلوث متبادلاً عبر السجل؛
+        والنتيجة الأصلية المخزنة تبقى مستقلة، والمجهول يبقى
+        ``ValueError`` كما كان. المعاملات غير القابلة للقطة (فشل نسخها
+        لا يغيّر نتيجة التنفيذ الأصلي ولا تنظيفه) إعادتها خطأ صريح
+        هنا. (قبل سجل العمل 0106 كان هذا الادعاء وهمياً: إعادة النتيجة
+        المخزنة بلا تنفيذ — والتعليق القديم في الكود كان يقر بذلك.)
+        """
+        if execution_id not in self.completed_executions:
             raise ValueError(f"Execution {execution_id} not found")
-        
-        # Re-run with same parameters
-        return result  # In production, would re-execute
+        args = self._replay_parameters.get(execution_id)
+        if args is None:
+            raise ValueError(
+                f"Execution {execution_id} has no replay parameters")
+        capability_id, skill_id, provider_id, replay_params, policy_name = args
+        # نسخة مستقلة لكل إعادة: عمل معاد يعدّل معامله لا يلوث سجل
+        # الإعادة ولا الإعادات اللاحقة
+        return await self.execute(
+            capability_id, skill_id, provider_id,
+            copy.deepcopy(replay_params), policy_name)
     
     def rollback(self, execution_id: str) -> bool:
         """Rollback an execution."""
