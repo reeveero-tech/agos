@@ -561,16 +561,17 @@ class RepositoryAnalysisService:
         الحقائق تكتمل في ``SharedAnalysis`` قبل تنظيف المستودع المستنسخ
         (المحتوى محفوظ في الذاكرة — لا يحتاج الإسقاط المسار بعدها).
         """
-        from providers import LocalRepositoryProvider, ReadRepositoryInput
+        from providers import (LocalRepositoryProvider, CloneRepositoryInput,
+                                ReadRepositoryInput)
 
         provider = LocalRepositoryProvider()
-        from capabilities import RepositoryAnalysisInput
         print(f"[CAPABILITY] Cloning {url}")
-        clone_result = provider._clone(RepositoryAnalysisInput(url, branch))
+        # العبور عبر واجهة المهارات العامة (المادة 4) — لا اختصار لميثود خاصة
+        clone_result = provider.execute("CloneRepository", CloneRepositoryInput(url, branch))
         repo_path = clone_result.path
         try:
             print("[CAPABILITY] Reading repository")
-            read_result = provider._read(ReadRepositoryInput(repo_path))
+            read_result = provider.execute("ReadRepository", ReadRepositoryInput(repo_path))
             snapshot = read_result.snapshot
             print("[CAPABILITY] Detecting languages")
             print("[CAPABILITY] Detecting frameworks")
