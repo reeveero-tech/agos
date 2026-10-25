@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 590,
+  "files_scanned": 591,
   "external_imports": [
     {
       "import": "a",
@@ -74,6 +74,7 @@
           "tests/test_article_4_evidence.py",
           "tests/test_article_7_evidence.py",
           "tests/test_article_8_11_evidence.py",
+          "tests/test_article_9_10_evidence.py",
           "tests/test_articles_1_2_evidence.py",
           "tests/test_bootstrap.py",
           "tests/test_capability_genome.py",
