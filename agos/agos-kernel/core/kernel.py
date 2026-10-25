@@ -116,10 +116,17 @@ class AGOSKernel:
         return self
 
     def shutdown(self) -> None:
-        """Stop accepting missions. Idempotent; registries stay readable for inspection."""
+        """Stop accepting missions. Idempotent; registries stay readable for inspection.
+
+        الشريحة 0098 (المادتان 8 و11): التفويض إلى ``runtime.stop`` —
+        الإيقاف يسري على المدخل العام نفسه (``KernelRuntime.run``) لا على
+        غلاف الواجهة وحده؛ المرجع المحتفَظ به لا يعود لتنفيذ مهام.
+        """
         if self.state == KernelState.RUNNING:
             self.state = KernelState.STOPPED
             self.stopped_at = datetime.now(timezone.utc)
+        if self.runtime is not None:
+            self.runtime.stop()
 
     def __enter__(self) -> "AGOSKernel":
         return self.start()

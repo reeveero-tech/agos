@@ -21,7 +21,14 @@ from typing import Any, Dict, List, Optional
 
 from bootstrapper import Bootstrapper, BootstrapResult
 
-__all__ = ["boot", "KernelRuntime", "BootError", "REPOSITORY_ANALYSIS"]
+# المادتان 8 و11 (الشريحة 0098): استثناء دورة حياة إيقاف القبول —
+# من واجهة النواة الرسمية (core.kernel) لا جديد يُخترع ولا BootError
+# (نجاح الإقلاع منفصل عن حالة قبول المهام). الاستيراد آمن: core.kernel
+# لا يستورد agos_runtime إلا كسولاً داخل start().
+from core.kernel import KernelNotRunning
+
+__all__ = ["boot", "KernelRuntime", "BootError", "REPOSITORY_ANALYSIS",
+           "KernelNotRunning"]
 
 #: Name of the kernel's repository-analysis capability (``capabilities.RepositoryAnalysisCapability``).
 REPOSITORY_ANALYSIS = "RepositoryAnalysis"
@@ -39,6 +46,9 @@ class KernelRuntime:
     result: BootstrapResult
     boot_log: str = ""
     missions: List[Any] = field(default_factory=list)
+    #: المادتان 8 و11 (الشريحة 0098): حالة قبول المهام ملك المقبض نفسه —
+    #: مستقلة عن نجاح الإقلاع (ready)؛ الإيقاف يرفض الطلبات اللاحقة.
+    stopped: bool = False
 
     # -- state -----------------------------------------------------------------
     @property
@@ -87,10 +97,27 @@ class KernelRuntime:
     def mission_engine(self):
         return self.bootstrapper.mission_engine
 
+    def stop(self) -> None:
+        """إيقاف قبول المهام (المادتان 8 و11 — الشريحة 0098).
+
+        سلطة دورة الحياة بيد النواة: بعد الإيقاف يرفض ``run`` الطلبات
+        الجديدة قبل الوصول إلى المحرك. Idempotent؛ السجلات تبقى مقروءة
+        للفحص، والمرجع المحتفَظ به لا يعود لتنفيذ مهام.
+        """
+        self.stopped = True
+
     # -- missions ---------------------------------------------------------------
     def run(self, mission: Any):
-        """Run a mission (``Mission`` or dict) through the mission engine."""
+        """Run a mission (``Mission`` or dict) through the mission engine.
+
+        يرفض قبول المهمة بعد ``stop`` — استثناء دورة حياة صريح قبل دخول
+        المحرك، لا نتيجة فشل مصنّعة لمهمة لم تُقبل أصلاً.
+        """
         self.require_ready()
+        if self.stopped:
+            raise KernelNotRunning(
+                "النواة موقوفة — لا تُقبل مهام جديدة بعد الإيقاف "
+                "(المادة 8: سلطة القبول للنواة)")
         outcome = self.mission_engine.run(mission)
         self.missions.append(outcome)
         return outcome
