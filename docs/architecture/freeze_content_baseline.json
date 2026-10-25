@@ -487,8 +487,8 @@
           "sha256": "ca1b55bcb67377d226f3e63ee2909d055fa16a0bdc2800cb88a39da3d51effd7"
         },
         "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py": {
-          "bytes": 41279,
-          "sha256": "0b0b211c5431b3f6b1be77ab43ed201ba7b0c2e2146e2806e2a5d7bbf8625642"
+          "bytes": 43270,
+          "sha256": "b070e7c409d981b7380ad608e8699bd8c2344594915668d09fe81592dcc498cf"
         },
         "agos/agos-kernel/civilization/autonomous_engineering/platform_batch.py": {
           "bytes": 28452,
@@ -2043,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "967112165ec91340c6a6ee56c715ab9aabcc7968988ff0e3def6928b784b6e3d",
+      "fingerprint": "8abea2e532c2a3a951631ac7bc3f17b54999d4c1c9b28bd3a8c91548184103f1",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2123,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "f3369027ce35577c876f9e4204d424713fde6937a3029f52de24609c06890b07",
+  "fingerprint": "15bd352a6adf350c442be291bb6ddcdaab06fcac2d11220bd06535e339b78046",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

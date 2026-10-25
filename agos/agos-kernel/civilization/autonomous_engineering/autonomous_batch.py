@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Any
 from enum import Enum
 import uuid
 from copy import deepcopy
+import traceback
 
 from agos_kernel.governance.policy_evaluator import (
     evaluate_rule_dicts, default_policy_rules, execution_authorization_grants,
@@ -887,7 +888,8 @@ class ExecutionAuditor:
         self.audit_log.append({'action': action, 'timestamp': datetime.now(timezone.utc).isoformat()})
 
     def audit_decision(self, action: Dict, result: Dict,
-                      policy_evidence: Optional[Dict] = None) -> None:
+                      policy_evidence: Optional[Dict] = None,
+                      error: Optional[Dict] = None) -> None:
         """أثر قرار الترخيص — سماحاً ومنعاً كلاهما، في السجل نفسه.
 
         لقطة مستقلة (نسخ عميقة) للطلب والنتيجة ونتائج القواعد المستشارة
@@ -895,9 +897,11 @@ class ExecutionAuditor:
         الكائنات أو إعادة تسجيل المواصفات لاحقاً لا يغير الأثر التاريخي —
         فالأثر يحفظ ما استُخدم وقت القرار لا الحالة اللاحقة؛ ونتائج
         القواعد وسياقها يُلتقطان عند استشارة السياسات لهذا الطلب نفسه —
-        لا من آخر نتيجة عامة قد تعود لطلب سابق."""
+        لا من آخر نتيجة عامة قد تعود لطلب سابق. و``error`` (إضافة اختيارية
+        — سجل العمل 0104): أثر الاستثناء الخارج قبل رجوع البوابات بنوعه
+        ورسالته وتتبعه حين يُمرر — لا يُختلق دليل سياسة للطلب المنقطع."""
         evidence = policy_evidence if isinstance(policy_evidence, dict) else {}
-        self.audit_log.append({
+        entry = {
             'action': deepcopy(action),
             'authorized': (bool(result.get('authorized'))
                            if isinstance(result, dict) else False),
@@ -909,7 +913,14 @@ class ExecutionAuditor:
                 'specs': evidence.get('specs') or {},
             }),
             'timestamp': datetime.now(timezone.utc).isoformat(),
-        })
+        }
+        if isinstance(error, dict):
+            entry['error'] = deepcopy({
+                'type': str(error.get('type') or ''),
+                'message': str(error.get('message') or ''),
+                'traceback': str(error.get('traceback') or ''),
+            })
+        self.audit_log.append(entry)
 
 
 class AuthorizationGrantGate:
@@ -959,8 +970,28 @@ class GovernanceRuntime:
         """قرار ترخيص الفعل — وكل قرار يترك أثره (المادة 6 — سجل العمل
         0081): السماح والمنع كلاهما يُسجّل لقطة مستقلة مرتبطة بالطلب
         بحكمه وسببه ونتائج القواعد المستشارة له؛ الفجوة السابقة: الرفض
-        المبكر كان يعود قبل التدقيق فلا أثر له."""
-        result, policy_evidence = self._evaluate_authorization(action)
+        المبكر كان يعود قبل التدقيق فلا أثر له.
+
+        (سجل العمل 0104 — المادة 6): الاستثناء الخارج من البوابات قبل
+        رجوعها كان يهرب بلا أثر — الغلاف يسجّل الآن أثراً واحداً للطلب
+        (authorized=False بسبب مسمى بالاستثناء بنوعه ورسالته وتتبعه) ثم
+        يعيد رميه كما هو: لا ابتلاع ولا تغيير دلالة، والصمت هو المخالفة.
+        استثناءات التحكم (خارج Exception) تمر كما هي ولا تُسجَّل — ليست
+        قراراً. حد معلن: أثر الاستثناء لا يحمل نتائج السياسات المستشارة
+        (انقطع المسار قبل الرجوع — لا يُختلق دليل من آخر نتيجة عامة)."""
+        try:
+            result, policy_evidence = self._evaluate_authorization(action)
+        except Exception as exc:
+            self.auditor.audit_decision(
+                action,
+                {'authorized': False,
+                 'reason': 'استثناء خارج قبل رجوع بوابات الترخيص: '
+                           '{}: {}'.format(type(exc).__name__, exc)},
+                None,
+                error={'type': type(exc).__name__,
+                       'message': str(exc),
+                       'traceback': traceback.format_exc()})
+            raise
         self.auditor.audit_decision(action, result, policy_evidence)
         return result
 

@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 538,
-  "lines": 103452,
+  "lines": 103483,
   "functions": 6218,
   "stub_functions": 782,
   "hardcoded_paths": 0,
@@ -189,7 +189,7 @@
   },
   "agos-kernel/civilization": {
    "files": 100,
-   "lines": 24742,
+   "lines": 24773,
    "functions": 1325,
    "stub_functions": 121,
    "hardcoded_paths": 0,
@@ -3120,7 +3120,7 @@
    "path": "agos/agos-kernel/civilization/autonomous_engineering/autonomous_batch.py",
    "module": "civilization.autonomous_engineering.autonomous_batch",
    "root": "kernel",
-   "lines": 1163,
+   "lines": 1194,
    "syntax_ok": true,
    "classes": 70,
    "functions": 121,
@@ -3133,6 +3133,7 @@
     "enum",
     "uuid",
     "copy",
+    "traceback",
     "agos_kernel.governance.policy_evaluator",
     "math",
     "agos_kernel.governance.policy_evaluator"
@@ -3146,6 +3147,7 @@
    "imported_by": [],
    "tested_by_external": [
     "tests/test_article_15_12_boundary.py",
+    "tests/test_authorization_exception_audit.py",
     "tests/test_fabricated_success.py",
     "tests/test_governance_unification.py"
    ],
@@ -17004,6 +17006,17 @@
    ],
    "scripts": [],
    "resolved": []
+  },
+  {
+   "path": "tests/test_authorization_exception_audit.py",
+   "imports": [
+    "agos_kernel.civilization.autonomous_engineering.autonomous_batch",
+    "pytest"
+   ],
+   "scripts": [],
+   "resolved": [
+    "K:civilization.autonomous_engineering.autonomous_batch"
+   ]
   },
   {
    "path": "tests/test_aware_utc.py",
