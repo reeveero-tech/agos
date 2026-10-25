@@ -12,6 +12,11 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
 
+try:  # مسارا الاستيراد للنواة (محزم ومسطّح — المادة 16 تعمل في كليهما)
+    from agos_kernel.architecture.kernel_protection import guard_kernel_write
+except ImportError:  # pragma: no cover
+    from architecture.kernel_protection import guard_kernel_write
+
 
 @dataclass
 class FileInfo:
@@ -89,8 +94,10 @@ class FilesystemProvider:
             return f.read()
     
     def write_file(self, path: str, content: str) -> bool:
-        """Write content to file."""
+        """Write content to file — مع حماية النواة (المادة 16): الصعود خارج
+        الجذر إلى شجرة النواة مرفوض صراحة لا نجاح وهمي."""
         file_path = self.root / path
+        guard_kernel_write(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         
         with open(file_path, 'w', encoding='utf-8') as f:

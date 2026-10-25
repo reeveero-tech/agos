@@ -358,6 +358,10 @@
           "bytes": 22328,
           "sha256": "c068548f1dc3bf72f180c6dd825d98ad9d3117263a8946e5ca64c8c7380fd353"
         },
+        "agos/agos-kernel/architecture/kernel_protection.py": {
+          "bytes": 2820,
+          "sha256": "34ff621add77248d05b85ca993e068bb22032ca4fc2e78624134e70ba3bf8c97"
+        },
         "agos/agos-kernel/audit/library.py": {
           "bytes": 5196,
           "sha256": "c033cacce3d3e18c847d566f5881761efd7294b799db2df239f20bec11aa6189"
@@ -863,8 +867,8 @@
           "sha256": "3ef5a07518b57f8100560deec4bab103863c71170834bf5e304ee2f0f5983ffd"
         },
         "agos/agos-kernel/civilization/providers/filesystem_provider.py": {
-          "bytes": 5252,
-          "sha256": "6d23c56ad23833208500d11eb63a6216187b39d0c76a3b3b62ba7cee95330eed"
+          "bytes": 5764,
+          "sha256": "fab32f9a9d640133b601f28397d7a9ed50d0c2418e16e3571b0716c8d6139195"
         },
         "agos/agos-kernel/civilization/providers/git_provider.py": {
           "bytes": 6690,
@@ -1643,8 +1647,8 @@
           "sha256": "8cf5759c925066eb599f071e072c5a7545a995a3aa28beac61fd2c034accb0d2"
         },
         "agos/agos-kernel/providers/filesystem.py": {
-          "bytes": 8405,
-          "sha256": "6045a6c362570b88574c5928803e6c0dfd344d33e07a3b7155f6bdad5c2b62c1"
+          "bytes": 9514,
+          "sha256": "ae352825ac50db4cd61d49b6ca6c11977763f59deb02ee1dd5b568e26fb6e143"
         },
         "agos/agos-kernel/providers/implementation.py": {
           "bytes": 14741,
@@ -2039,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "4b6d5521c8a794700e4b8489a0308dc8d98a6be56cc12a944164bceebfe81a2e",
+      "fingerprint": "aad4bb891a13626cf86aeb2b8c85f920e485bd9e0f0c9c8b9c489e7995a30de1",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2119,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "ebb865fcf95251ddb5eac3c250f2eec6dbb85f13d1910b70eb552dca6ca04f01",
+  "fingerprint": "14b53f31f6479cf9228a5eb9896a675d632f6b4e95b1767e76cd5e6fa90cc229",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

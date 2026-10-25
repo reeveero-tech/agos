@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 584,
+  "files_scanned": 586,
   "external_imports": [
     {
       "import": "a",
@@ -83,6 +83,7 @@
           "tests/test_framework_detection.py",
           "tests/test_intelligence_unification.py",
           "tests/test_kernel_facade.py",
+          "tests/test_kernel_protection.py",
           "tests/test_knowledge_graph_from_analysis.py",
           "tests/test_language_weights.py",
           "tests/test_mission_unification.py",

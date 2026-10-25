@@ -1,9 +1,15 @@
 """Filesystem Provider."""
 import os
 import shutil
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .base import Provider
+
+try:  # مسارا الاستيراد للنواة (مسطّح ومحزم — المادة 16 تعمل في كليهما)
+    from architecture.kernel_protection import guard_kernel_write
+except ImportError:  # pragma: no cover
+    from agos_kernel.architecture.kernel_protection import guard_kernel_write
 
 
 class FilesystemProvider(Provider):
@@ -28,7 +34,9 @@ class FilesystemProvider(Provider):
             return f.read()
     
     def write(self, path: str, content: str) -> bool:
-        """Write file."""
+        """Write file — مع حماية النواة (المادة 16): الكتابة إلى محتوى
+        شجرة النواة مرفوضة صراحة (PermissionError بسبب) لا نجاح وهمي."""
+        guard_kernel_write(path)
         with open(path, "w") as f:
             f.write(content)
         return True
@@ -172,15 +180,22 @@ class ArchiveProvider(Provider):
         self.metadata.auth_types = ["none"]
     
     def extract(self, archive_path: str, dest_path: str) -> bool:
-        """Extract archive."""
+        """Extract archive — مع حماية النواة (المادة 16): كل عضو يُفحص
+        قبل الاستخراج؛ رفض الحماية يُرفع صراحة ولا يُبتلع (ADR-0008)."""
         try:
             if archive_path.endswith(".zip"):
                 with zipfile.ZipFile(archive_path, "r") as zf:
+                    for name in zf.namelist():
+                        guard_kernel_write(Path(dest_path) / name)
                     zf.extractall(dest_path)
             elif archive_path.endswith((".tar", ".tar.gz", ".tgz", ".tar.bz2")):
                 with tarfile.open(archive_path, "r:*") as tf:
+                    for name in tf.getnames():
+                        guard_kernel_write(Path(dest_path) / name)
                     tf.extractall(dest_path)
             return True
+        except PermissionError:
+            raise  # رفض حماية النواة يُرفع لا يُعاد False صامتاً (ADR-0008)
         except Exception:
             return False
 
