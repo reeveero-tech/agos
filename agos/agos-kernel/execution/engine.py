@@ -474,33 +474,44 @@ class ExecutionEngine:
         return results
     
     def pause(self, execution_id: str) -> bool:
-        """Pause an execution."""
+        """التقاط نقطة تحقق مع حدثَي CHECKPOINT وPAUSED (المادة 14 — سجل العمل 0107).
+
+        حد معلن: هذا لا يعلّق العمل الجاري — التعليق الفعلي تعاوني
+        عند نقاط انتظار العمل ولا آلية له في هذا المسار (Recoverable
+        مفتوحة)؛ الدليل الرصدي: العمل يكتمل بعد عودة True. لقطة
+        النقطة نسخة عميقة مستقلة تُجهَّز قبل الإلحاق والأحداث، وفشل
+        نسخها ينتشر صريحاً — لا نجاح يُعلن عن لقطة فاشلة.
+        """
         context = self.active_executions.get(execution_id)
         if not context:
             return False
-        
-        # Create checkpoint
-        checkpoint = {
-            "execution_id": execution_id,
-            "state": context.state.copy(),
-            "parameters": context.parameters.copy(),
-            "timestamp": datetime.now().isoformat(),
-        }
-        context.checkpoints.append(checkpoint)
+
+        checkpoint = self.checkpoint(execution_id)
         self._emit_event(ExecutionEvent.CHECKPOINT, context)
         self._emit_event(ExecutionEvent.PAUSED, context)
         return True
     
     def resume(self, execution_id: str) -> bool:
-        """Resume a paused execution."""
+        """استعادة بيانات السياق من آخر نقطة تحقق (سجل العمل 0107).
+
+        حد معلن: هذا يستعيد الحالة والمعاملات بنسخ مستقلة عن النقطة
+        المخزنة — لا يستأنف موضع coroutine (لا تعليق فعلي قائم
+        يُستأنف). النسخة المستعادة مستقلة فتبقى النقطة قابلة
+        للاستعادة مراراً، وفشل النسخ يترك السياق دون تغيير (لا
+        استعادة نصفية).
+        """
         context = self.active_executions.get(execution_id)
         if not context or not context.checkpoints:
             return False
         
-        # Restore from last checkpoint
+        # Restore from last checkpoint — النسختان تُجهَّزان في متغير
+        # محلي قبل تعديل أي حقل في السياق، من بنية واحدة تحفظ
+        # العلاقات المشتركة بين الحالة والمعاملات
         checkpoint = context.checkpoints[-1]
-        context.state = checkpoint["state"]
-        context.parameters = checkpoint["parameters"]
+        restored = copy.deepcopy(
+            {"state": checkpoint["state"], "parameters": checkpoint["parameters"]})
+        context.state = restored["state"]
+        context.parameters = restored["parameters"]
         self._emit_event(ExecutionEvent.RESUMED, context)
         return True
     
@@ -526,15 +537,25 @@ class ExecutionEngine:
         return True
     
     def checkpoint(self, execution_id: str) -> Optional[Dict]:
-        """Create a checkpoint for an execution."""
+        """Create a checkpoint for an execution.
+
+        حد معلن (سجل العمل 0107): اللقطة نسخة عميقة مستقلة للحالة
+        والمعاملات تُجهَّز قبل الإلحاق — تعديل السياق الحي بعدها لا
+        يلوثها، وكل استعادة تنال نسخة منها. فشل النسخ ينتشر صريحاً:
+        لا نقطة تُنشأ ولا نجاح يُعلن عن لقطة فاشلة.
+        """
         context = self.active_executions.get(execution_id)
         if not context:
             return None
         
+        # نسخة واحدة للبنية الكاملة تحفظ العلاقات المشتركة بين
+        # الحالة والمعاملات، وتُجهَّز قبل أي نشر (إلحاق أو أحداث)
+        snapshot = copy.deepcopy(
+            {"state": context.state, "parameters": context.parameters})
         checkpoint = {
             "execution_id": execution_id,
-            "state": context.state.copy(),
-            "parameters": context.parameters.copy(),
+            "state": snapshot["state"],
+            "parameters": snapshot["parameters"],
             "timestamp": datetime.now().isoformat(),
         }
         context.checkpoints.append(checkpoint)
@@ -568,7 +589,13 @@ class ExecutionEngine:
             copy.deepcopy(replay_params), policy_name)
     
     def rollback(self, execution_id: str) -> bool:
-        """Rollback an execution."""
+        """إصدار حدث ROLLED_BACK للمسار الجاري فقط (سجل العمل 0107).
+
+        حد معلن: هذا لا يعكس أي آثار — العكس الفعلي للآثار آلية
+        غير متوفرة في هذا المسار (Recoverable مفتوحة) ومسؤولية
+        مجالية إن وُجدت لاحقاً؛ الدليل الرصدي: التنفيذ يكتمل بعد
+        عودة True.
+        """
         context = self.active_executions.get(execution_id)
         if not context:
             return False

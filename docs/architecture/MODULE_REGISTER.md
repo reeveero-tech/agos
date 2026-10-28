@@ -53,7 +53,7 @@
 | L1 | `agos-kernel/registry` | registry | 3 | 123 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/resolvers` | registry | 1 | 326 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/shared` | contracts | 1 | 63 | 0 | yes | yes | yes | L4 | R-W1-019 |
-| L1 | `agos_kernel` | namespace | 1 | 172 | 0 | yes | no | no | L1 | R-F-003, R-F-005 |
+| L1 | `agos_kernel` | namespace | 1 | 172 | 0 | yes | no | yes | L1 | R-F-003, R-F-005 |
 | L2 | `agos-kernel` | quality | 23 | 5562 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
 | L2 | `agos-kernel/agos_runtime` | boot | 1 | 166 | 0 | yes | yes | yes | L4 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
@@ -61,7 +61,7 @@
 | L2 | `agos-kernel/collaboration` | human-loop | 2 | 238 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/crossdomain` | mission | 2 | 524 | 0 | yes | yes | yes | L4 | R-W4-013 |
 | L2 | `agos-kernel/distributed` | cloud | 2 | 316 | 0 | yes | no | yes | L1 | R-W4-008 |
-| L2 | `agos-kernel/execution` | execution | 5 | 1764 | 0 | yes | yes | yes | L4 | R-W3-003 |
+| L2 | `agos-kernel/execution` | execution | 5 | 1791 | 0 | yes | yes | yes | L4 | R-W3-003 |
 | L2 | `agos-kernel/finalization` | quality | 1 | 1147 | 0 | yes | no | yes | L1 | R-W5-002 |
 | L2 | `agos-kernel/governance` | governance | 3 | 1201 | 0 | yes | no | yes | L1 | R-W1-007, R-W3-015 |
 | L2 | `agos-kernel/hardening` | quality | 1 | 404 | 0 | yes | no | no | L1 | R-F-007, R-Q-007 |

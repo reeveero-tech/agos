@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 597,
+  "files_scanned": 598,
   "external_imports": [
     {
       "import": "a",
@@ -87,6 +87,7 @@
           "tests/test_decision_explanation.py",
           "tests/test_decision_unification.py",
           "tests/test_dependency_extraction.py",
+          "tests/test_engine_checkpoint_independence.py",
           "tests/test_engine_replay_execution.py",
           "tests/test_event_listener_diagnosis.py",
           "tests/test_execution_boundary.py",

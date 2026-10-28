@@ -1,7 +1,7 @@
 {
  "totals": {
   "files": 538,
-  "lines": 103528,
+  "lines": 103555,
   "functions": 6218,
   "stub_functions": 782,
   "hardcoded_paths": 0,
@@ -453,7 +453,7 @@
   },
   "agos-kernel/execution": {
    "files": 5,
-   "lines": 1764,
+   "lines": 1791,
    "functions": 92,
    "stub_functions": 0,
    "hardcoded_paths": 0,
@@ -7882,7 +7882,7 @@
    "path": "agos/agos-kernel/execution/engine.py",
    "module": "execution.engine",
    "root": "kernel",
-   "lines": 611,
+   "lines": 638,
    "syntax_ok": true,
    "classes": 9,
    "functions": 29,
@@ -13361,6 +13361,9 @@
    "id": "S:agos_kernel",
    "resolved_imports": [],
    "imported_by": [],
+   "tested_by_external": [
+    "tests/test_engine_checkpoint_independence.py"
+   ],
    "import_status": "OK"
   },
   {
@@ -17337,6 +17340,18 @@
     "K:intelligence.repository.analyzer",
     "K:vertical_slices.repo_discovery.slice",
     "S:rie.application"
+   ]
+  },
+  {
+   "path": "tests/test_engine_checkpoint_independence.py",
+   "imports": [
+    "agos.agos_kernel.execution.engine",
+    "asyncio",
+    "pytest"
+   ],
+   "scripts": [],
+   "resolved": [
+    "S:agos_kernel"
    ]
   },
   {
