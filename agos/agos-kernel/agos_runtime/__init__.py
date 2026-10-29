@@ -26,6 +26,7 @@ from bootstrapper import Bootstrapper, BootstrapResult
 # (نجاح الإقلاع منفصل عن حالة قبول المهام). الاستيراد آمن: core.kernel
 # لا يستورد agos_runtime إلا كسولاً داخل start().
 from core.kernel import KernelNotRunning
+from events import Event, EventType
 
 __all__ = ["boot", "KernelRuntime", "BootError", "REPOSITORY_ANALYSIS",
            "KernelNotRunning"]
@@ -103,8 +104,20 @@ class KernelRuntime:
         سلطة دورة الحياة بيد النواة: بعد الإيقاف يرفض ``run`` الطلبات
         الجديدة قبل الوصول إلى المحرك. Idempotent؛ السجلات تبقى مقروءة
         للفحص، والمرجع المحتفَظ به لا يعود لتنفيذ مهام.
+
+        المادة 6 (الشريحة 34 / سجل العمل 0108): الانتقال إلى الإيقاف
+        فعلُ نواة يُسجَّل حدثاً واحداً ``kernel_stopped`` على ناقل
+        الأحداث الإنتاجي فور اكتمال الانتقال — بلا هوية مهمة لأنه فعل
+        نواة لا يتبع مهمة؛ والتكرار على نواة موقوفة لا ينشر حدثاً
+        جديداً (الحدث يسجل الانتقال لا محاولة الطلب). وإن لم يوجد
+        ناقل (إقلاع لم يكتمل بناؤه) يُضبط العلم دون نشر — هذه الحالة
+        خارج الدليل الحي لهذه الشريحة.
         """
-        self.stopped = True
+        if not self.stopped:
+            self.stopped = True
+            bus = self.event_bus
+            if bus is not None:
+                bus.publish(Event(type=EventType.KERNEL_STOPPED))
 
     # -- missions ---------------------------------------------------------------
     def run(self, mission: Any):

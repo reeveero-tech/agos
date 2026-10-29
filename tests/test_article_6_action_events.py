@@ -234,3 +234,69 @@ def test_article_6_rejection_before_work_emits_only_failure_event():
     assert out["identity_ok"] is True
     assert out["failure_cause"].startswith("Capability resolution failed")
     assert out["ledger_last_state"] == "failed"
+
+
+def test_article_6_stop_transition_produces_lifecycle_event(git_repo):
+    """الأحمر أولاً (الشريحة 34): الانتقال إلى الإيقاف فعلُ نواة حقيقي —
+    القبول قبله مثبت بمهمة مكتملة عبر المدخل العام، والرفض بعده استثناء
+    دورة حياة صريح قبل أي دخول لمحرك المهام؛ فالمادة 6 (كل فعل يترك
+    حدثاً) توجب أن يسجَّل الانتقال نفسه حدثاً على الناقل الإنتاجي، لا
+    أن يُكتفى بأثره في رفض الطلبات اللاحقة. نافذة الناقل والحالة
+    تُلتقطان فور عودة ``stop`` الأول وقبل أي طلب أو تكرار حتى لا تختلط
+    أحداث الرفض بحدث الانتقال ولا يُنسب الإيقاف إلى استدعاء آخر؛
+    والحدث يسجل الانتقال نفسه بلا هوية مهمة (فعل نواة لا يتبع مهمة) —
+    وتكرار ``stop`` على نواة موقوفة لا ينشر حدثاً جديداً."""
+    out = json.loads(run(f"""
+        import json
+        import agos_runtime
+
+        k = agos_runtime.boot()
+        bus = k.event_bus
+        r = k.analyze({str(git_repo)!r}, branch="main")
+
+        window_start = len(bus.get_events())
+        k.stop()  # الانتقال الفعلي — النافذة والحالة فوراً قبل أي طلب أو تكرار
+        window = [(e.type.value, e.mission_id) for e in bus.get_events()[window_start:]]
+        stopped_after_first = k.stopped
+
+        # إثبات الفعل مستقلاً عن أي حدث: الحالة + الرفض اللاحق قبل المحرك
+        engine_entries = [0]
+        real_run = k.mission_engine.run
+        def counting_run(*args, **kwargs):
+            engine_entries[0] += 1
+            return real_run(*args, **kwargs)
+        k.mission_engine.run = counting_run
+        refused_type, refused_msg = None, None
+        try:
+            k.run({{"name": "بعد الإيقاف", "capability": "RepositoryAnalysis",
+                    "parameters": {{}}}})
+        except Exception as exc:
+            refused_type, refused_msg = type(exc).__name__, str(exc)
+
+        # التكرار أخيراً: الانتقال سُجل مرة، لا حدثاً جديداً
+        k.stop()
+        window_after_repeat = [e.type.value for e in bus.get_events()[window_start:]]
+
+        print(json.dumps({{
+            "mission_state": r.state.value,
+            "stopped_after_first": stopped_after_first,
+            "window": window,
+            "window_after_repeat": window_after_repeat,
+            "refused_type": refused_type,
+            "refused_msg": refused_msg,
+            "engine_entries": engine_entries[0],
+        }}))
+    """))
+    # القبول قبل الإيقاف مثبت — النواة كانت تقبل المهام وتكملها
+    assert out["mission_state"] == "completed"
+    # الفعل مثبت بالاستدعاء الذي أصدر الحدث: النواة موقوفة فور أول stop،
+    # والطلب اللاحق يُرفض استثناء دورة حياة صريحاً قبل أي دخول للمحرك
+    assert out["stopped_after_first"] is True
+    assert out["refused_type"] == "KernelNotRunning"
+    assert "النواة موقوفة" in out["refused_msg"]
+    assert out["engine_entries"] == 0
+    # الأحمر: الانتقال إلى الإيقاف فعل — يجب أن يسجله حدث واحد على
+    # الناقل، بلا هوية مهمة (فعل نواة لا يتبع مهمة)
+    assert out["window"] == [["kernel_stopped", None]]
+    # الحدث يسجل الانتقال لا محاولة الطلب: التكرار لا ينشر حدثاً جديداً
+    assert out["window_after_repeat"] == ["kernel_stopped"]

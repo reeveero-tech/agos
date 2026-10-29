@@ -244,11 +244,11 @@
           "sha256": "2fb6e6910134f1272609c3f82143242eb7e5bc8c9dc380c5483711224f5dd18c"
         },
         "agos/agos-kernel/events/__init__.py": {
-          "bytes": 2241,
-          "sha256": "df71e9758c91744549f876db82a905140613f36814d472b71beb8806235c2df6"
+          "bytes": 2374,
+          "sha256": "960d04686fcdb2ea65aaeb3ba736b9db589c04242f67bc87d5be5ffeb86f5faf"
         }
       },
-      "fingerprint": "e71b1e6675fd4810b74d504b5f8d58362af3795d125edb923c0ee76d13699930",
+      "fingerprint": "4fd00c46bca95f2f7171a6ef65c38c8b12b6c584285c6bb8fa9644f6404091d3",
       "scope": [
         "agos/agos-kernel/event-engine/",
         "agos/agos-kernel/event_engine/",
@@ -335,8 +335,8 @@
           "sha256": "a3f18b62f056ef055570d8f6ffdaf761e0b207e59d9f421c27adf9b69e14c337"
         },
         "agos/agos-kernel/agos_runtime/__init__.py": {
-          "bytes": 6605,
-          "sha256": "cf76bf935e0c48bed750160fd228a4ecb264fd106caf961ad387112eff703815"
+          "bytes": 7541,
+          "sha256": "2f62baa1ca51c5e8adff3dff9dd206d3f446379c9ee26b798e5e2b3cd9faf22a"
         },
         "agos/agos-kernel/api/__init__.py": {
           "bytes": 121,
@@ -1203,8 +1203,8 @@
           "sha256": "2fb6e6910134f1272609c3f82143242eb7e5bc8c9dc380c5483711224f5dd18c"
         },
         "agos/agos-kernel/events/__init__.py": {
-          "bytes": 2241,
-          "sha256": "df71e9758c91744549f876db82a905140613f36814d472b71beb8806235c2df6"
+          "bytes": 2374,
+          "sha256": "960d04686fcdb2ea65aaeb3ba736b9db589c04242f67bc87d5be5ffeb86f5faf"
         },
         "agos/agos-kernel/evolution/__init__.py": {
           "bytes": 22,
@@ -2043,7 +2043,7 @@
           "sha256": "7a1c1f39377688e70bfbf5d7373c8327d007eecc4b200aaf34ca9073677386bf"
         }
       },
-      "fingerprint": "012b5b8930ff198244d284d543d75c240fa837e5c22ce359633415f8213a3972",
+      "fingerprint": "6ac0cb20d8b00c06bce08d18b7489d7be5c00af14a1c2ca0312f22e3ad069a6a",
       "scope": [
         "agos/agos-kernel/"
       ]
@@ -2123,7 +2123,7 @@
       ]
     }
   },
-  "fingerprint": "5391e8e01d68f26ba3b77c89f368e3c31247e12990ab141a6ed09e0d9d91bbe1",
+  "fingerprint": "869d08c7fcb858716bc340e519677c457fc4d1f46437b6efdbe12107baad1e86",
   "format": "agos-freeze-content-baseline",
   "format_version": 1
 }

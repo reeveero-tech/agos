@@ -28,6 +28,9 @@ class EventType(Enum):
     SKILL_COMPLETED = "skill_completed"
     SKILL_FAILED = "skill_failed"
 
+    # Kernel Lifecycle Events (المادة 6 — الشريحة 34 / سجل العمل 0108)
+    KERNEL_STOPPED = "kernel_stopped"
+
 
 @dataclass
 class Event:

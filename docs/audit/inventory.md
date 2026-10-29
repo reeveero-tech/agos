@@ -9,7 +9,7 @@
 - **hardcoded_paths**: 0
 - **import_fail**: 0
 - **import_ok**: 536
-- **lines**: 103555
+- **lines**: 103571
 - **not_imported_by_others**: 250
 - **stub_functions**: 782
 - **syntax_errors**: 0
@@ -23,7 +23,7 @@
 | `agos-kernel/adapters` | 11 | 1343 | 109 | 9 | 0 | 11 | 0 | 6 |
 | `agos-kernel/agent_packs` | 1 | 141 | 6 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/agos_kernel` | 1 | 14 | 0 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/agos_runtime` | 1 | 166 | 17 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/agos_runtime` | 1 | 179 | 17 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/api` | 2 | 342 | 24 | 1 | 0 | 2 | 0 | 0 |
 | `agos-kernel/approval` | 2 | 196 | 11 | 0 | 0 | 2 | 0 | 0 |
 | `agos-kernel/architecture` | 2 | 565 | 21 | 0 | 0 | 2 | 0 | 1 |
@@ -56,7 +56,7 @@
 | `agos-kernel/enterprise` | 5 | 2237 | 221 | 100 | 0 | 5 | 0 | 4 |
 | `agos-kernel/event-engine` | 1 | 211 | 27 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/event_engine` | 1 | 18 | 0 | 0 | 0 | 1 | 0 | 0 |
-| `agos-kernel/events` | 1 | 75 | 5 | 0 | 0 | 1 | 0 | 0 |
+| `agos-kernel/events` | 1 | 78 | 5 | 0 | 0 | 1 | 0 | 0 |
 | `agos-kernel/evolution` | 4 | 1268 | 96 | 44 | 0 | 4 | 0 | 4 |
 | `agos-kernel/execution` | 5 | 1791 | 92 | 0 | 0 | 5 | 0 | 0 |
 | `agos-kernel/execution-context` | 1 | 248 | 21 | 0 | 0 | 1 | 0 | 1 |

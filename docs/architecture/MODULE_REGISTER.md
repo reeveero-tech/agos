@@ -43,7 +43,7 @@
 | L1 | `agos-kernel/discovery` | registry | 1 | 442 | 0 | yes | yes | yes | L4 | R-W3-002 |
 | L1 | `agos-kernel/event-engine` | events | 1 | 211 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
 | L1 | `agos-kernel/event_engine` | events | 1 | 18 | 0 | yes | yes | no | L2 | R-F-004, R-W3-005 |
-| L1 | `agos-kernel/events` | events | 1 | 75 | 0 | yes | yes | yes | L4 | R-W3-005 |
+| L1 | `agos-kernel/events` | events | 1 | 78 | 0 | yes | yes | yes | L4 | R-W3-005 |
 | L1 | `agos-kernel/execution-context` | execution | 1 | 248 | 0 | yes | no | no | L1 | R-F-004, R-W3-003 |
 | L1 | `agos-kernel/execution_context` | execution | 1 | 18 | 0 | yes | no | no | L1 | R-F-004, R-W3-003 |
 | L1 | `agos-kernel/interfaces` | contracts | 1 | 80 | 0 | yes | yes | yes | L4 | R-W1-019 |
@@ -55,7 +55,7 @@
 | L1 | `agos-kernel/shared` | contracts | 1 | 63 | 0 | yes | yes | yes | L4 | R-W1-019 |
 | L1 | `agos_kernel` | namespace | 1 | 172 | 0 | yes | no | yes | L1 | R-F-003, R-F-005 |
 | L2 | `agos-kernel` | quality | 23 | 5562 | 0 | yes | yes | yes | L4 | R-F-002, R-F-008, R-Q-001 |
-| L2 | `agos-kernel/agos_runtime` | boot | 1 | 166 | 0 | yes | yes | yes | L4 | R-W3-001 |
+| L2 | `agos-kernel/agos_runtime` | boot | 1 | 179 | 0 | yes | yes | yes | L4 | R-W3-001 |
 | L2 | `agos-kernel/api` | products-api | 2 | 342 | 1 | yes | no | yes | L1 | R-W4-007 |
 | L2 | `agos-kernel/approval` | human-loop | 2 | 196 | 0 | yes | no | yes | L1 | R-W3-015 |
 | L2 | `agos-kernel/collaboration` | human-loop | 2 | 238 | 0 | yes | no | yes | L1 | R-W3-015 |
