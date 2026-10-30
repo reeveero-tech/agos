@@ -2,7 +2,7 @@
 
 > مُولَّد بـ`tools/audit/dependencies.py`، فلا يُحرَّر يدوياً. `--check` يُفشل CI إن تقادم التقرير أو ظهرت مشكلة.
 
-الملفات المفحوصة: **599** (`agos/` و`tests/` و`tools/`) · المشاكل: **0**
+الملفات المفحوصة: **600** (`agos/` و`tests/` و`tools/`) · المشاكل: **0**
 
 ## الاستيرادات الخارجية الفعلية
 
@@ -12,7 +12,7 @@
 | `c` | `c` | generated (1) | — | — |
 | `memory_profiler` | `memory-profiler` | runtime (1) | runtime | 0.61.0 |
 | `psutil` | `psutil` | runtime (1) | runtime | 7.2.2 |
-| `pytest` | `pytest` | dev (47) | dev | 9.1.1 |
+| `pytest` | `pytest` | dev (48) | dev | 9.1.1 |
 | `requests` | `requests` | generated (3) | runtime | 2.34.2 |
 | `yaml` | `pyyaml` | optional (1)، runtime (1) | runtime | 6.0.3 |
 

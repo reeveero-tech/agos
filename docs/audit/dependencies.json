@@ -5,7 +5,7 @@
     "tests",
     "tools"
   ],
-  "files_scanned": 599,
+  "files_scanned": 600,
   "external_imports": [
     {
       "import": "a",
@@ -72,6 +72,7 @@
           "agos/agos-kernel/core/tests/test_golden_security.py",
           "agos/agos-kernel/core/tests/test_golden_serialization.py",
           "tests/test_article_12_decision_repeatability.py",
+          "tests/test_article_12_research_decision_repeatability.py",
           "tests/test_article_15_12_boundary.py",
           "tests/test_article_4_evidence.py",
           "tests/test_article_4_provider_injection.py",
